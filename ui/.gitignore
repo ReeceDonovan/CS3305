@@ -5,6 +5,8 @@
 /.pnp
 .pnp.js
 
+.next
+
 # lockfiles
 yarn.lock
 package-lock.json
