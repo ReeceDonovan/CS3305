@@ -18,7 +18,9 @@ Using:
 
 # Sample Frontend Code
 
-You may look for sample code for using carbon design on [this website](https://www.carbondesignsystem.com/components/overview/)
+
+
+You may look for notes on component configuration [here](https://www.carbondesignsystem.com/components/overview/) or sample code for using carbon design on [this website](https://www.carbondesignsystem.com/components/overview/)
 
 # Notes
 
