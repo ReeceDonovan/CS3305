@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.tabSize": 2,
+    "git.ignoreLimitWarning": true,
+    "editor.formatOnSave": true,
+    "files.insertFinalNewline": true
+  }
+}
