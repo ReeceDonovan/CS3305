@@ -1,10 +1,15 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 
-import 'carbon-components/scss/globals/scss/styles.scss';
+import '../styles/style.scss'
+import Layout from '../layout/Layout'
 
 function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+  return (
+    <Layout>
+      <Component {...pageProps} />
+    </Layout>
+  )
 }
 
 export default MyApp
