@@ -20,3 +20,6 @@ Using:
 
 You may look for sample code for using carbon design on [this website](https://www.carbondesignsystem.com/components/overview/)
 
+# Notes
+
+Routing can be done by simpling renaming the file or creating a new file in the `pages` directory
