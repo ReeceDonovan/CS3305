@@ -77,4 +77,4 @@ class Config {
     }
 }
 
-export default config
+export default Config
