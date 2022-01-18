@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 
 // Add onto this as needed
-const defaultConfig: configInterface = {
+const config: configInterface = {
     emailProvider: 'gmail',
     emailConfigs: [
         {
@@ -34,15 +34,15 @@ interface emailConfig {
     }
 }
 
-class config {
+class Config {
     path: string = 'config.json'
     currentConfig: configInterface;
     
     constructor() {
         fs.readFile(this.path, 'utf-8', (err, data) => {
             if (err) {
-                this.update(defaultConfig)
-                this.currentConfig = defaultConfig
+                this.update(config)
+                this.currentConfig = config
                 return console.log(err)
             } 
             try {
@@ -51,8 +51,8 @@ class config {
                 fs.rename(this.path, "old." + this.path, () => {
                     console.error("Failed to rename")
                 })
-                this.update(defaultConfig)
-                this.currentConfig = defaultConfig
+                this.update(config)
+                this.currentConfig = config
             }
         })
     }
