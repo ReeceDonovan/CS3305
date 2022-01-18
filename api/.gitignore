@@ -1,0 +1,12 @@
+# express gitignore
+
+node_modules
+
+yarn.lock
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+.env
+.env.*
+
