@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 
 // Add onto this as needed
-const config: configInterface = {
+export var config: configInterface = {
     emailProvider: 'gmail',
     emailConfigs: [
         {
@@ -17,12 +17,17 @@ const config: configInterface = {
                ciphers:'SSLv3'
             }
         }
-    ]
+    ],
+    oauthConfig: {
+        oauthClientId: "",
+        oauthClientSecret: "",
+    }
 }
 
 interface configInterface {
     emailProvider: string;
     emailConfigs: Array<emailConfig>;
+    oauthConfig: oauthConfig;
 }
 
 interface emailConfig {
@@ -34,7 +39,12 @@ interface emailConfig {
     }
 }
 
-class Config {
+interface oauthConfig {
+    oauthClientId: string;
+    oauthClientSecret: string;
+}
+
+export class Config {
     path: string = 'config.json'
     currentConfig: configInterface;
     
@@ -76,5 +86,3 @@ class Config {
         return this.currentConfig
     }
 }
-
-export default Config
