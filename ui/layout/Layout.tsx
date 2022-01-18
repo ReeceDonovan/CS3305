@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             id="main"
           style={{
               maxWidth: '100vw',
-              margin: '40px 0 0 50px'
+              margin: '50px 0 0 50px'
           }}
         >
             {children}
