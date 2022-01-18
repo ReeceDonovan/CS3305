@@ -35,7 +35,7 @@ interface emailConfig {
 }
 
 class config {
-    path: string = 'default.json'
+    path: string = 'config.json'
     currentConfig: configInterface;
     
     constructor() {
