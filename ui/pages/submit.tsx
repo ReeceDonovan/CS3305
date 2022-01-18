@@ -1,9 +1,26 @@
-import { FileUploaderDropContainer } from "carbon-components-react";
+import { Button, FileUploaderDropContainer } from "carbon-components-react";
+import { userInfo } from "os";
+import { useState } from "react";
 
 
 const Submit = () => {
 
+  const [modiflag, setModiflag] = useState(true);
+  const [err_msg, setError_msg] = useState<string | null>(null);
+
   let pdf_file = null;
+
+  const user = getUser();
+
+  const sendApplication = () => {
+    /*post({
+      name: user.name
+      bio: user.bio
+      school: user.school
+      file: pdf_file
+    })*/
+  }
+
 
   return (
     <>
@@ -22,11 +39,28 @@ const Submit = () => {
       })=>{
           if (!content.addedFiles[0].invalidFileType == true){
             pdf_file = content.addedFiles[0]
+            if (user.name && user.bio && user.school){
+              setModiflag(false)
+            }else{
+              setError_msg("Please ensure that all of your account fields are filled out correctly before continuing with your application")
+            }
+            
+          }else{
+            setModiflag(false)
           }
           
         }}
 
       />
+      <Button
+        disabled={modiflag}
+        onClick={sendApplication}
+      >
+        Submit Your Application
+      </Button>
+      {
+        err_msg? <p style={{color:"red"}}>{err_msg}</p>: <></>
+      }
     </>
   );
 };
@@ -36,7 +70,7 @@ export default Submit;
 const getUser = () => {
     return {
         name: "name",
-        bio: null,
-        school: null
+        bio: "bio",
+        school: "school"
     }
 }
