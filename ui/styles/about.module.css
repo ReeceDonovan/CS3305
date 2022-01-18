@@ -1,0 +1,22 @@
+.info {
+    max-width: 100%;
+    width: 80%;
+    margin: auto;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.info p {
+    margin: 2em auto;
+}
+
+.info ul {
+    margin: 0 0 0 3.6em;
+    list-style-type: square;
+    font-size: medium;
+    line-height: normal;
+}
+
+.info ul li {
+    margin-bottom: 0.6em;
+}
