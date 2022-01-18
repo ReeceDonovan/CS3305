@@ -16,11 +16,9 @@ const AccountPage: NextPage = () => {
   
 
   const checkModified = () => {
-    console.log("halp")
     if (name_ref?.current?.value != user.name || bio_ref?.current?.value != user.bio || school_ref?.current?.value != user.school){
         setModiflag(false);
     }
-    console.log(modiflag)
   }
 
   return(
