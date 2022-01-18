@@ -6,6 +6,8 @@ yarn.lock
 npm-debug.log
 yarn-error.log
 package-lock.json
+default.json
+old.default.json
 
 .env
 .env.*
