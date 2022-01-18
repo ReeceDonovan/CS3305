@@ -17,12 +17,17 @@ const config: configInterface = {
                ciphers:'SSLv3'
             }
         }
-    ]
+    ],
+    oauthConfig: {
+        oauthClientId: "",
+        oauthClientSecret: "",
+    }
 }
 
 interface configInterface {
     emailProvider: string;
     emailConfigs: Array<emailConfig>;
+    oauthConfig: oauthConfig;
 }
 
 interface emailConfig {
@@ -32,6 +37,11 @@ interface emailConfig {
     tls?: {
         ciphers?: string;
     }
+}
+
+interface oauthConfig {
+    oauthClientId: string;
+    oauthClientSecret: string;
 }
 
 class Config {
