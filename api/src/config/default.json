@@ -1,5 +1,5 @@
 {
-    "emailType": 0,
+    "emailProvider": "gmail",
     "emailConfigs": [
         {
             "host": "smtp.gmail.com",

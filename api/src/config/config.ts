@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 
 interface configInterface {
-    emailType: number;
+    emailProvider: string;
     emailConfigs: Array<emailConfig>;
 }
 
