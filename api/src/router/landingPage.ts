@@ -8,7 +8,7 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const pageRouter = express.Router();
 
-pageRouter.get("/about", (req, res) => {
+pageRouter.get("/about", (_req, res) => {
     const converter = new showdown.Converter();
     res.set('Content-Type', 'text/html');
     res.send(DOMPurify.sanitize(converter.makeHtml(config.get().landingPageMD)));
