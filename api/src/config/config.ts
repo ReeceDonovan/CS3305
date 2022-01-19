@@ -2,7 +2,7 @@ import * as fs from "fs";
 import path from "path";
 
 // Add onto this as needed
-export var config: configInterface = {
+var defaultConfig: configInterface = {
   emailProvider: "gmail",
   emailConfigs: [
     {
@@ -24,6 +24,7 @@ export var config: configInterface = {
     oauthClientSecret: "",
   },
   signingKey: "",
+  landingPageMD: "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))"
 };
 
 interface configInterface {
@@ -31,6 +32,7 @@ interface configInterface {
   emailConfigs: Array<emailConfig>;
   oauthConfig: oauthConfig;
   signingKey: string;
+  landingPageMD: string;
 }
 
 interface emailConfig {
@@ -47,48 +49,52 @@ interface oauthConfig {
   oauthClientSecret: string;
 }
 
-export class Config {
-  path: string;
-  currentConfig: configInterface;
+class Config {
+  private path: string;
+  private static currentConfig: configInterface;
 
   constructor() {
     this.path = path.join("config.json");
-    this.currentConfig = config
+    Config.currentConfig = defaultConfig
     fs.readFile(this.path, "utf-8", (err, data) => {
       if (err) {
-        this.update(config);
-        this.currentConfig = config;
+        this.update(defaultConfig);
+        Config.currentConfig = defaultConfig;
         return console.log(err);
       }
       try {
-        this.currentConfig = JSON.parse(data);
-        config = this.currentConfig;
+        Config.currentConfig = JSON.parse(data);
+        if (Object.keys(Config.currentConfig).sort() != Object.keys(defaultConfig).sort()) console.log('Discrepancy within the config/Missing parameters')
       } catch (error) {
         fs.rename(this.path, "old." + this.path, () => {
           console.error("Failed to rename");
         });
-        this.update(config);
-        this.currentConfig = config;
+        this.update(defaultConfig);
+        Config.currentConfig = defaultConfig;
       }
     });
   }
 
   public update(newJSON: configInterface) {
-    fs.writeFile(this.path, JSON.stringify(newJSON), { flag: "w+" }, (err) => {
+    fs.writeFile(this.path, JSON.stringify(newJSON), { flag: "w" }, (err) => {
       if (err) return console.log(err);
-      this.currentConfig = newJSON;
+      Config.currentConfig = newJSON;
     });
   }
 
   public get(): configInterface {
-    return this.currentConfig;
+    return Config.currentConfig;
   }
 
   public read(): configInterface {
     fs.readFile(this.path, "utf-8", (err, data) => {
       if (err) return console.log(err);
-      this.currentConfig = JSON.parse(data);
+      Config.currentConfig = JSON.parse(data);
     });
-    return this.currentConfig;
+    return Config.currentConfig;
   }
 }
+
+const config = new Config();
+
+export default config
