@@ -39,7 +39,7 @@ export default class User {
     return this;
   }
 
-  static create(email: string): User {
+  static create(email: string, avatar: string): User {
     var user = new User()
     user.id = faker.datatype.number(),
     user.name = faker.name.findName(),
