@@ -4,10 +4,13 @@ import express from "express";
 import { config } from '../config/config'
 import User from "../models/user";
 
+import jwt from 'jsonwebtoken'
+
 const loginRouter = express.Router();
+import response from '../utils/response'
 
 // sessions map of string to object with date and string
-const sessions: { [key: string]: { date: Date, email: string } } = {};
+const sessions: { [key: string]: { date: number, email: string } } = {};
 
 loginRouter.get(
   "/login",
@@ -22,7 +25,6 @@ loginRouter.get(
   "/login/callback",
   async (req: express.Request, res: express.Response) => {
     const code = req.query["code"];
-    console.log("something")
 
     const r = await axios.post("https://oauth2.googleapis.com/token", {
       code,
@@ -36,8 +38,6 @@ loginRouter.get(
     const resp = await axios(
       `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${access_token}`
     );
-    
-    console.log("got user info")
 
     if (resp.data.email.endsWith("ucc.ie") && resp.data.verified_email === true) {
       const email = resp.data.email;
@@ -54,11 +54,24 @@ loginRouter.get(
         }
       }
 
-      // now, if user was already or has just been created, log them in
+      // create and sign a jwt 
       var sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      sessions[sessionId] = {date: new Date(), email: email};
-      res.cookie("sessionId", sessionId);
-      res.redirect("/");
+      const token = jwt.sign({
+        id: sessionId,
+        email: email
+      }, config.signingKey, (err: Error, token: string) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Error signing token");
+        }
+        sessions[sessionId] = { date: new Date().setHours(new Date().getHours() + 24), email: email };
+        const re: response = {
+          status: 200,
+          message: "Success",
+          data: token
+        }
+        res.json(re)
+      });
     }
   }
 );
