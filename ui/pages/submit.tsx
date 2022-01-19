@@ -1,4 +1,3 @@
-
 import {
   Button,
   FileUploaderDropContainer,
@@ -6,7 +5,7 @@ import {
   Tag,
   TextInput,
 } from "carbon-components-react";
-import React, {useState } from "react";
+import React, { KeyboardEvent, useState } from "react";
 
 const Submit = () => {
   const [modiflag, setModiflag] = useState(true);
@@ -18,6 +17,10 @@ const Submit = () => {
   let pdf_file = null;
 
   const user = getUser();
+
+  const emailRegexp = new RegExp(
+    "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+  );
 
   const sendApplication = () => {
     /*post({
@@ -86,28 +89,35 @@ const Submit = () => {
           style={{
             marginBottom: "1em",
           }}
-
-          onKeyDown={(e)=>{
-            if ((e.code === "Enter" || e.code === "Tab") && e.target.value){
-              setCoauthor([...coauthor, e.target.value])
-              e.target.value = ""
-              e.preventDefault()
+          onKeyDown={(e) => {
+            const t = e.target as HTMLInputElement;
+            if ((e.code === "Enter" || e.code === "Tab") && t.value) {
+              const t = e.target as HTMLInputElement;
+              if (t.value && t.value.length > 0) {
+                if (emailRegexp.test(t.value)) {
+                  setCoauthor([...coauthor, t.value]);
+                  t.value = "";
+                }
+              }
+              e.preventDefault();
             }
           }}
         />
 
         <div>
-          {coauthor.map((elem, i) => <Tag key={i} 
-          
-            onClick={(e)=>{
-              e.preventDefault()
-              coauthor.splice(i,1)
-              setCoauthor([...coauthor])
-
-            
-          }}>{elem}</Tag>)}
+          {coauthor.map((elem, i) => (
+            <Tag
+              key={i}
+              onClick={(e) => {
+                e.preventDefault();
+                coauthor.splice(i, 1);
+                setCoauthor([...coauthor]);
+              }}
+            >
+              {elem}
+            </Tag>
+          ))}
         </div>
-        
 
         <TextInput
           id="supervisors"
@@ -117,28 +127,35 @@ const Submit = () => {
           style={{
             marginBottom: "1em",
           }}
-
-          onKeyDown={(e)=>{
-            if ((e.code === "Enter" || e.code === "Tab") && e.target.value){
-              setSupervisors([...supervisors, e.target.value])
-              e.target.value = ""
-              e.preventDefault()
+          onKeyDown={(e: KeyboardEvent) => {
+            const t = e.target as HTMLInputElement;
+            if ((e.code === "Enter" || e.code === "Tab") && t.value) {
+              if (t && t.value.length > 0) {
+                if (emailRegexp.test(t.value)) {
+                  setSupervisors([...supervisors, t.value]);
+                  t.value = "";
+                }
+              }
+              e.preventDefault();
             }
           }}
         />
 
         <div>
-          {supervisors.map((elem, i) => <Tag key={i} 
-          
-            onClick={(e)=>{
-              e.preventDefault()
-              supervisors.splice(i,1)
-              setSupervisors([...supervisors])
+          {supervisors.map((elem, i) => (
+            <Tag
+              key={i}
+              onClick={(e) => {
+                e.preventDefault();
 
-            
-          }}>{elem}</Tag>)}
+                supervisors.splice(i, 1);
+                setSupervisors([...supervisors]);
+              }}
+            >
+              {elem}
+            </Tag>
+          ))}
         </div>
-        
 
         <FileUploaderDropContainer
           name="Form upload"
@@ -150,16 +167,16 @@ const Submit = () => {
           accept={[".pdf"]}
           multiple={false}
           onAddFiles={
-            //I would like to have these as typed but
-            //  _event doesnt matter to me so i will no bother to try and figure out what the thing was asking for
-            //  addedFiles should be a list of Files type but carbon components injects a custom field onto a FIle if its not the correct filetype that is not in the File Object
+            // addedFiles extends File by adding a property
             (
               _event: any,
               content: {
-                addedFiles: any[];
+                addedFiles: Array<File>;
+                
               }
             ) => {
               if (!content.addedFiles[0].invalidFileType == true) {
+                console.log(content.addedFiles[0]);
                 pdf_file = content.addedFiles[0];
                 if (user.name && user.bio && user.school) {
                   setModiflag(false);
