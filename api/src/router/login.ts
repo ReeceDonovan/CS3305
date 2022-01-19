@@ -1,7 +1,7 @@
 import axios from "axios";
 import express from "express";
 
-import { config } from '../config/config'
+import config from '../config/config'
 import User from "../models/user";
 
 import jwt from 'jsonwebtoken'
@@ -16,7 +16,7 @@ loginRouter.get(
   "/login",
   async (_req: express.Request, res: express.Response) => {
     res.redirect(
-      `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&hd=ucc.ie&client_id=${config.oauthConfig.oauthClientId}&redirect_uri=http://localhost:8000/login/callback&response_type=code`
+      `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&hd=ucc.ie&client_id=${config.get().oauthConfig.oauthClientId}&redirect_uri=http://localhost:8000/login/callback&response_type=code`
     );
   }
 );
@@ -28,8 +28,8 @@ loginRouter.get(
 
     const r = await axios.post("https://oauth2.googleapis.com/token", {
       code,
-      client_id: config.oauthConfig.oauthClientId,
-      client_secret: config.oauthConfig.oauthClientSecret,
+      client_id: config.get().oauthConfig.oauthClientId,
+      client_secret: config.get().oauthConfig.oauthClientSecret,
       grant_type: "authorization_code",
       redirect_uri: "http://localhost:8000/login/callback",
     });
@@ -59,7 +59,7 @@ loginRouter.get(
       const token = jwt.sign({
         id: sessionId,
         email: email
-      }, config.signingKey, (err: Error, token: string) => {
+      }, config.get().signingKey, (err: Error, token: string) => {
         if (err) {
           console.error(err);
           res.status(500).send("Error signing token");

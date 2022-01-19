@@ -1,5 +1,5 @@
 import * as nodemailer from 'nodemailer'
-import Config from '../config/config'
+import config from '../config/config'
 
 enum providers {
     "gmail" = 0,
@@ -7,8 +7,7 @@ enum providers {
 }
 
 export default function handler(recepient: string, subject: string, body: string) {
-    const currentConfig = new Config()
-    const emailProvider = currentConfig.get().emailConfigs[providers[currentConfig.get().emailProvider]]
+    const emailProvider = config.get().emailConfigs[providers[config.get().emailProvider]]
     const transportPayload = Object.assign(emailProvider, {user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS})
     const transporter = nodemailer.createTransport(transportPayload)
     const mailOptions = {

@@ -2,7 +2,7 @@ import * as fs from "fs";
 import path from "path";
 
 // Add onto this as needed
-var config: configInterface = {
+var defaultConfig: configInterface = {
   emailProvider: "gmail",
   emailConfigs: [
     {
@@ -24,7 +24,7 @@ var config: configInterface = {
     oauthClientSecret: "",
   },
   signingKey: "",
-  landingPageMD: "Landing Page Markdown Sample"
+  landingPageMD: "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))"
 };
 
 interface configInterface {
@@ -49,34 +49,33 @@ interface oauthConfig {
   oauthClientSecret: string;
 }
 
-export default class Config {
+class Config {
   private path: string;
   private static currentConfig: configInterface;
 
   constructor() {
     this.path = path.join("config.json");
-    Config.currentConfig = config
+    Config.currentConfig = defaultConfig
     fs.readFile(this.path, "utf-8", (err, data) => {
       if (err) {
-        this.update(config);
-        Config.currentConfig = config;
+        this.update(defaultConfig);
+        Config.currentConfig = defaultConfig;
         return console.log(err);
       }
       try {
         Config.currentConfig = JSON.parse(data);
-        config = Config.currentConfig;
       } catch (error) {
         fs.rename(this.path, "old." + this.path, () => {
           console.error("Failed to rename");
         });
-        this.update(config);
-        Config.currentConfig = config;
+        this.update(defaultConfig);
+        Config.currentConfig = defaultConfig;
       }
     });
   }
 
   public update(newJSON: configInterface) {
-    fs.writeFile(this.path, JSON.stringify(newJSON), { flag: "w+" }, (err) => {
+    fs.writeFile(this.path, JSON.stringify(newJSON), { flag: "w" }, (err) => {
       if (err) return console.log(err);
       Config.currentConfig = newJSON;
     });
@@ -94,3 +93,7 @@ export default class Config {
     return Config.currentConfig;
   }
 }
+
+const config = new Config();
+
+export default config
