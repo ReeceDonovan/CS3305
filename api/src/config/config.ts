@@ -2,7 +2,7 @@ import * as fs from "fs";
 import path from "path";
 
 // Add onto this as needed
-export var config: configInterface = {
+var config: configInterface = {
   emailProvider: "gmail",
   emailConfigs: [
     {
@@ -24,6 +24,7 @@ export var config: configInterface = {
     oauthClientSecret: "",
   },
   signingKey: "",
+  landingPageMD: "Landing Page Markdown Sample"
 };
 
 interface configInterface {
@@ -31,6 +32,7 @@ interface configInterface {
   emailConfigs: Array<emailConfig>;
   oauthConfig: oauthConfig;
   signingKey: string;
+  landingPageMD: string;
 }
 
 interface emailConfig {
@@ -47,28 +49,28 @@ interface oauthConfig {
   oauthClientSecret: string;
 }
 
-export class Config {
-  path: string;
-  currentConfig: configInterface;
+export default class Config {
+  private path: string;
+  private static currentConfig: configInterface;
 
   constructor() {
     this.path = path.join("config.json");
-    this.currentConfig = config
+    Config.currentConfig = config
     fs.readFile(this.path, "utf-8", (err, data) => {
       if (err) {
         this.update(config);
-        this.currentConfig = config;
+        Config.currentConfig = config;
         return console.log(err);
       }
       try {
-        this.currentConfig = JSON.parse(data);
-        config = this.currentConfig;
+        Config.currentConfig = JSON.parse(data);
+        config = Config.currentConfig;
       } catch (error) {
         fs.rename(this.path, "old." + this.path, () => {
           console.error("Failed to rename");
         });
         this.update(config);
-        this.currentConfig = config;
+        Config.currentConfig = config;
       }
     });
   }
@@ -76,19 +78,19 @@ export class Config {
   public update(newJSON: configInterface) {
     fs.writeFile(this.path, JSON.stringify(newJSON), { flag: "w+" }, (err) => {
       if (err) return console.log(err);
-      this.currentConfig = newJSON;
+      Config.currentConfig = newJSON;
     });
   }
 
   public get(): configInterface {
-    return this.currentConfig;
+    return Config.currentConfig;
   }
 
   public read(): configInterface {
     fs.readFile(this.path, "utf-8", (err, data) => {
       if (err) return console.log(err);
-      this.currentConfig = JSON.parse(data);
+      Config.currentConfig = JSON.parse(data);
     });
-    return this.currentConfig;
+    return Config.currentConfig;
   }
 }
