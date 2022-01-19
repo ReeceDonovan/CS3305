@@ -1,6 +1,17 @@
-import * as express from 'express'
+import express from "express";
 
-export const app = express()
-app.use(express.json())
+import userRouter from "./router/user";
+import loginRouter from "./router/login";
+import pageRouter from "./router/landingPage";
 
-app.listen(3000)
+const PORT = 8000;
+
+const app = express();
+
+app.use(userRouter);
+app.use(loginRouter);
+app.use(pageRouter);
+
+app.listen(PORT, () => {
+  console.log(`Example app listening at http://localhost:${PORT}`);
+});
