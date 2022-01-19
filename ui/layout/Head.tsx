@@ -39,12 +39,14 @@ export default function Head() {
             <HeaderGlobalAction aria-label="Notifications">
               <Notification20 />
             </HeaderGlobalAction>
-            <HeaderGlobalAction
-              style={{ marginRight: "1em" }}
-              aria-label="Account"
-            >
-              <User20 />
-            </HeaderGlobalAction>
+            <a href="/account">
+              <HeaderGlobalAction
+                style={{ marginRight: "1em" }}
+                aria-label="Account"
+              >
+                <User20 />
+              </HeaderGlobalAction>
+            </a>
           </HeaderGlobalBar>
           <SideNav
             aria-label="Side navigation"

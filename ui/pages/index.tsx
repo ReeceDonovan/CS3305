@@ -145,7 +145,8 @@ export default function Index() {
           label="Research"
           style={{ marginTop: "8px" }}
         >
-          <About />
+          {/* TODO this is a placeholder */}
+          <About content={""} />
         </Tab>
       </Tabs>
     </>

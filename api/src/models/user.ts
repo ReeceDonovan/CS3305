@@ -1,5 +1,7 @@
 import faker = require("@faker-js/faker");
+
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { IsEmail } from 'class-validator'
 
 @Entity()
 export default class User {
@@ -10,6 +12,7 @@ export default class User {
   name: string;
 
   @Column()
+  @IsEmail()
   email: string;
 
   @Column()
@@ -19,41 +22,30 @@ export default class User {
   school: string;
 
   @Column()
-  // base64 png
+  // base64 png or URL
   avatar: string;
 
-  constructor(id: number, name: string, email: string, bio: string) {
-    this.id = id;
-    this.name = name;
-    this.email = email;
-    this.bio = bio;
-  }
-
-  getFromId(this: User) {
-    return new User(
-      this.id,
-      faker.name.findName(),
-      faker.internet.email(),
-      faker.lorem.sentence()
-    );
+  getFromId(this: User): User {
+    (this.name = faker.name.findName()),
+      (this.email = faker.internet.email()),
+      (this.bio = faker.lorem.sentence());
+    return this;
   }
 
   getFromEmail(this: User): User {
-    return new User(
-      faker.datatype.number(),
-      faker.name.findName(),
-      this.email,
-      faker.lorem.sentence()
-    );
+    (this.id = faker.datatype.number()),
+      (this.name = faker.name.findName()),
+      (this.bio = faker.lorem.sentence());
+    return this;
   }
 
-  static create(email: string): User {
-    return new User(
-      faker.datatype.number(),
-      faker.name.findName(),
-      email,
-      faker.lorem.sentence()
-    );
+  static create(email: string, avatar: string): User {
+    var user = new User()
+    user.id = faker.datatype.number(),
+    user.name = faker.name.findName(),
+    user.email = email,
+    user.bio = faker.lorem.sentence()
+    return user
   }
 
   update(this: User): User {

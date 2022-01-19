@@ -44,7 +44,7 @@ export default class Application {
       faker.lorem.sentences(2),
       faker.lorem.word(),
       faker.lorem.word(),
-      [User.create(faker.internet.email())]
+      [User.create(faker.internet.email(), faker.internet.avatar())]
     );
   }
 
