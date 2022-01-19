@@ -2,8 +2,12 @@ import axios from "axios";
 import express from "express";
 
 import { config } from '../config/config'
+import User from "../models/user";
 
 const loginRouter = express.Router();
+
+// sessions map of string to object with date and string
+const sessions: { [key: string]: { date: Date, email: string } } = {};
 
 loginRouter.get(
   "/login",
@@ -18,6 +22,7 @@ loginRouter.get(
   "/login/callback",
   async (req: express.Request, res: express.Response) => {
     const code = req.query["code"];
+    console.log("something")
 
     const r = await axios.post("https://oauth2.googleapis.com/token", {
       code,
@@ -31,8 +36,30 @@ loginRouter.get(
     const resp = await axios(
       `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${access_token}`
     );
-    console.log(resp.data);
-    res.send(resp.data);
+    
+    console.log("got user info")
+
+    if (resp.data.email.endsWith("ucc.ie") && resp.data.verified_email === true) {
+      const email = resp.data.email;
+      const avatar = resp.data.picture;
+
+      const user = new User();
+      user.email = email;
+      user.getFromEmail();
+
+      // if user has not been created yet...
+      if (user.id === 0) {
+        if (User.create(email, avatar).id != 0) {
+          res.status(501).send("Error creating user");
+        }
+      }
+
+      // now, if user was already or has just been created, log them in
+      var sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      sessions[sessionId] = {date: new Date(), email: email};
+      res.cookie("sessionId", sessionId);
+      res.redirect("/");
+    }
   }
 );
 
