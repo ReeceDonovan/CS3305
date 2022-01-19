@@ -1,10 +1,10 @@
 # UI Quickstart
 
 You can run the dev server using 
->```sh
->npm i
->npm run start
->```
+```sh
+yarn
+yarn start
+```
 
 The following are required enviroment variables:
 - Sample 1
@@ -20,8 +20,10 @@ Using:
 
 # Creating a new Endpoint
 
-If you want to add a new endpoint, make a new router such as in the `User` Router
+If you want to add a new endpoint, make a new router such as in the `User` Router. [Examples.](https://github.com/ReeceDonovan/CS3305/tree/api/api/src/router)
 
+
+Sample code:
 ```tsx
 import express from "express";
 import User from "../models/user";
