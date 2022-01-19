@@ -2,6 +2,7 @@
 
 You can run the dev server using 
 >```sh
+>yarn
 >yarn dev
 >```
 
