@@ -38,7 +38,7 @@ const AccountPage: NextPage = () => {
 
         <Button
           type="submit"
-          disabled={name === "" || jobTitle === "" || school === ""}
+          disabled={name === "" && jobTitle === "" && school === ""}
         >
           Submit
         </Button>
