@@ -1,16 +1,19 @@
-import { TextAlignCenter16 } from "@carbon/icons-react";
+
 import {
   Button,
   FileUploaderDropContainer,
   Form,
+  Tag,
   TextInput,
 } from "carbon-components-react";
-import { userInfo } from "os";
-import React, { useState } from "react";
+import React, {useState } from "react";
 
 const Submit = () => {
   const [modiflag, setModiflag] = useState(true);
   const [err_msg, setError_msg] = useState<string | null>(null);
+
+  const [coauthor, setCoauthor] = useState<string[]>([]);
+  const [supervisors, setSupervisors] = useState<string[]>([]);
 
   let pdf_file = null;
 
@@ -83,7 +86,28 @@ const Submit = () => {
           style={{
             marginBottom: "1em",
           }}
+
+          onKeyDown={(e)=>{
+            if ((e.code === "Enter" || e.code === "Tab") && e.target.value){
+              setCoauthor([...coauthor, e.target.value])
+              e.target.value = ""
+              e.preventDefault()
+            }
+          }}
         />
+
+        <div>
+          {coauthor.map((elem, i) => <Tag key={i} 
+          
+            onClick={(e)=>{
+              e.preventDefault()
+              coauthor.splice(i,1)
+              setCoauthor([...coauthor])
+
+            
+          }}>{elem}</Tag>)}
+        </div>
+        
 
         <TextInput
           id="supervisors"
@@ -93,7 +117,28 @@ const Submit = () => {
           style={{
             marginBottom: "1em",
           }}
+
+          onKeyDown={(e)=>{
+            if ((e.code === "Enter" || e.code === "Tab") && e.target.value){
+              setSupervisors([...supervisors, e.target.value])
+              e.target.value = ""
+              e.preventDefault()
+            }
+          }}
         />
+
+        <div>
+          {supervisors.map((elem, i) => <Tag key={i} 
+          
+            onClick={(e)=>{
+              e.preventDefault()
+              supervisors.splice(i,1)
+              setSupervisors([...supervisors])
+
+            
+          }}>{elem}</Tag>)}
+        </div>
+        
 
         <FileUploaderDropContainer
           name="Form upload"
