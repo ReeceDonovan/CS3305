@@ -64,6 +64,7 @@ class Config {
       }
       try {
         Config.currentConfig = JSON.parse(data);
+        if (Object.keys(Config.currentConfig).sort() != Object.keys(defaultConfig).sort()) console.log('Discrepancy within the config/Missing parameters')
       } catch (error) {
         fs.rename(this.path, "old." + this.path, () => {
           console.error("Failed to rename");
