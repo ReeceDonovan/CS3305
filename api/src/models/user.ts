@@ -20,7 +20,7 @@ export default class User extends Entity {
     Object.assign(this, user);
   }
 
-  @Column({ default: "" })
+  @Column({ nullable: true })
   name: string;
 
   @Index({ unique: true })
@@ -28,13 +28,13 @@ export default class User extends Entity {
   @Column()
   email: string;
 
-  @Column({ default: "" })
+  @Column({ nullable: true })
   bio: string;
 
-  @Column({ default: "" })
+  @Column({ nullable: true })
   school: string;
 
-  @Column({ default: "" })
+  @Column({ nullable: true })
   avatar: string;
 
   @IsEnum(["researcher", "reviewer"])
