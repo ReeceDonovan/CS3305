@@ -1,23 +1,35 @@
-import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn, UpdateResult, DeleteResult } from "typeorm";
+import {
+  Entity as OrmEntity,
+  PrimaryColumn,
+  Column,
+  PrimaryGeneratedColumn,
+  UpdateResult,
+  DeleteResult,
+  Index,
+  OneToMany,
+  ManyToMany,
+} from "typeorm";
 import { IsEmail, IsEnum } from "class-validator";
 
 import { dbConn } from "./database";
+import faker from "@faker-js/faker";
+import Entity from "./entity";
+import Application from "./application";
 
-@Entity()
-export default class User {
-  @PrimaryGeneratedColumn("increment")
-  @PrimaryColumn()
-  id: number;
+@OrmEntity("users")
+export default class User extends Entity {
+  constructor(user: Partial<User>) {
+    super();
+    Object.assign(this, user);
+  }
 
+  @Index()
   @Column()
   name: string;
 
-  @Column()
-  @IsEnum(["applicant", "reviewer"])
-  role: string;
-
-  @Column()
+  @Index({ unique: true })
   @IsEmail()
+  @Column()
   email: string;
 
   @Column()
@@ -26,58 +38,29 @@ export default class User {
   @Column()
   school: string;
 
+  // avatar as base64 string
   @Column()
-  // base64 png or URL
   avatar: string;
 
-  static async fromDB(user: Partial<User>): Promise<User> {
-    var u = new User();
-    (u.id = user.id),
-      (u.name = user.name),
-      (u.email = user.email),
-      (u.role = user.role),
-      (u.bio = user.bio);
-    (u.school = user.school), (u.avatar = user.avatar);
-    return u;
+  @Column()
+  @IsEnum(["researcher", "reviewer"])
+  role: string;
+
+  // Many to Many relationship between user and application based off application supervisors
+  @ManyToMany(() => Application, (application) => application.supervisors)
+  applications: Application[];
+
+  // if the user is a reviewer, have a relationship between user and applications they are assigned to review based on application.reviewers
+  @OneToMany(() => Application, (application) => application.reviewers)
+  reviewerApplications: Application[];
+
+  // get user by id
+  static async getById(id: number): Promise<User | undefined> {
+    return await dbConn.getRepository(User).findOne(id);
   }
 
-  async getFromId(this: User): Promise<User> {
-    const user = await dbConn.getRepository(User).findOne(this.id);
-
-    (this.name = user.name),
-      (this.email = user.email),
-      (this.role = user.role),
-      (this.bio = user.bio);
-      (this.school = user.school), (this.avatar = user.avatar);
-
-    return this;
-  }
-
-  async getFromEmail(this: User): Promise<User> {
-    const user = await dbConn.getRepository(User).findOne({
-      where: { email: this.email },
-    });
-
-    (this.id = user.id), (this.name = user.name), (this.bio = user.bio);
-    (this.school = user.school), (this.avatar = user.avatar);
-
-    return this;
-  }
-
-  static create(email: string, avatar: string): User {
-    var user = new User();
-    (user.id = faker.datatype.number()),
-      (user.name = faker.name.findName()),
-      (user.email = email),
-      (user.bio = faker.lorem.sentence());
-    return user;
-  }
-
-  async update(this: User): Promise<UpdateResult> {
-    return await dbConn.getRepository(User).update(this.id, this);
-  }
-
-  async delete(this: User): Promise<DeleteResult> {
-    return await dbConn.getRepository(User).delete(this.id);
+  // get user by email
+  static async getByEmail(email: string): Promise<User | undefined> {
+    return await dbConn.getRepository(User).findOne({ email });
   }
 }

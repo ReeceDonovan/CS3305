@@ -1,10 +1,15 @@
 import faker = require("@faker-js/faker");
-import { Entity, PrimaryColumn, Column } from "typeorm";
+import { Entity as OrmEntity, PrimaryColumn, Column } from "typeorm";
 import User from "./user";
+import Entity from "./entity";
+import { IsEnum } from "class-validator";
 
-export default class Application {
-  @PrimaryColumn()
-  id: number;
+@OrmEntity("applications")
+export default class Application extends Entity {
+  constructor(application: Partial<Application>) {
+    super();
+    Object.assign(this, application);
+  }
 
   @Column()
   name: string;
@@ -13,48 +18,21 @@ export default class Application {
   description: string;
 
   @Column()
-  school: string;
+  field: string;
 
   @Column()
-  course: string;
+  supervisors: User[];
 
   @Column()
-  supervisors: User[] = [];
+  reviewers: User[];
 
-  // constructor(
-  //   id: number,
-  //   name: string,
-  //   description: string,
-  //   school: string,
-  //   course: string,
-  //   supervisors: User[]
-  // ) {
-  //   this.id = id;
-  //   this.name = name;
-  //   this.description = description;
-  //   this.school = school;
-  //   this.course = course;
-  //   this.supervisors = supervisors;
-  // }
+  // enum of progress state
+  @Column()
+  @IsEnum(["pending", "in progress", "reviewed", "completed"])
+  progress: string;
 
-  // getFromId(this: Application): Application {
-  //   return new Application(
-  //     this.id,
-  //     faker.name.findName(),
-  //     faker.lorem.sentences(2),
-  //     faker.lorem.word(),
-  //     faker.lorem.word(),
-  //     [User.create(faker.internet.email(), faker.internet.avatar())]
-  //   );
-  // }
-
-  // update(this: Application): Application {
-  //   // update user to database
-  //   return this;
-  // }
-
-  // delete(this: Application): Application {
-  //   // delete user from database
-  //   return this;
-  // }
+  // enum of acceptance state
+  @Column()
+  @IsEnum(["pending", "action needed", "accepted", "rejected"])
+  acceptance: string;
 }
