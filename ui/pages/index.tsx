@@ -126,9 +126,9 @@ export default function Index() {
                         ))}
                         <TableCell className="bx--table-column-menu">
                           <OverflowMenu size="sm" flipped>
-                            <OverflowMenuItem itemText="Action 1" />
-                            <OverflowMenuItem itemText="Action 2" />
-                            <OverflowMenuItem itemText="Action 3" />
+                            <OverflowMenuItem itemText="View" href="/application#view" />
+                            <OverflowMenuItem itemText="Edit" href="/application#edit" />
+                            <OverflowMenuItem itemText="Share" href="/application#share" />
                           </OverflowMenu>
                         </TableCell>
                       </TableRow>
