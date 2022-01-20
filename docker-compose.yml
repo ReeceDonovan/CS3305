@@ -1,0 +1,13 @@
+version: "3.9"
+# I'm just putting this here to quickly test if both build, you can make a proper dev environment but it's not apart of this issue
+services:
+  srec-api:
+    container_name: srec-api
+    image: srec-api
+    build:
+      context: ./api
+  srec-ui:
+    container_name: srec-ui
+    image: srec-ui
+    build:
+      context: ./ui

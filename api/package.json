@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node --loader ts-node/esm src/app.ts"
+    "start": "node --loader ts-node/esm src/app.ts",
+    "build": "tsc -p ."
   },
   "devDependencies": {
     "@faker-js/faker": "^6.0.0-alpha.3",

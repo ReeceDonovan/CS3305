@@ -2,7 +2,6 @@ import {
   Header,
   HeaderName,
   HeaderContainer,
-  SkipToContent,
   HeaderMenuButton,
   HeaderGlobalBar,
   HeaderGlobalAction,
@@ -10,7 +9,6 @@ import {
   SideNavItems,
   SideNavItem,
   SideNavMenuItem,
-  SideNavMenu,
 } from "carbon-components-react/lib/components/UIShell";
 import Notification20 from "@carbon/icons-react/lib/notification/20";
 import User20 from "@carbon/icons-react/lib/user/20";

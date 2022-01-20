@@ -8,6 +8,7 @@ yarn-error.log
 package-lock.json
 config.json
 old.config.json
+dist
 
 .env
 .env.*
