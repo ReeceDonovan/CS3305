@@ -36,4 +36,4 @@ jobs:
         with:
           context: ./api
           push: true
-          tags: ghcr.io/ReeceDonovan/cs3505-api:latest
+          tags: ghcr.io/reecedonovan/cs3505-api:latest
