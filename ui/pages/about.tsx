@@ -6,7 +6,12 @@ export default function About(props: {content: string}) {
   return (
     <>
       {props.content.length > 0 ? (
-        <div className={styles.info} dangerouslySetInnerHTML={{__html: props.content}} />
+        <>
+          <div className={styles.info}>
+            <div dangerouslySetInnerHTML={{__html: props.content}} />
+            <Button href="/login">Log in with UCC Email</Button>
+          </div>
+        </>
       ) : (
         <>
           <h1
