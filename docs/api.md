@@ -1,10 +1,16 @@
 # UI Quickstart
 
-You can run the dev server using 
+You can run the dev server from root using 
 ```sh
 docker-compose up -d
+cd api
 yarn
 yarn start
+```
+
+You can take down the containers using 
+```sh
+docker-compose down
 ```
 
 # Enviroment Variables
