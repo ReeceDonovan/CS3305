@@ -2,13 +2,18 @@
 
 You can run the dev server using 
 ```sh
+docker-compose up -d
 yarn
 yarn start
 ```
 
-The following are required enviroment variables:
-- Sample 1
-- Sample 2
+# Enviroment Variables
+- DB_USER
+- DB_PASS
+- DB_NAME
+
+These are for the PostgresDB docker container
+
 
 Ensure to fill out the config.json with the credentials found in the `#credentials` channel
 
