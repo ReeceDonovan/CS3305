@@ -1,7 +1,8 @@
 import { IsEnum } from "class-validator";
-import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
+import { Column, Entity as OrmEntity, ManyToMany, OneToMany } from "typeorm";
 
 import Entity from "./entity";
+import Review from "./review";
 import User from "./user";
 
 @OrmEntity("applications")
@@ -20,19 +21,20 @@ export default class Application extends Entity {
   @Column()
   field: string;
 
-  @OneToMany(() => User, (user) => user.applications)
+  @ManyToMany(() => User, (user) => user.applications)
   supervisors: User[];
 
-  @OneToMany(() => User, (user) => user.reviewerApplications)
+  @ManyToMany(() => User, (user) => user.reviewerApplications)
   reviewers: User[];
 
-  // enum of progress state
-  @Column()
-  @IsEnum(["pending", "in progress", "reviewed", "completed"])
+  @OneToMany(() => Review, (review) => review.application)
+  reviews: Review[];
+
+  @IsEnum(["pending", "in progress", "completed"])
+  @Column({ default: "pending" })
   progress: string;
 
-  // enum of acceptance state
-  @Column()
-  @IsEnum(["pending", "action needed", "accepted", "rejected"])
+  @IsEnum(["pending", "accepted", "rejected"])
+  @Column({ default: "pending" })
   acceptance: string;
 }

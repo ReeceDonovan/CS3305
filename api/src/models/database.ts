@@ -1,6 +1,6 @@
-import { Connection, createConnection } from 'typeorm';
+import { Connection, createConnection } from "typeorm";
 
-import config from '../config/config';
+import config from "../config/config";
 
 export var dbConn: Connection;
 

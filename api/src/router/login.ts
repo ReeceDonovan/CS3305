@@ -1,14 +1,12 @@
 import axios from "axios";
 import express from "express";
+import jwt from "jsonwebtoken";
 
 import config from "../config/config";
 import User from "../models/user";
-
-import jwt from "jsonwebtoken";
-
-const loginRouter = express.Router();
 import response from "../utils/response";
 
+const loginRouter = express.Router();
 // sessions map of string to object with date and string
 const sessions: { [key: string]: { date: number; email: string } } = {};
 
