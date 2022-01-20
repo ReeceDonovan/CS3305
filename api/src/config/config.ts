@@ -24,7 +24,14 @@ var defaultConfig: configInterface = {
     oauthClientSecret: "",
   },
   signingKey: "",
-  landingPageMD: "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))"
+  landingPageMD: "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))",
+  databaseConfig: {
+    host: "localhost",
+    port: 5432,
+    username: "postgres",
+    password: "postgres",
+    database: "postgres",
+  }
 };
 
 interface configInterface {
@@ -33,6 +40,7 @@ interface configInterface {
   oauthConfig: oauthConfig;
   signingKey: string;
   landingPageMD: string;
+  databaseConfig: databaseConfig;
 }
 
 interface emailConfig {
@@ -47,6 +55,14 @@ interface emailConfig {
 interface oauthConfig {
   oauthClientId: string;
   oauthClientSecret: string;
+}
+
+interface databaseConfig {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
 }
 
 class Config {
