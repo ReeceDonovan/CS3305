@@ -1,8 +1,8 @@
-import faker = require("@faker-js/faker");
-import { Entity as OrmEntity, PrimaryColumn, Column } from "typeorm";
-import User from "./user";
-import Entity from "./entity";
 import { IsEnum } from "class-validator";
+import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
+
+import Entity from "./entity";
+import User from "./user";
 
 @OrmEntity("applications")
 export default class Application extends Entity {
@@ -20,10 +20,10 @@ export default class Application extends Entity {
   @Column()
   field: string;
 
-  @Column()
+  @OneToMany(() => User, (user) => user.applications)
   supervisors: User[];
 
-  @Column()
+  @OneToMany(() => User, (user) => user.reviewerApplications)
   reviewers: User[];
 
   // enum of progress state

@@ -1,5 +1,6 @@
-import { Connection, createConnection, BaseEntity } from "typeorm";
-import config from "../config/config";
+import { Connection, createConnection } from 'typeorm';
+
+import config from '../config/config';
 
 export var dbConn: Connection;
 
@@ -13,7 +14,10 @@ export const createConn = async (): Promise<void> => {
       username: config.read().databaseConfig.username,
       password: config.read().databaseConfig.password,
       database: config.read().databaseConfig.database,
+      synchronize: true,
+      entities: [__dirname + "/../models/*.ts"],
     });
+    console.log("Connected to database");
   } catch (err) {
     console.error(err);
   }
