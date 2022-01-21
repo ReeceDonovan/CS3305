@@ -57,7 +57,7 @@ loginRouter.get(
       }
 
       // create and sign a jwt
-      var sessionId =
+      const sessionId =
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15);
       const token = jwt.sign(

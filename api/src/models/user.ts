@@ -21,34 +21,34 @@ export default class User extends Entity {
   }
 
   @Column({ nullable: true })
-  name: string;
+    name: string;
 
   @Index({ unique: true })
   @IsEmail()
   @Column()
-  email: string;
+    email: string;
 
   @Column({ nullable: true })
-  bio: string;
+    bio: string;
 
   @Column({ nullable: true })
-  school: string;
+    school: string;
 
   @Column({ nullable: true })
-  avatar: string;
+    avatar: string;
 
   @IsEnum(["researcher", "reviewer"])
   @Column({ default: "researcher" })
-  role: string;
+    role: string;
 
   @ManyToMany(() => Application, (application) => application.supervisors)
-  applications: Application[];
+    applications: Application[];
 
   @ManyToMany(() => Application, (application) => application.reviewers)
-  reviewerApplications: Application[];
+    reviewerApplications: Application[];
 
   @OneToMany(() => Review, (review) => review.reviewer)
-  reviews: Review[];
+    reviews: Review[];
 
   @Expose() get lastReviewed(): Date | undefined {
     if (this.reviews.length > 0) {

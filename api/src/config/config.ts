@@ -2,7 +2,7 @@ import * as fs from "fs";
 import path from "path";
 
 // Add onto this as needed
-var defaultConfig: configInterface = {
+const defaultConfig: configInterface = {
   emailProvider: "gmail",
   emailConfigs: [
     {
