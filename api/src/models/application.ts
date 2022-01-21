@@ -1,10 +1,16 @@
-import faker = require("@faker-js/faker");
-import { Entity, PrimaryColumn, Column } from "typeorm";
+import { IsEnum } from "class-validator";
+import { Column, Entity as OrmEntity, ManyToMany, OneToMany } from "typeorm";
+
+import Entity from "./entity";
+import Review from "./review";
 import User from "./user";
 
-export default class Application {
-  @PrimaryColumn()
-  id: number;
+@OrmEntity("applications")
+export default class Application extends Entity {
+  constructor(application: Partial<Application>) {
+    super();
+    Object.assign(this, application);
+  }
 
   @Column()
   name: string;
@@ -13,48 +19,22 @@ export default class Application {
   description: string;
 
   @Column()
-  school: string;
+  field: string;
 
-  @Column()
-  course: string;
+  @ManyToMany(() => User, (user) => user.applications)
+  supervisors: User[];
 
-  @Column()
-  supervisors: User[] = [];
+  @ManyToMany(() => User, (user) => user.reviewerApplications)
+  reviewers: User[];
 
-  constructor(
-    id: number,
-    name: string,
-    description: string,
-    school: string,
-    course: string,
-    supervisors: User[]
-  ) {
-    this.id = id;
-    this.name = name;
-    this.description = description;
-    this.school = school;
-    this.course = course;
-    this.supervisors = supervisors;
-  }
+  @OneToMany(() => Review, (review) => review.application)
+  reviews: Review[];
 
-  getFromId(this: Application): Application {
-    return new Application(
-      this.id,
-      faker.name.findName(),
-      faker.lorem.sentences(2),
-      faker.lorem.word(),
-      faker.lorem.word(),
-      [User.create(faker.internet.email(), faker.internet.avatar())]
-    );
-  }
+  @IsEnum(["pending", "in progress", "completed"])
+  @Column({ default: "pending" })
+  progress: string;
 
-  update(this: Application): Application {
-    // update user to database
-    return this;
-  }
-
-  delete(this: Application): Application {
-    // delete user from database
-    return this;
-  }
+  @IsEnum(["pending", "accepted", "rejected"])
+  @Column({ default: "pending" })
+  acceptance: string;
 }

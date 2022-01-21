@@ -1,5 +1,4 @@
 version: "3.9"
-# I'm just putting this here to quickly test if both build, you can make a proper dev environment but it's not apart of this issue
 services:
   srec-api:
     container_name: srec-api
@@ -11,3 +10,17 @@ services:
     image: srec-ui
     build:
       context: ./ui
+  timescaledb:
+    container_name: pgres
+    image: "timescale/timescaledb:latest-pg14"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - "pg_data:/var/lib/postgresql/data"
+
+volumes:
+  pg_data:

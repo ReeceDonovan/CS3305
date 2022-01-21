@@ -1,10 +1,13 @@
 import express from "express";
 
-import userRouter from "./router/user";
-import loginRouter from "./router/login";
+import { createConn } from "./models/database";
 import pageRouter from "./router/landingPage";
+import loginRouter from "./router/login";
+import userRouter from "./router/user";
 
 const PORT = 8000;
+
+createConn();
 
 const app = express();
 
