@@ -1,24 +1,24 @@
 .view {
-    width: 80%;
-    margin: 20px 0 0 10%;
+  width: 80%;
+  margin: 20px 0 0 10%;
 }
 
 .view h2 {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .view h4 {
-    margin-bottom: 5px;
+  margin-bottom: 5px;
 }
 
 .view button {
-    margin-top: 50px;
+  margin-top: 50px;
 }
 
 .edit input {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .edit button {
-    width: 0px;
+  width: 0px;
 }

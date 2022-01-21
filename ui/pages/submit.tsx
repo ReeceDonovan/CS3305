@@ -172,7 +172,6 @@ const Submit = () => {
               _event: any,
               content: {
                 addedFiles: Array<File>;
-                
               }
             ) => {
               if (!content.addedFiles[0].invalidFileType == true) {

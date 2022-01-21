@@ -1,9 +1,9 @@
-@import '@carbon/themes/scss/themes';
+@import "@carbon/themes/scss/themes";
 
 $carbon--theme: $carbon--theme--g100;
 @include carbon--theme();
 
-@import  'carbon-components/scss/globals/scss/styles.scss';
+@import "carbon-components/scss/globals/scss/styles.scss";
 
 // body {
 //     background: $ui-background;

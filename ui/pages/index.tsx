@@ -72,7 +72,7 @@ export default function Index() {
       header: "Status",
     },
   ];
-  
+
   return (
     <>
       <Tabs type="container" scrollIntoView={false}>
@@ -126,9 +126,18 @@ export default function Index() {
                         ))}
                         <TableCell className="bx--table-column-menu">
                           <OverflowMenu size="sm" flipped>
-                            <OverflowMenuItem itemText="View" href="/application#view" />
-                            <OverflowMenuItem itemText="Edit" href="/application#edit" />
-                            <OverflowMenuItem itemText="Share" href="/application#share" />
+                            <OverflowMenuItem
+                              itemText="View"
+                              href="/application#view"
+                            />
+                            <OverflowMenuItem
+                              itemText="Edit"
+                              href="/application#edit"
+                            />
+                            <OverflowMenuItem
+                              itemText="Share"
+                              href="/application#share"
+                            />
                           </OverflowMenu>
                         </TableCell>
                       </TableRow>

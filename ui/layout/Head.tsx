@@ -19,7 +19,7 @@ export default function Head() {
       render={({ isSideNavExpanded, onClickSideNavExpand }) => (
         <Header
           style={{
-            maxWidth: '100vw'
+            maxWidth: "100vw",
           }}
           aria-label="UCC SRES"
         >

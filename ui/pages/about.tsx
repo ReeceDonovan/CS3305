@@ -2,13 +2,13 @@ import { Button } from "carbon-components-react";
 import styles from "../styles/about.module.css";
 import axios from "axios";
 
-export default function About(props: {content: string}) {
+export default function About(props: { content: string }) {
   return (
     <>
       {props.content.length > 0 ? (
         <>
           <div className={styles.info}>
-            <div dangerouslySetInnerHTML={{__html: props.content}} />
+            <div dangerouslySetInnerHTML={{ __html: props.content }} />
             <Button href="/login">Log in with UCC Email</Button>
           </div>
         </>
@@ -91,7 +91,7 @@ export default function About(props: {content: string}) {
 
 export async function getStaticProps() {
   const data = await axios.get("http://localhost:8000/about");
-  console.log("Fetched about page")
+  console.log("Fetched about page");
   return {
     props: {
       content: data.data,
