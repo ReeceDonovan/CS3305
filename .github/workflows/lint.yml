@@ -23,11 +23,11 @@ jobs:
           node-version: 16
 
       - name: Install API dependencies
-        working-directory: /api/
+        working-directory: api/
         run: npm i
 
       - name: Install UI dependencies
-        working-directory: /ui/
+        working-directory: ui/
         run: yarn
 
       - name: Run linters
@@ -35,5 +35,5 @@ jobs:
         with:
           eslint: true
           prettier: true
-          eslint_dir: /ui/
-          prettier_dir: /api/
+          eslint_dir: ui/
+          prettier_dir: api/
