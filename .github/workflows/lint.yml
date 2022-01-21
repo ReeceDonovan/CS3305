@@ -36,4 +36,6 @@ jobs:
           eslint: true
           prettier: true
           eslint_dir: ui/
+          prettier_dir: ui/
           prettier_dir: api/
+          eslint_dir: api/
