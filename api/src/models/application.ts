@@ -13,28 +13,28 @@ export default class Application extends Entity {
   }
 
   @Column()
-    name: string;
+  name: string;
 
   @Column()
-    description: string;
+  description: string;
 
   @Column()
-    field: string;
+  field: string;
 
   @ManyToMany(() => User, (user) => user.applications)
-    supervisors: User[];
+  supervisors: User[];
 
   @ManyToMany(() => User, (user) => user.reviewerApplications)
-    reviewers: User[];
+  reviewers: User[];
 
   @OneToMany(() => Review, (review) => review.application)
-    reviews: Review[];
+  reviews: Review[];
 
   @IsEnum(["pending", "in progress", "completed"])
   @Column({ default: "pending" })
-    progress: string;
+  progress: string;
 
   @IsEnum(["pending", "accepted", "rejected"])
   @Column({ default: "pending" })
-    acceptance: string;
+  acceptance: string;
 }
