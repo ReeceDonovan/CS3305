@@ -30,10 +30,18 @@ jobs:
         working-directory: ui/
         run: yarn
 
-      - name: Run linters
+      - name: Run Linter on UI
         uses: wearerequired/lint-action@v1
         with:
           eslint: true
           prettier: true
-          eslint_dir: ui/ api/
-          prettier_dir: ui/ api/
+          eslint_dir: ui/
+          prettier_dir: ui/
+
+      - name: Run Linter on API
+        uses: wearerequired/lint-action@v1
+        with:
+          eslint: true
+          prettier: true
+          eslint_dir: api/
+          prettier_dir: api/
