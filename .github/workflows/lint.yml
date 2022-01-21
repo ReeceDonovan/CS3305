@@ -20,20 +20,42 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
 
       - name: Install API dependencies
         working-directory: api
         run: npm i
 
       - name: Install UI dependencies
-        working-directory: ui
+        working-directory: /ui
         run: yarn
 
       - name: Run linters
         uses: wearerequired/lint-action@v1
         with:
           eslint: true
+          eslint_dir: /ui/
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install API dependencies
+        working-directory: /api
+        run: npm i
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v1
+        with:
           prettier: true
-          eslint_dir: ui/
-          prettier_dir: api/
+          prettier_dir: /api/
