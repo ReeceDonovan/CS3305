@@ -24,7 +24,7 @@ jobs:
 
       - name: Install API dependencies
         working-directory: api/
-        run: npm i
+        run: yarn
 
       - name: Run Linter on API
         uses: wearerequired/lint-action@v1
@@ -35,4 +35,6 @@ jobs:
           eslint: true
           prettier: true
           eslint_dir: api/
+          eslint_extensions: js,ts
           prettier_dir: api/
+          prettier_extensions: js,ts
