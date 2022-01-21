@@ -13,16 +13,16 @@ export default class Review extends Entity {
   }
 
   @ManyToOne(() => User, (user) => user.reviews)
-  reviewer: User;
+    reviewer: User;
 
   @ManyToOne(() => Application, (application) => application.reviews)
-  application: Application;
+    application: Application;
 
   // Review status (Approved, Rejected, Needs Action)
   @IsEnum(["approved", "needs action", "rejected"])
   @Column()
-  status: string;
+    status: string;
 
   @Column()
-  comments: string;
+    comments: string;
 }
