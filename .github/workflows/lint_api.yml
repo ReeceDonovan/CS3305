@@ -26,21 +26,6 @@ jobs:
         working-directory: api/
         run: npm i
 
-      - name: Install UI dependencies
-        working-directory: ui/
-        run: yarn
-
-      - name: Run Linter on UI
-        uses: wearerequired/lint-action@v1
-        with:
-          auto_fix: true
-          github_token: ${{ secrets.TOKEN }}
-
-          eslint: true
-          prettier: true
-          eslint_dir: ui/
-          prettier_dir: ui/
-
       - name: Run Linter on API
         uses: wearerequired/lint-action@v1
         with:
