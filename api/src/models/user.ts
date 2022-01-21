@@ -1,60 +1,66 @@
-import faker = require("@faker-js/faker");
+import { Expose } from "class-transformer";
+import { IsEmail, IsEnum } from "class-validator";
+import {
+  Column,
+  Entity as OrmEntity,
+  Index,
+  ManyToMany,
+  OneToMany,
+} from "typeorm";
 
-import { Entity, PrimaryColumn, Column } from "typeorm";
-import { IsEmail } from 'class-validator'
+import Application from "./application";
+import { dbConn } from "./database";
+import Entity from "./entity";
+import Review from "./review";
 
-@Entity()
-export default class User {
-  @PrimaryColumn()
-  id: number;
+@OrmEntity("users")
+export default class User extends Entity {
+  constructor(user: Partial<User>) {
+    super();
+    Object.assign(this, user);
+  }
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
-  @Column()
+  @Index({ unique: true })
   @IsEmail()
+  @Column()
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   bio: string;
 
-  @Column()
+  @Column({ nullable: true })
   school: string;
 
-  @Column()
-  // base64 png or URL
+  @Column({ nullable: true })
   avatar: string;
 
-  getFromId(this: User): User {
-    (this.name = faker.name.findName()),
-      (this.email = faker.internet.email()),
-      (this.bio = faker.lorem.sentence());
-    return this;
+  @IsEnum(["researcher", "reviewer"])
+  @Column({ default: "researcher" })
+  role: string;
+
+  @ManyToMany(() => Application, (application) => application.supervisors)
+  applications: Application[];
+
+  @ManyToMany(() => Application, (application) => application.reviewers)
+  reviewerApplications: Application[];
+
+  @OneToMany(() => Review, (review) => review.reviewer)
+  reviews: Review[];
+
+  @Expose() get lastReviewed(): Date | undefined {
+    if (this.reviews.length > 0) {
+      return this.reviews[this.reviews.length - 1].createdAt;
+    }
   }
 
-  getFromEmail(this: User): User {
-    (this.id = faker.datatype.number()),
-      (this.name = faker.name.findName()),
-      (this.bio = faker.lorem.sentence());
-    return this;
+  static async getById(id: number): Promise<User | undefined> {
+    return await dbConn.getRepository(User).findOne(id);
   }
 
-  static create(email: string, avatar: string): User {
-    var user = new User()
-    user.id = faker.datatype.number(),
-    user.name = faker.name.findName(),
-    user.email = email,
-    user.bio = faker.lorem.sentence()
-    return user
-  }
-
-  update(this: User): User {
-    // update user to database
-    return this;
-  }
-
-  delete(this: User): User {
-    // delete user from database
-    return this;
+  static async getByEmail(email: string): Promise<User | undefined> {
+    return await dbConn.getRepository(User).findOne({ email });
   }
 }
