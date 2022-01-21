@@ -33,6 +33,9 @@ jobs:
       - name: Run Linter on UI
         uses: wearerequired/lint-action@v1
         with:
+          auto_fix: true
+          github_token: ${{ secrets.TOKEN }}
+
           eslint: true
           prettier: true
           eslint_dir: ui/
@@ -41,6 +44,9 @@ jobs:
       - name: Run Linter on API
         uses: wearerequired/lint-action@v1
         with:
+          auto_fix: true
+          github_token: ${{ secrets.TOKEN }}
+          
           eslint: true
           prettier: true
           eslint_dir: api/
