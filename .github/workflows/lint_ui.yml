@@ -33,5 +33,8 @@ jobs:
           github_token: ${{ secrets.TOKEN }}
 
           eslint: true
+          prettier: true
           eslint_dir: ui/
           eslint_extensions: js,ts
+          prettier_dir: ui/
+          prettier_extensions: js,ts
