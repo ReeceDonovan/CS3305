@@ -1,5 +1,6 @@
 import { IsEnum } from "class-validator";
 import { Column, Entity as OrmEntity, ManyToMany, OneToMany } from "typeorm";
+import { dbConn } from "./database";
 
 import Entity from "./entity";
 import Review from "./review";
@@ -24,6 +25,9 @@ export default class Application extends Entity {
   @ManyToMany(() => User, (user) => user.applications)
   supervisors: User[];
 
+  @ManyToMany(() => User, (user) => user.applications)
+  coauthors: User[];
+
   @ManyToMany(() => User, (user) => user.reviewerApplications)
   reviewers: User[];
 
@@ -37,4 +41,8 @@ export default class Application extends Entity {
   @IsEnum(["pending", "accepted", "rejected"])
   @Column({ default: "pending" })
   acceptance: string;
+
+  static async getById(id: number): Promise<Application | undefined> {
+    return await dbConn.getRepository(Application).findOne(id);
+  }
 }

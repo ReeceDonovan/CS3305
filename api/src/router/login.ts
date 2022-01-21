@@ -8,7 +8,7 @@ import response from "../utils/response";
 
 const loginRouter = express.Router();
 // sessions map of string to object with date and string
-const sessions: { [key: string]: { date: number; email: string } } = {};
+export const sessions: { [key: string]: { date: number; email: string } } = {};
 
 loginRouter.get(
   "/login",
