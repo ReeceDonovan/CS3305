@@ -12,7 +12,9 @@ FROM node:16.8
 
 WORKDIR /usr/api
 
-COPY package.json package-lock.json ./
+COPY --from=build /usr/api/package-lock.json ./
+
+COPY package.json ./
 
 COPY --from=build /usr/api/dist ./src
 
