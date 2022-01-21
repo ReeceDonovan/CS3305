@@ -22,8 +22,13 @@ jobs:
         with:
           node-version: 12
 
-      - name: Install Node.js dependencies
+      - name: Install API dependencies
+        working-directory: api
         run: npm i
+
+      - name: Install UI dependencies
+        working-directory: ui
+        run: yarn
 
       - name: Run linters
         uses: wearerequired/lint-action@v1
