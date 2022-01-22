@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 import { createConn } from "./models/database";
 import { decodeToken } from "./auth/tokens";
@@ -8,6 +9,7 @@ import loginRouter from "./router/login";
 import userRouter from "./router/user";
 import User from "./models/user";
 import response from "./utils/response";
+import appRouter from "./router/application";
 
 const PORT = 8000;
 
@@ -50,11 +52,19 @@ app.use(async (req: express.Request, res: express.Response, next) => {
   return res.status(401).json(unauthorizedResponse);
 })
 
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+app.use(cors(corsOptions));
+
 
 app.use(userRouter);
 app.use(loginRouter);
-app.use(pageRouter);)
+app.use(pageRouter);
+app.use('/applications', appRouter)
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`);
 });
+
