@@ -231,6 +231,7 @@ const Submit = () => {
                 addedFiles: Array<File>;
               }
             ) => {
+              // @ts-ignore
               if (!content.addedFiles[0].invalidFileType == true) {
                 // pdf_files.push(content.addedFiles[0]);
                 setPdfFile(content.addedFiles[0]);
