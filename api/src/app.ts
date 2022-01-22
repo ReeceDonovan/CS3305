@@ -5,7 +5,6 @@ import { createConn } from "./models/database";
 import pageRouter from "./router/landingPage";
 import loginRouter from "./router/login";
 import userRouter from "./router/user";
-import submitRouter from "./router/submit_form";
 import appRouter from "./router/application";
 
 const PORT = 8000;
@@ -25,7 +24,6 @@ app.use(cors(corsOptions));
 app.use(userRouter);
 app.use(loginRouter);
 app.use(pageRouter);
-app.use(submitRouter);
 app.use('/applications', appRouter)
 
 
