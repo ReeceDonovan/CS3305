@@ -15,22 +15,23 @@ createConn();
 
 const app = express();
 
-app.use(userRouter);
-app.use(loginRouter);
-app.use(pageRouter);
-
 const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about"];
 
 // middleware to check for Authorization header, to get token.
 // gets user from id in token, then sends user object to next handler
 app.use(async (req: express.Request, res: express.Response, next) => {
 
+  // log request
+  console.log(`${new Date().getTime()} ${req.method.toUpperCase()} ${req.url} `);
+
   // if authorization is not necessary for a route, skip this middleware
-  if (req.url in unAuthenticatedRoutes) {
+  if (unAuthenticatedRoutes.includes(req.url.split("?")[0])) {
+    console.log("skipping auth");
     return next();
   }
 
-  const authHeader = req.headers["authorization"];
+  const authHeader = req.headers.authorization;
+  
   if (authHeader && authHeader.split(" ")[0] == "Bearer" && authHeader.split(" ")[1]) {
     const token = await decodeToken(authHeader.split(" ")[1]);
     if (token !== null) {
@@ -48,6 +49,11 @@ app.use(async (req: express.Request, res: express.Response, next) => {
 
   return res.status(401).json(unauthorizedResponse);
 })
+
+
+app.use(userRouter);
+app.use(loginRouter);
+app.use(pageRouter);)
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`);
