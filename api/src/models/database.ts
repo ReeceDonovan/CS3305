@@ -15,6 +15,7 @@ export const createConn = async (): Promise<void> => {
       password: config.read().databaseConfig.password,
       database: config.read().databaseConfig.database,
       synchronize: true,
+      logging: true,
       entities: [__dirname + "/../models/*.ts"],
     });
     console.log("Connected to database");
