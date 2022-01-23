@@ -12,12 +12,25 @@ import response from "./utils/response";
 import appRouter from "./router/application";
 
 const PORT = 8000;
+declare global {
+  namespace Express {
+    interface Request {
+      user: User;
+    }
+  }
+}
 
 createConn();
 
 const app = express();
 
-const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about"];
+const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about", "/applications/13/form"];
+
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+app.use(cors(corsOptions));
 
 // middleware to check for Authorization header, to get token.
 // gets user from id in token, then sends user object to next handler
@@ -33,7 +46,7 @@ app.use(async (req: express.Request, res: express.Response, next) => {
   }
 
   const authHeader = req.headers.authorization;
-  
+
   if (authHeader && authHeader.split(" ")[0] == "Bearer" && authHeader.split(" ")[1]) {
     const token = await decodeToken(authHeader.split(" ")[1]);
     if (token !== null) {
@@ -51,13 +64,6 @@ app.use(async (req: express.Request, res: express.Response, next) => {
 
   return res.status(401).json(unauthorizedResponse);
 })
-
-const corsOptions = {
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
-app.use(cors(corsOptions));
-
 
 app.use(userRouter);
 app.use(loginRouter);
