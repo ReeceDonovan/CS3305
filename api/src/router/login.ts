@@ -71,16 +71,17 @@ loginRouter.get(
             console.error(err);
             res.status(500).send("Error signing token");
           }
-          sessions[sessionId] = {
-            date: new Date().setHours(new Date().getHours() + 24),
-            email: email,
-          };
-          const re: response = {
-            status: 200,
-            message: "Success",
-            data: token,
-          };
-          res.json(re);
+          // sessions[sessionId] = {
+          //   date: new Date().setHours(new Date().getHours() + 24),
+          //   email: email,
+          // };
+          // const re: response = {
+          //   status: 200,
+          //   message: "Success",
+          //   data: token,
+          // };
+          res.redirect(`http://localhost:3000/login?token=${token}`);
+          // res.json(re);
         }
       );
     }
