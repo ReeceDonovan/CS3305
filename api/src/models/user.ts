@@ -24,7 +24,7 @@ export default class User extends Entity {
     Object.assign(this, user);
   }
 
-  @Column({ type: "text", nullable: false })
+  @Column({ type: "text", nullable: false, default: "RESEARCHER" })
   @IsEnum(UserType)
   type: UserType;
 
@@ -36,7 +36,7 @@ export default class User extends Entity {
   @Column({ type: "text", nullable: true })
   avatar: string;
 
-  @ManyToMany((_type) => Application, (application) => application.reviewers)
+  @ManyToMany((_type) => Application, (application) => application.authors)
   applications: Application[];
 
   @OneToMany((_type) => Review, (review) => review.reviewer)
