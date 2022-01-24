@@ -33,7 +33,7 @@ export const request = async (
       method: props.method,
       data: props.body,
       headers: {
-        "authorization":
+        authorization:
           localStorage.getItem("token") !== null
             ? `Bearer ${localStorage.getItem("token")}`
             : "",
@@ -57,33 +57,29 @@ export const request = async (
   }
 };
 
-export const fetchPDF = async (id: number) => {
+export const fetchPDF = async (id: string) => {
   try {
     const req = await axios({
-      url: `http://localhost:8000/applications/13/form`,
+      url: `http://localhost:8000/applications/${id}/form`,
       method: "GET",
+      responseType: 'blob',
       headers: {
-        "authorization":
-          await localStorage.getItem("token") !== null
+        authorization:
+          (await localStorage.getItem("token")) !== null
             ? `Bearer ${localStorage.getItem("token")}`
             : "",
       },
     });
-    console.log("NICE")
     return req.data;
-    // console.log("something")
   } catch (e) {
     console.log(e);
-  } 
-  // finally {
-  //   console.log("FFS")
-  //   return {
-  //     message: "Unkown error",
-  //     status: 500,
-  //     data: null,
-  //   } as StandardResponse;
-  // }
-}
+    return {
+      message: "Unkown error",
+      status: 500,
+      data: null,
+    } as StandardResponse;
+  }
+};
 
 export const formRequest = async (props: RequestParams) => {
   try {
@@ -93,8 +89,8 @@ export const formRequest = async (props: RequestParams) => {
       data: props.body,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "authorization":
-          await localStorage.getItem("token") !== null
+        authorization:
+          (await localStorage.getItem("token")) !== null
             ? `Bearer ${localStorage.getItem("token")}`
             : "",
       },

@@ -1,5 +1,5 @@
 import { IsEnum } from "class-validator";
-import { Column, Entity as OrmEntity, ManyToMany, OneToMany } from "typeorm";
+import { Column, Entity as OrmEntity, ManyToMany, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { dbConn } from "./database";
 
 import Entity from "./entity";
@@ -21,6 +21,9 @@ export default class Application extends Entity {
 
   @Column()
   field: string;
+
+  @ManyToOne(() => User, (user) => user.applications)
+  submitter: User;
 
   @ManyToMany(() => User, (user) => user.applications)
   supervisors: User[];
