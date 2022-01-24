@@ -18,17 +18,15 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
       message: "Application not found",
       data: null,
     };
-    res.send(JSON.stringify(re));
-  } else {
-    res.json(application);
+    return res.send(JSON.stringify(re));
   }
 
-  re = {
+  const re = {
     status: 200,
     message: "Success",
     data: application,
   };
-  res.json(re);
+  return res.json(re);
 });
 
 appRouter.get(
@@ -91,7 +89,7 @@ appRouter.post(
       name: form.name,
       description: form.description,
       field: form.field,
-      authors: coauthors,
+      coauthors: coauthors,
       supervisors,
     });
 
@@ -175,7 +173,7 @@ appRouter.delete(
       const response: Response = {
         status: 200,
         message: "Success",
-        data: null
+        data: null,
       };
       res.json(response);
     } else {

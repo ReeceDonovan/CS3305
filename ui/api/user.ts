@@ -4,7 +4,7 @@ export interface User {
   name: string;
   email: string;
   bio: string;
-  school: string;
+  field: string;
   role: string;
 }
 

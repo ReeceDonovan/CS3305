@@ -32,7 +32,7 @@ const AccountPage: NextPage = () => {
         console.log("yes", user);
         setName(user.name);
         setBio(user.bio);
-        setSchool(user.school);
+        setSchool(user.field);
       }
     });
   }, []);

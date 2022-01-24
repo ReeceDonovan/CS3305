@@ -21,13 +21,13 @@ export default class Application extends Entity {
     Object.assign(this, application);
   }
 
-  @Column({ type: "text", nullable: false })
+  @Column({ type: "text", nullable: true })
   name: string;
 
-  @Column({ type: "text", nullable: false })
+  @Column({ type: "text", nullable: true })
   description: string;
 
-  @Column({ type: "text", nullable: false })
+  @Column({ type: "text", nullable: true })
   field: string;
 
   @ManyToOne(() => User, (user) => user.applications)

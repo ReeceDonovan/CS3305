@@ -55,14 +55,6 @@ const Submit = () => {
       path: "/applications",
       data: form_data,
     });
-    axios
-      .post("http://localhost:8000/applications", form_data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          mode: "no-cors",
-        },
-      })
-      .then(console.log);
   };
 
   return (
