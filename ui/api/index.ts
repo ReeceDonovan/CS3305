@@ -57,20 +57,19 @@ export const request = async (
   }
 };
 
-export const fetchPDF = async (id: number) => {
+export const fetchPDF = async (id: string) => {
   try {
-    const req = await axios.get(
-      `http://localhost:8000/applications/${id}/form`,
-      {
-        responseType: "blob",
-        headers: {
-          authorization:
-            (await localStorage.getItem("token")) !== null
-              ? `Bearer ${localStorage.getItem("token")}`
-              : "",
-        },
-      }
-    );
+    const req = await axios({
+      url: `http://localhost:8000/applications/${id}/form`,
+      method: "GET",
+      responseType: "blob",
+      headers: {
+        authorization:
+          (await localStorage.getItem("token")) !== null
+            ? `Bearer ${localStorage.getItem("token")}`
+            : "",
+      },
+    });
     return req.data;
   } catch (e) {
     console.log(e);

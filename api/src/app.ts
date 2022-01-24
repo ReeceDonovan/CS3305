@@ -24,7 +24,7 @@ createConn();
 
 const app = express();
 
-const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about", "/applications/13/form"];
+const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about"];
 
 const corsOptions = {
   origin: 'http://localhost:3000',
@@ -35,7 +35,6 @@ app.use(cors(corsOptions));
 // middleware to check for Authorization header, to get token.
 // gets user from id in token, then sends user object to next handler
 app.use(async (req: express.Request, res: express.Response, next) => {
-
   // log request
   console.log(`${new Date().getTime()} ${req.method.toUpperCase()} ${req.url} `);
 
