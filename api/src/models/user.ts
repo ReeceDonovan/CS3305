@@ -37,7 +37,7 @@ export default class User extends Entity {
   @Column({ nullable: true })
   avatar: string;
 
-  @IsEnum(["researcher", "reviewer"])
+  @IsEnum(["researcher", "reviewer", "admin"])
   @Column({ default: "researcher" })
   role: string;
 

@@ -4,17 +4,25 @@ import response from "../utils/response";
 
 import multer from "multer";
 import fs from "fs";
-import path, { join } from "path";
+import path from "path";
 import User from "../models/user";
 import Response from "../utils/response";
-import { decodeToken } from "../auth/tokens";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
 
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
   const application = await Application.getById(parseInt(req.params.id));
-  const re: response = {
+  let re: Response;
+  if (application === undefined) {
+    re = {
+      status: 404,
+      message: "Application not found",
+      data: null,
+    };
+  }
+
+  re = {
     status: 200,
     message: "Success",
     data: application,
@@ -25,10 +33,7 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
 appRouter.get(
   "/:id/form",
   async (req: express.Request, res: express.Response) => {
-    // const token = req.query.token;
-    // check for auth
     const application = await Application.getById(parseInt(req.params.id));
-    // console.log(application);
     const files = fs.readdirSync(
       path.join(
         path.join(__dirname, `../../../data/pdf_store/${application.id}`)
@@ -123,5 +128,48 @@ appRouter.post(
     }
   }
 );
+
+appRouter.put("/:id", async (req: express.Request, res: express.Response) => {
+  const body = req.body;
+  let application = await Application.getById(parseInt(req.params.id));
+  if (application) {
+    application = { ...body };
+    console.log(application);
+    application.save();
+    const response: Response = {
+      status: 200,
+      message: "Success",
+      data: application,
+    };
+    res.json(response);
+  } else {
+    const response: Response = {
+      status: 404,
+      message: "Application not found",
+      data: null,
+    };
+    res.json(response);
+  }
+});
+
+appRouter.delete("/:id", async (req: express.Request, res: express.Response) => {
+  const application = await Application.getById(parseInt(req.params.id));
+  if (application) {
+    application.softRemove();
+    const response: Response = {
+      status: 200,
+      message: "Success",
+      data: application,
+    };
+    res.json(response);
+  } else {
+    const response: Response = {
+      status: 404,
+      message: "Application not found",
+      data: null,
+    };
+    res.json(response);
+  }
+})
 
 export default appRouter;
