@@ -11,16 +11,9 @@ const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
+
   // 0 is nothing, 1 is in progress, 2 is failure, 3 is success
   const [submit_success, setSubmit_success] = useState<number>(0);
-
-  const [remoteUser, setRemoteUser] = useState<User | null>(null);
-  // get_me().then((user: User)=>{
-  //   console.log(user)
-  //   if(user){
-  //     setName(user.name)
-  //   }
-  // })
 
   let save_state = <> </>;
   if (submit_success === 1) {
@@ -79,7 +72,7 @@ const AccountPage: NextPage = () => {
             e.preventDefault();
             setSubmit_success(1);
             request({
-              method: "POST",
+              method: "PATCH",
               path: "/users",
               data: { name: name, bio: bio, school: school },
             }).then((res) => {
