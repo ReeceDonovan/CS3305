@@ -4,8 +4,10 @@ import React, { useEffect, useState } from "react";
 import get_me, { User } from "../api/user"
 import {request} from "../api/index"
 import {Checkmark32, Error32, InProgress32} from "@carbon/icons-react";
+import styles from "../styles/account.module.css"
 
 const AccountPage: NextPage = () => {
+  console.log(styles)
   const [name, setName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [school, setSchool] = useState("");
@@ -22,11 +24,11 @@ const AccountPage: NextPage = () => {
 
   let save_state = <> </>
   if (submit_success === 1){
-    save_state = <InProgress32 />
+    save_state = <InProgress32 className={styles.resultIcon}/>
   }else if (submit_success == 2){
-    save_state = <Error32 />
+    save_state = <Error32 className={styles.resultIcon}/>
   }else if (submit_success == 3){
-    save_state =<Checkmark32 />
+    save_state =<Checkmark32 className={styles.resultIcon}/>
   }else{
     save_state =<> </>
   }
@@ -45,12 +47,10 @@ const AccountPage: NextPage = () => {
   return (
     <>
       <Form
-        style={{
-          height: "90vh",
-          width: "100%",
-        }}
+        className = {styles.form}
       >
         <TextInput
+          className = {styles.formElements}
           id="name"
           labelText="Name"
           placeholder={name}
@@ -62,6 +62,7 @@ const AccountPage: NextPage = () => {
           labelText="Job Title"
           placeholder={jobTitle}
           onChange={(e) => setJobTitle(e.target.value)}
+          className={styles.formElements}
         />
 
         <TextInput
@@ -69,9 +70,11 @@ const AccountPage: NextPage = () => {
           labelText="School"
           placeholder={school}
           onChange={(e) => setSchool(e.target.value)}
+          className={styles.formElements}
         />
 
         <Button
+          className={styles.formElements}
           type="submit"
           disabled={!name && !jobTitle && !school}
           onClick={(e)=>{
@@ -86,7 +89,7 @@ const AccountPage: NextPage = () => {
             })
           }}
         >
-          Submit
+          Save
         </Button>
 
         {save_state}

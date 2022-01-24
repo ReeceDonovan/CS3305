@@ -1,0 +1,18 @@
+.form{
+    max-width: 50em;
+    margin: 0 auto;
+}
+
+.form:first-child{
+    margin-top: 10px;
+}
+
+.formElements{
+    margin-bottom: 2em;
+}
+
+.resultIcon{
+    margin-left: 2em;
+    margin-top: .5em;
+}
+
