@@ -4,6 +4,7 @@ import {
   Column,
   Entity as OrmEntity,
   Index,
+  JoinTable,
   ManyToMany,
   OneToMany,
 } from "typeorm";
@@ -42,12 +43,15 @@ export default class User extends Entity {
   role: string;
 
   @ManyToMany(() => Application, (application) => application.supervisors)
+  @JoinTable()
   applications: Application[];
 
   @ManyToMany(() => Application, (application) => application.reviewers)
+  @JoinTable()
   reviewerApplications: Application[];
 
   @OneToMany(() => Review, (review) => review.reviewer)
+  @JoinTable()
   reviews: Review[];
 
   @Expose() get lastReviewed(): Date | undefined {

@@ -129,13 +129,26 @@ appRouter.post(
   }
 );
 
-appRouter.put("/:id", async (req: express.Request, res: express.Response) => {
-  const body = req.body;
+appRouter.patch("/:id", async (req: express.Request, res: express.Response) => {
+  // console.log(req.body)
+  const body = req.body as Application;
   let application = await Application.getById(parseInt(req.params.id));
+  console.log(application);
+
   if (application) {
-    application = { ...body };
-    console.log(application);
-    application.save();
+    application.name = body.name ? body.name : application.name;
+    application.description = body.description
+      ? body.description
+      : application.description;
+    application.field = body.field ? body.field : application.field;
+    application.supervisors = body.supervisors
+      ? body.supervisors
+      : application.supervisors;
+    application.coauthors = body.coauthors
+      ? body.coauthors
+      : application.coauthors;
+    await application.save();
+
     const response: Response = {
       status: 200,
       message: "Success",
@@ -152,24 +165,27 @@ appRouter.put("/:id", async (req: express.Request, res: express.Response) => {
   }
 });
 
-appRouter.delete("/:id", async (req: express.Request, res: express.Response) => {
-  const application = await Application.getById(parseInt(req.params.id));
-  if (application) {
-    application.softRemove();
-    const response: Response = {
-      status: 200,
-      message: "Success",
-      data: application,
-    };
-    res.json(response);
-  } else {
-    const response: Response = {
-      status: 404,
-      message: "Application not found",
-      data: null,
-    };
-    res.json(response);
+appRouter.delete(
+  "/:id",
+  async (req: express.Request, res: express.Response) => {
+    const application = await Application.getById(parseInt(req.params.id));
+    if (application) {
+      await application.remove();
+      const response: Response = {
+        status: 200,
+        message: "Success",
+        data: null
+      };
+      res.json(response);
+    } else {
+      const response: Response = {
+        status: 404,
+        message: "Application not found",
+        data: null,
+      };
+      res.json(response);
+    }
   }
-})
+);
 
 export default appRouter;

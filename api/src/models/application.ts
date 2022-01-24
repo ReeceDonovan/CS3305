@@ -1,5 +1,5 @@
 import { IsEnum } from "class-validator";
-import { Column, Entity as OrmEntity, ManyToMany, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { Column, Entity as OrmEntity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { dbConn } from "./database";
 
 import Entity from "./entity";
@@ -23,18 +23,23 @@ export default class Application extends Entity {
   field: string;
 
   @ManyToOne(() => User, (user) => user.applications)
+  @JoinTable()
   submitter: User;
 
   @ManyToMany(() => User, (user) => user.applications)
+  @JoinTable()
   supervisors: User[];
 
   @ManyToMany(() => User, (user) => user.applications)
+  @JoinTable()
   coauthors: User[];
 
   @ManyToMany(() => User, (user) => user.reviewerApplications)
+  @JoinTable()
   reviewers: User[];
 
   @OneToMany(() => Review, (review) => review.application)
+  @JoinTable()
   reviews: Review[];
 
   @IsEnum(["pending", "in progress", "completed"])
