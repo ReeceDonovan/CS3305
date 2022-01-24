@@ -22,6 +22,7 @@ const ApplicationPage: NextPage = () => {
   const [author, setAuthor] = useState("");
   const [supervisor, setSupervisor] = useState("");
   const [pdf, setPdf] = useState<ArrayBuffer | null>(null);
+  const [showPDF, setShowPDF] = useState(false);
 
   useEffect(() => {
     fetchPDF(2 /* Dynamically assign from url query param(?) */).then((res) => {
@@ -29,7 +30,7 @@ const ApplicationPage: NextPage = () => {
     });
   }, []);
 
-  if (pdf == null) {
+  if (pdf == null || !showPDF) {
     return (
       <Tabs
         style={{
@@ -46,7 +47,14 @@ const ApplicationPage: NextPage = () => {
             <h4>School: {fakeSchool}</h4>
             <h4>Status: {fakeStatus}</h4>
 
-            <Button type="submit">Download PDF</Button>
+            <Button
+              className={styles.button}
+              onClick={() => {
+                setShowPDF(true);
+              }}
+            >
+              View PDF
+            </Button>
           </div>
         </Tab>
         <Tab href="#edit" style={{ marginTop: "8px" }} id="edit" label="Edit">
@@ -106,22 +114,36 @@ const ApplicationPage: NextPage = () => {
     );
   } else {
     return (
-      <div>
-        <h1>Application</h1>
-        {pdf && (
-          <iframe
-            src={URL.createObjectURL(
-              new Blob([pdf], { type: "application/pdf" })
-            )}
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              transform: "translate(-50%, -50%)",
-              top: "50%",
-              left: "50%",
-            }}
-          />
+      <div className={styles.view} style={{ height: "90vh", maxWidth: "100%" }}>
+        {pdf && showPDF && (
+          <>
+            <Button
+              style={{
+                position: "absolute",
+                right: "5%",
+                zIndex: "99",
+              }}
+              type="button"
+              onClick={() => {
+                setShowPDF(false);
+              }}
+            >
+              Close
+            </Button>
+            <iframe
+              src={URL.createObjectURL(
+                new Blob([pdf], { type: "application/pdf" })
+              )}
+              style={{
+                width: "100%",
+                height: "100%",
+                position: "absolute",
+                transform: "translate(-50%, -50%)",
+                top: "50%",
+                left: "50%",
+              }}
+            />
+          </>
         )}
       </div>
     );
