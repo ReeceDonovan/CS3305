@@ -35,7 +35,6 @@ const ApplicationPage: NextPage = () => {
           setApplication(response.data);
         });
       api.fetchPDF(slug).then((response) => {
-        console.log(response);
         setPDF(response);
       });
     }

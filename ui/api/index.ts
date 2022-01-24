@@ -3,7 +3,7 @@ import axios, { Method } from "axios";
 export interface RequestParams {
   path: string;
   method: Method;
-  body?: any;
+  data?: any;
   // headers?: any
 }
 
@@ -30,15 +30,15 @@ export const request = async (
 ): Promise<StandardResponse> => {
   try {
     const req = await axios(`${API_URL}${props.path}`, {
-      method: props.method,
-      data: props.body,
+      ...props,
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
     return {
-      ...req.data,
+      data: req.data,
       message: "Success",
+      status: req.status,
     };
   } catch (e) {
     console.log(e);
@@ -73,8 +73,7 @@ export const formRequest = async (props: RequestParams) => {
   try {
     const req = await axios({
       url: `${API_URL}${props.path}`,
-      method: props.method,
-      data: props.body,
+      ...props,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         authorization:

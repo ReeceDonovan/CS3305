@@ -34,6 +34,15 @@ export default class User extends Entity {
   email: string;
 
   @Column({ type: "text", nullable: true })
+  name: string;
+
+  @Column({ type: "text", nullable: true })
+  bio: string;
+
+  @Column({ type: "text", nullable: true })
+  school: string;
+
+  @Column({ type: "text", nullable: true })
   avatar: string;
 
   @ManyToMany((_type) => Application, (application) => application.authors)
