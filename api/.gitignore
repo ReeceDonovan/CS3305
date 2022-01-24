@@ -12,3 +12,5 @@ old.config.json
 .env.*
 
 config.json
+data
+

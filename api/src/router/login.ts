@@ -8,7 +8,7 @@ import response from "../utils/response";
 
 const loginRouter = express.Router();
 // sessions map of string to object with date and string
-const sessions: { [key: string]: { date: number; email: string } } = {};
+export const sessions: { [key: string]: { date: number; email: string } } = {};
 
 loginRouter.get(
   "/login",
@@ -60,7 +60,7 @@ loginRouter.get(
       var sessionId =
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15);
-      const token = jwt.sign(
+      jwt.sign(
         {
           id: sessionId,
           email: email,
@@ -71,16 +71,17 @@ loginRouter.get(
             console.error(err);
             res.status(500).send("Error signing token");
           }
-          sessions[sessionId] = {
-            date: new Date().setHours(new Date().getHours() + 24),
-            email: email,
-          };
-          const re: response = {
-            status: 200,
-            message: "Success",
-            data: token,
-          };
-          res.json(re);
+          // sessions[sessionId] = {
+          //   date: new Date().setHours(new Date().getHours() + 24),
+          //   email: email,
+          // };
+          // const re: response = {
+          //   status: 200,
+          //   message: "Success",
+          //   data: token,
+          // };
+          res.redirect(`http://localhost:3000/login?token=${token}`);
+          // res.json(re);
         }
       );
     }
