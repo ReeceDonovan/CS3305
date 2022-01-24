@@ -8,7 +8,7 @@ import {
   TextInput,
 } from "carbon-components-react";
 import React, { KeyboardEvent, useState } from "react";
-import * as api from '../api';
+import * as api from "../api";
 
 const Submit = () => {
   const [modiflag, setModiflag] = useState(false);
@@ -53,16 +53,8 @@ const Submit = () => {
     api.request({
       method: "POST",
       path: "/applications",
-      body: form_data,
-    })
-    axios
-      .post("http://localhost:8000/applications", form_data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          mode: "no-cors",
-        },
-      })
-      .then(console.log);
+      data: form_data,
+    });
   };
 
   return (

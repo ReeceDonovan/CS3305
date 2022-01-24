@@ -1,10 +1,9 @@
 import express from "express";
-import Application from "../models/application";
-import response from "../utils/response";
-
-import multer from "multer";
 import fs from "fs";
+import multer from "multer";
 import path from "path";
+
+import Application from "../models/application";
 import User from "../models/user";
 import Response from "../utils/response";
 
@@ -13,21 +12,21 @@ const appRouter = express.Router();
 
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
   const application = await Application.getById(parseInt(req.params.id));
-  let re: Response;
-  if (application === undefined) {
-    re = {
+  if (!application) {
+    const re: Response = {
       status: 404,
       message: "Application not found",
       data: null,
     };
+    return res.send(JSON.stringify(re));
   }
 
-  re = {
+  const re = {
     status: 200,
     message: "Success",
     data: application,
   };
-  res.json(re);
+  return res.json(re);
 });
 
 appRouter.get(
@@ -90,8 +89,8 @@ appRouter.post(
       name: form.name,
       description: form.description,
       field: form.field,
-      supervisors: supervisors,
       coauthors: coauthors,
+      supervisors,
     });
 
     await application.save();
@@ -115,7 +114,7 @@ appRouter.post(
           message: "Success",
           data: application,
         };
-        res.json(response);
+        res.send(JSON.stringify(response));
       } catch (e) {
         const response: Response = {
           status: 500,
@@ -123,7 +122,7 @@ appRouter.post(
           data: null,
         };
         console.error("Error writing application form to disk\n", e);
-        res.status(500).json(response);
+        res.status(500).send(JSON.stringify(response));
       }
     }
   }
@@ -174,7 +173,7 @@ appRouter.delete(
       const response: Response = {
         status: 200,
         message: "Success",
-        data: null
+        data: null,
       };
       res.json(response);
     } else {

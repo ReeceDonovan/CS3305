@@ -1,5 +1,13 @@
 import { IsEnum } from "class-validator";
-import { Column, Entity as OrmEntity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne } from "typeorm";
+
+import { Column,
+  Entity as OrmEntity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne
+ } from "typeorm";
 import { dbConn } from "./database";
 
 import Entity from "./entity";
@@ -13,13 +21,13 @@ export default class Application extends Entity {
     Object.assign(this, application);
   }
 
-  @Column()
+  @Column({ type: "text", nullable: true })
   name: string;
 
-  @Column()
+  @Column({ type: "text", nullable: true })
   description: string;
 
-  @Column()
+  @Column({ type: "text", nullable: true })
   field: string;
 
   @ManyToOne(() => User, (user) => user.applications)
@@ -42,15 +50,15 @@ export default class Application extends Entity {
   @JoinTable()
   reviews: Review[];
 
-  @IsEnum(["pending", "in progress", "completed"])
-  @Column({ default: "pending" })
-  progress: string;
-
-  @IsEnum(["pending", "accepted", "rejected"])
-  @Column({ default: "pending" })
-  acceptance: string;
-
-  static async getById(id: number): Promise<Application | undefined> {
+  static async getById(id: number) {
     return await dbConn.getRepository(Application).findOne(id);
+  }
+
+  static async getByName(name: string) {
+    return await dbConn.getRepository(Application).findOne({ name });
+  }
+
+  static async getByField(field: string) {
+    return await dbConn.getRepository(Application).find({ field });
   }
 }

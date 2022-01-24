@@ -3,7 +3,7 @@ import axios, { Method } from "axios";
 export interface RequestParams {
   path: string;
   method: Method;
-  body?: any;
+  data?: any;
   // headers?: any
 }
 
@@ -30,30 +30,23 @@ export const request = async (
 ): Promise<StandardResponse> => {
   try {
     const req = await axios(`${API_URL}${props.path}`, {
-      method: props.method,
-      data: props.body,
+      ...props,
       headers: {
-        authorization:
-          localStorage.getItem("token") !== null
-            ? `Bearer ${localStorage.getItem("token")}`
-            : "",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
-
-    if (
-      Object.keys(req.data).sort().toString() ==
-      Object.keys(exampleResponse).sort().toString()
-    ) {
-      return req.data as StandardResponse;
-    }
+    return {
+      data: req.data,
+      message: "Success",
+      status: req.status,
+    };
   } catch (e) {
     console.log(e);
-  } finally {
     return {
-      message: "Unkown error",
       status: 500,
+      message: "Error",
       data: null,
-    } as StandardResponse;
+    };
   }
 };
 
@@ -62,7 +55,7 @@ export const fetchPDF = async (id: string) => {
     const req = await axios({
       url: `http://localhost:8000/applications/${id}/form`,
       method: "GET",
-      responseType: 'blob',
+      responseType: "blob",
       headers: {
         authorization:
           (await localStorage.getItem("token")) !== null
@@ -73,11 +66,6 @@ export const fetchPDF = async (id: string) => {
     return req.data;
   } catch (e) {
     console.log(e);
-    return {
-      message: "Unkown error",
-      status: 500,
-      data: null,
-    } as StandardResponse;
   }
 };
 
@@ -85,11 +73,10 @@ export const formRequest = async (props: RequestParams) => {
   try {
     const req = await axios({
       url: `${API_URL}${props.path}`,
-      method: props.method,
-      data: props.body,
+      ...props,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        authorization:
+        "authorization":
           (await localStorage.getItem("token")) !== null
             ? `Bearer ${localStorage.getItem("token")}`
             : "",
@@ -103,11 +90,10 @@ export const formRequest = async (props: RequestParams) => {
     }
   } catch (e) {
     console.log(e);
-  } finally {
     return {
-      message: "Unkown error",
       status: 500,
+      message: "Error",
       data: null,
     } as StandardResponse;
-  }
+  } 
 };

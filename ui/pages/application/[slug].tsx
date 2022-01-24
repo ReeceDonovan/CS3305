@@ -1,72 +1,48 @@
-import type { NextPage } from "next";
-import { useRouter } from "next/router";
 import {
   Button,
   Form,
   SkeletonPlaceholder,
+  Tab,
+  Tabs,
   TextInput,
 } from "carbon-components-react";
-import { Tab, Tabs } from "carbon-components-react";
-import styles from "../../styles/application.module.css";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
 import * as api from "../../api";
+import { Application } from "../../api/types";
+import styles from "../../styles/application.module.css";
 
+import type { NextPage } from "next";
 const ApplicationPage: NextPage = () => {
-  const [applicationID, setApplicationID] = useState("");
-  const [application, setApplication] = useState<any | null>(null);
-
   const router = useRouter();
+  const [application, setApplication] = useState<Application>();
+  const [pdf, setPDF] = useState<ArrayBuffer>();
 
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [supervisor, setSupervisor] = useState("");
-  const [pdf, setPDF] = useState("");
 
   useEffect(() => {
-    (async () => {
-      const { slug } = await router.query;
-      if (slug !== undefined) {
-        console.log(slug);
-        setApplicationID(slug as string);
-        console.log("check");
-      }
-    })();
-  }, [router.isReady]);
+    const slug = router.query.slug as string;
+    if (slug && slug.length > 0) {
+      api
+        .request({
+          path: `/applications/${slug}`,
+          method: "GET",
+        })
+        .then((response) => {
+          setApplication(response.data);
+        });
+      api.fetchPDF(slug).then((response) => {
+        setPDF(response);
+      });
+    }
+  }, [router.query.slug]);
 
-  useEffect(() => {
-    (async () => {
-      console.log("check1");
-      if (applicationID !== "") {
-        console.log("check1 1");
-        api
-          .request({
-            method: "GET",
-            path: `/applications/${applicationID}`,
-          })
-          .then((resp) => {
-            console.log("peggers");
-            console.log(resp)
-            setApplication(resp.data);
-          });
-        console.log("applicaion", application);
-      }
-    })();
-  }, [applicationID]);
-
-  useEffect(() => {
-    (async () => {
-      console.log("check2");
-      if (applicationID !== "") {
-        console.log("check2 1");
-        console.log("app ID", applicationID);
-        const data = await api.fetchPDF(applicationID);
-        setPDF(
-          URL.createObjectURL(new Blob([data], { type: "application/pdf" }))
-        );
-      }
-    })();
-  }, [applicationID]);
+  if (!application) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
@@ -79,17 +55,15 @@ const ApplicationPage: NextPage = () => {
       >
         <Tab href="#view" style={{ marginTop: "8px" }} id="view" label="View">
           {application && (
-            <>
-              <div className={styles.view}>
-                <h2>Title: {application?.name}</h2>
-                {/* <h4>Author: {application.submitter}</h4>
-                <h4>Supervisors: {application.supervisors}</h4>
-                <h4>Field of Study: {application.field}</h4>
-                <h4>Status: {application.progress}</h4> */}
-              </div>
-            </>
+            <div className={styles.view}>
+              <h2>Title: {application.name}</h2>
+              <h4>Author: {application.submitter}</h4>
+              <h4>Supervisors: {application.supervisors}</h4>
+              <h4>Field of Study: {application.field}</h4>
+              {/* <h4>Status: {application.progress}</h4> */}
+            </div>
           )}
-          {pdf == null && (
+          {!pdf && (
             <SkeletonPlaceholder
               style={{
                 width: "100%",
@@ -97,17 +71,28 @@ const ApplicationPage: NextPage = () => {
               }}
             />
           )}
-          {pdf != null && (
+          {pdf && (
             <div
               style={{
                 width: "95%",
                 height: "600px",
                 resize: "vertical",
                 overflow: "auto",
-                marginBottom: "6em",
+                margin: "6em auto 0px auto",
               }}
             >
-              <object data={pdf} width="100%" height="100%" />
+              <iframe
+                src={URL.createObjectURL(
+                  new Blob([pdf], { type: "application/pdf" })
+                )}
+                style={{
+                  width: "90%",
+                  height: "90%",
+                  margin: "auto",
+                  position: "relative",
+                  left: "7%",
+                }}
+              />
             </div>
           )}
         </Tab>
