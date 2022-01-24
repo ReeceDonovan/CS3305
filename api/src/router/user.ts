@@ -10,12 +10,21 @@ userRouter.get("/users/:id", async (req, res) => {
 });
 
 userRouter.get("/users", (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const tokenData = sessions[token];
-  if (tokenData === undefined) {
-    res.status(401).send("Unauthorized");
-  }
-  res.send(User.getByEmail(tokenData.email));
+  res.send(res.locals.user);
 });
+
+userRouter.post("/users", (req, res) => {
+  let user = res.locals.user;
+  if(req.body.name){
+    user.name=req.body.name
+  }if(req.body.bio){
+    user.bio=req.body.bio
+  }if(req.body.name){
+    user.school=req.body.school
+  }
+  user.save()
+  res.sendStatus(200);
+})
+
 
 export default userRouter;
