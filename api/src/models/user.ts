@@ -3,6 +3,7 @@ import {
   Column,
   Entity as OrmEntity,
   Index,
+  JoinTable,
   ManyToMany,
   OneToMany,
 } from "typeorm";
@@ -45,10 +46,20 @@ export default class User extends Entity {
   @Column({ type: "text", nullable: true })
   avatar: string;
 
-  @ManyToMany((_type) => Application, (application) => application.authors)
+  @IsEnum(["researcher", "reviewer", "admin"])
+  @Column({ default: "researcher" })
+  role: string;
+
+  @ManyToMany(() => Application, (application) => application.supervisors)
+  @JoinTable()
   applications: Application[];
 
-  @OneToMany((_type) => Review, (review) => review.reviewer)
+  @ManyToMany(() => Application, (application) => application.reviewers)
+  @JoinTable()
+  reviewerApplications: Application[];
+
+  @OneToMany(() => Review, (review) => review.reviewer)
+  @JoinTable()
   reviews: Review[];
 
   static async getByEmail(email: string) {

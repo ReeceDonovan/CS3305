@@ -1,12 +1,13 @@
 import { IsEnum } from "class-validator";
-import {
-  Column,
+
+import { Column,
   Entity as OrmEntity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
-  OneToOne,
-} from "typeorm";
+  OneToOne
+ } from "typeorm";
 import { dbConn } from "./database";
 
 import Entity from "./entity";
@@ -29,19 +30,24 @@ export default class Application extends Entity {
   @Column({ type: "text", nullable: false })
   field: string;
 
-  @ManyToMany((_type) => User, (user) => user.applications)
-  authors: User[];
-
-  @ManyToOne((_type) => User, (user) => user.applications)
+  @ManyToOne(() => User, (user) => user.applications)
+  @JoinTable()
   submitter: User;
 
-  @ManyToMany((_type) => User, (user) => user.applications)
+  @ManyToMany(() => User, (user) => user.applications)
+  @JoinTable()
   supervisors: User[];
 
-  @ManyToMany((_type) => User, (user) => user.applications)
+  @ManyToMany(() => User, (user) => user.applications)
+  @JoinTable()
+  coauthors: User[];
+
+  @ManyToMany(() => User, (user) => user.reviewerApplications)
+  @JoinTable()
   reviewers: User[];
 
-  @OneToMany((_type) => Review, (review) => review.application)
+  @OneToMany(() => Review, (review) => review.application)
+  @JoinTable()
   reviews: Review[];
 
   static async getById(id: number) {

@@ -22,15 +22,19 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
   } else {
     res.json(application);
   }
+
+  re = {
+    status: 200,
+    message: "Success",
+    data: application,
+  };
+  res.json(re);
 });
 
 appRouter.get(
   "/:id/form",
   async (req: express.Request, res: express.Response) => {
-    // const token = req.query.token;
-    // check for auth
     const application = await Application.getById(parseInt(req.params.id));
-    // console.log(application);
     const files = fs.readdirSync(
       path.join(
         path.join(__dirname, `../../../data/pdf_store/${application.id}`)
@@ -122,6 +126,65 @@ appRouter.post(
         console.error("Error writing application form to disk\n", e);
         res.status(500).send(JSON.stringify(response));
       }
+    }
+  }
+);
+
+appRouter.patch("/:id", async (req: express.Request, res: express.Response) => {
+  // console.log(req.body)
+  const body = req.body as Application;
+  let application = await Application.getById(parseInt(req.params.id));
+  console.log(application);
+
+  if (application) {
+    application.name = body.name ? body.name : application.name;
+    application.description = body.description
+      ? body.description
+      : application.description;
+    application.field = body.field ? body.field : application.field;
+    application.supervisors = body.supervisors
+      ? body.supervisors
+      : application.supervisors;
+    application.coauthors = body.coauthors
+      ? body.coauthors
+      : application.coauthors;
+    await application.save();
+
+    const response: Response = {
+      status: 200,
+      message: "Success",
+      data: application,
+    };
+    res.json(response);
+  } else {
+    const response: Response = {
+      status: 404,
+      message: "Application not found",
+      data: null,
+    };
+    res.json(response);
+  }
+});
+
+appRouter.delete(
+  "/:id",
+  async (req: express.Request, res: express.Response) => {
+    const application = await Application.getById(parseInt(req.params.id));
+    if (application) {
+      await application.remove();
+      const response: Response = {
+        status: 200,
+        message: "Success",
+        data: null
+      };
+      res.json(response);
+    } else {
+      const response: Response = {
+        status: 404,
+        message: "Application not found",
+        data: null,
+      };
+      res.json(response);
     }
   }
 );
