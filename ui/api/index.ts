@@ -33,27 +33,20 @@ export const request = async (
       method: props.method,
       data: props.body,
       headers: {
-        authorization:
-          localStorage.getItem("token") !== null
-            ? `Bearer ${localStorage.getItem("token")}`
-            : "",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
-
-    if (
-      Object.keys(req.data).sort().toString() ==
-      Object.keys(exampleResponse).sort().toString()
-    ) {
-      return req.data as StandardResponse;
-    }
+    return {
+      ...req.data,
+      message: "Success",
+    };
   } catch (e) {
     console.log(e);
-  } finally {
     return {
-      message: "Unkown error",
       status: 500,
+      message: "Error",
       data: null,
-    } as StandardResponse;
+    };
   }
 };
 
