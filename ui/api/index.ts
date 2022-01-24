@@ -39,16 +39,14 @@ export const request = async (
             : "",
       },
     });
-
-    if (
-      Object.keys(req.data).sort().toString() ==
-      Object.keys(exampleResponse).sort().toString()
-    ) {
-      return req.data as StandardResponse;
-    }
+    // if (
+    //   Object.keys(req.data).sort().toString() ==
+    //   Object.keys(exampleResponse).sort().toString()
+    // ) {
+    return req as StandardResponse;
+    // }
   } catch (e) {
     console.log(e);
-  } finally {
     return {
       message: "Unkown error",
       status: 500,
