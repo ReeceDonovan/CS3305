@@ -4,9 +4,10 @@ import response from "../utils/response";
 
 import multer from "multer";
 import fs from "fs";
-import path from "path";
+import path, { join } from "path";
 import User from "../models/user";
 import Response from "../utils/response";
+import { decodeToken } from "../auth/tokens";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
@@ -24,11 +25,23 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
 appRouter.get(
   "/:id/form",
   async (req: express.Request, res: express.Response) => {
+    // const token = req.query.token;
     // check for auth
-    // const application = await Application.getById(parseInt(req.params.id));
-    // const files = fs.readdirSync(
-    //   // path.join(__dirname, `../../data/pdf_store/${application.id}/form.pdf`)
-    // );
+    const application = await Application.getById(parseInt(req.params.id));
+    // console.log(application);
+    const files = fs.readdirSync(
+      path.join(
+        path.join(__dirname, `../../../data/pdf_store/${application.id}`)
+      )
+    );
+    if (files.includes("form.pdf")) {
+      res.download(
+        path.join(
+          __dirname,
+          `../../../data/pdf_store/${application.id}/form.pdf`
+        )
+      );
+    }
   }
 );
 
@@ -45,15 +58,12 @@ appRouter.post(
   upload.single("pdf_form"),
   async (req: express.Request, res: express.Response) => {
     const form = JSON.parse(req.body.meta_data);
-    console.log(form);
+    // console.log(form);
     const coauthorEmails: string[] = form.coauthors;
     const supervisorEmails: string[] = form.supervisors;
 
     let coauthors: Array<User> = [];
     let supervisors: Array<User> = [];
-
-    console.log(coauthorEmails);
-    console.log(supervisorEmails);
 
     coauthorEmails.forEach((coauthorEmail: string) => {
       User.getByEmail(coauthorEmail).then((user: User) => {
@@ -78,10 +88,11 @@ appRouter.post(
       authors: coauthors,
       supervisors,
     });
+
     await application.save();
     if (application.id) {
       try {
-        console.log(req.file);
+        // console.log(req.file);
         req.file.originalname.replace(" ", "%20");
         fs.mkdirSync(
           path.join(__dirname, `../../../data/pdf_store/${application.id}`)
