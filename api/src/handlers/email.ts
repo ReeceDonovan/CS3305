@@ -15,8 +15,8 @@ export default function handler(
   const emailProvider =
     config.get().emailConfigs[providers[config.get().emailProvider]];
   const transportPayload = Object.assign(emailProvider, {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: config.get().emailUser,
+    pass: config.get().emailToken,
   });
   const transporter = nodemailer.createTransport(transportPayload);
   const mailOptions = {
