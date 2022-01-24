@@ -1,25 +1,27 @@
 import express from "express";
-import Application from "../models/application";
-import response from "../utils/response";
-
-import multer from "multer";
 import fs from "fs";
-import path, { join } from "path";
+import multer from "multer";
+import path from "path";
+
+import Application from "../models/application";
 import User from "../models/user";
 import Response from "../utils/response";
-import { decodeToken } from "../auth/tokens";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
 
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
   const application = await Application.getById(parseInt(req.params.id));
-  const re: response = {
-    status: 200,
-    message: "Success",
-    data: application,
-  };
-  res.json(re);
+  if (!application) {
+    const re: Response = {
+      status: 404,
+      message: "Application not found",
+      data: null,
+    };
+    res.send(JSON.stringify(re));
+  } else {
+    res.json(application);
+  }
 });
 
 appRouter.get(
@@ -85,8 +87,8 @@ appRouter.post(
       name: form.name,
       description: form.description,
       field: form.field,
-      supervisors: supervisors,
-      coauthors: coauthors,
+      authors: coauthors,
+      supervisors,
     });
 
     await application.save();
@@ -110,7 +112,7 @@ appRouter.post(
           message: "Success",
           data: application,
         };
-        res.json(response);
+        res.send(JSON.stringify(response));
       } catch (e) {
         const response: Response = {
           status: 500,
@@ -118,7 +120,7 @@ appRouter.post(
           data: null,
         };
         console.error("Error writing application form to disk\n", e);
-        res.status(500).json(response);
+        res.status(500).send(JSON.stringify(response));
       }
     }
   }
