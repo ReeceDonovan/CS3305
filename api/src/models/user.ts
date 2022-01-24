@@ -1,4 +1,3 @@
-import { Expose } from "class-transformer";
 import { IsEmail, IsEnum } from "class-validator";
 import {
   Column,
@@ -13,6 +12,11 @@ import { dbConn } from "./database";
 import Entity from "./entity";
 import Review from "./review";
 
+export enum UserType {
+  RESEARCHER = "RESEARCHER",
+  REVIEWER = "REVIEWER",
+}
+
 @OrmEntity("users")
 export default class User extends Entity {
   constructor(user: Partial<User>) {
@@ -20,47 +24,33 @@ export default class User extends Entity {
     Object.assign(this, user);
   }
 
-  @Column({ nullable: true })
-  name: string;
+  @Column({ type: "text", nullable: false, default: "RESEARCHER" })
+  @IsEnum(UserType)
+  type: UserType;
 
   @Index({ unique: true })
   @IsEmail()
-  @Column()
+  @Column({ nullable: false })
   email: string;
 
-  @Column({ nullable: true })
-  bio: string;
-
-  @Column({ nullable: true })
-  school: string;
-
-  @Column({ nullable: true })
+  @Column({ type: "text", nullable: true })
   avatar: string;
 
-  @IsEnum(["researcher", "reviewer"])
-  @Column({ default: "researcher" })
-  role: string;
-
-  @ManyToMany(() => Application, (application) => application.supervisors)
+  @ManyToMany((_type) => Application, (application) => application.authors)
   applications: Application[];
 
-  @ManyToMany(() => Application, (application) => application.reviewers)
-  reviewerApplications: Application[];
-
-  @OneToMany(() => Review, (review) => review.reviewer)
+  @OneToMany((_type) => Review, (review) => review.reviewer)
   reviews: Review[];
 
-  @Expose() get lastReviewed(): Date | undefined {
-    if (this.reviews.length > 0) {
-      return this.reviews[this.reviews.length - 1].createdAt;
-    }
+  static async getByEmail(email: string) {
+    return await dbConn.getRepository(User).findOne({ email });
   }
 
-  static async getById(id: number): Promise<User | undefined> {
+  static async getById(id: number) {
     return await dbConn.getRepository(User).findOne(id);
   }
 
-  static async getByEmail(email: string): Promise<User | undefined> {
-    return await dbConn.getRepository(User).findOne({ email });
+  static async getByType(type: UserType) {
+    return await dbConn.getRepository(User).find({ type });
   }
 }

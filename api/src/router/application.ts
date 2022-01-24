@@ -85,8 +85,8 @@ appRouter.post(
       name: form.name,
       description: form.description,
       field: form.field,
-      supervisors: supervisors,
-      coauthors: coauthors,
+      authors: coauthors,
+      supervisors,
     });
 
     await application.save();
