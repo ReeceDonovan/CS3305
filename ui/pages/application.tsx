@@ -1,11 +1,9 @@
-import type { NextPage } from "next";
-import { Button, Form, TextInput } from "carbon-components-react";
-import { Tab, Tabs } from "carbon-components-react";
-import styles from "../styles/application.module.css";
-import React, { useEffect, useState } from "react";
 import * as faker from "@faker-js/faker";
+import { Button, Form, Tab, Tabs, TextInput } from "carbon-components-react";
+import React, { useEffect, useState } from "react";
 
-import * as api from "../api";
+import { fetchPDF } from "../api";
+import styles from "../styles/application.module.css";
 
 const fakeName = faker.name.findName();
 const fakeSupervisor = faker.name.findName();
@@ -17,23 +15,18 @@ const fakeStatus = faker.random.arrayElement([
   "Reviewed",
 ]);
 
+import type { NextPage } from "next";
+
 const ApplicationPage: NextPage = () => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [supervisor, setSupervisor] = useState("");
-  const [pdf, setPDF] = useState("");
+  const [pdf, setPdf] = useState<ArrayBuffer | null>(null);
 
   useEffect(() => {
-    (async () => {
-      // setPDF(await api.fetchPDF(13));
-      const data = await api.fetchPDF(1);
-      data.toString("base64");
-      const pdfData = new Buffer(data).toString("base64");
-
-      // setPDF(data);
-      // var dataURL = URL.createObjectURL(new Blob([data]));
-      setPDF(pdfData);
-    })();
+    fetchPDF(2 /* Dynamically assign from url query param(?) */).then((res) => {
+      setPdf(res);
+    });
   }, []);
 
   if (pdf == null) {
@@ -113,26 +106,24 @@ const ApplicationPage: NextPage = () => {
     );
   } else {
     return (
-      <>
-        <iframe
-          src={"data:application/pdf;base64," + pdf}
-          width="100%"
-          height="900px"
-        />
-        {/* <iframe
-          src={"data:application/pdf;base64," + pdf}
-          width="100%"
-          height="900px"
-        />
-        <object data={pdf} type="application/pdf" width="100%" height="900px" />
-        <embed
-          src={pdf}
-          type="application/pdf;base64"
-          width="100%"
-          height="900px"
-        />
-        <embed src={pdf} type="application/pdf" width="100%" height="900px" /> */}
-      </>
+      <div>
+        <h1>Application</h1>
+        {pdf && (
+          <iframe
+            src={URL.createObjectURL(
+              new Blob([pdf], { type: "application/pdf" })
+            )}
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              transform: "translate(-50%, -50%)",
+              top: "50%",
+              left: "50%",
+            }}
+          />
+        )}
+      </div>
     );
   }
 };
