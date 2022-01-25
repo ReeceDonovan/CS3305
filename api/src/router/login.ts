@@ -16,7 +16,7 @@ loginRouter.get(
     res.redirect(
       `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&hd=ucc.ie&client_id=${
         config.get().oauthConfig.oauthClientId
-      }&redirect_uri=http://localhost:8000/login/callback&response_type=code`
+      }&redirect_uri=/api/login/callback&response_type=code`
     );
   }
 );
@@ -31,7 +31,7 @@ loginRouter.get(
       client_id: config.get().oauthConfig.oauthClientId,
       client_secret: config.get().oauthConfig.oauthClientSecret,
       grant_type: "authorization_code",
-      redirect_uri: "http://localhost:8000/login/callback",
+      redirect_uri: "/api/login/callback",
     });
 
     const access_token = r.data.access_token;

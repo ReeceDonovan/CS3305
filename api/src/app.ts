@@ -27,14 +27,12 @@ const app = express();
 const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about"];
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: "http://localhost:3000",
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
+};
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
-app.use(express.json())
 
 // middleware to check for Authorization header, to get token.
 // gets user from id in token, then sends user object to next handler
@@ -58,19 +56,19 @@ app.use(async (req: express.Request, res: express.Response, next) => {
       return next();
     }
   }
-  
+
   const unauthorizedResponse: response = {
     data: null,
     message: "Unauthorized",
     status: 401,
-  }
+  };
   return res.status(401).json(unauthorizedResponse);
-})
+});
 
 app.use(userRouter);
 app.use(loginRouter);
 app.use(pageRouter);
-app.use('/applications', appRouter)
+app.use("/applications", appRouter);
 
 
 
