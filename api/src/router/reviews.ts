@@ -1,11 +1,14 @@
 // @format
-import Review from './-models/review.ts';
 import express from 'express';
+import Application from '../models/application';
+import Review, { ReviewStatus } from '../models/review';
+
+import Response from '../utils/response';
 
 const reviewRouter = express.Router();
 
-reviewRouter.get("/:id", (req: express.Request, res: express.Response) => {
-  const application = Application.findById(req.params.id, true);
+reviewRouter.get("/:id", async (req: express.Request, res: express.Response) => {
+  const application = await Application.getById(parseInt(req.params.id), true);
 
   if (!application) {
     res.status(404).send("Application not found");
@@ -13,14 +16,20 @@ reviewRouter.get("/:id", (req: express.Request, res: express.Response) => {
   }
 
   if (application.reviews) {
-    res.json(application.reviews);
+    const response: Response = {
+      status: 200,
+      data: application.reviews,
+      message: "Success"
+    };
+    res.json(response)
+
   } else {
     res.status(404).send("No reviews found");
   }
 });
 
-reviewRouter.post("/:id", (req: express.Request, res: express.Response) => {
-  const application = Application.findById(req.params.id, true);
+reviewRouter.post("/:id", async (req: express.Request, res: express.Response) => {
+  const application = await Application.getById(parseInt(req.params.id), true);
 
   if (!application) {
     res.status(404).send("Application not found");
@@ -38,11 +47,9 @@ reviewRouter.post("/:id", (req: express.Request, res: express.Response) => {
   application.save();
 
   const response: Response = {
-    status: "success",
+    status: 201,
     message: "Success",
     data: review,
   };
-  
-  res.status(201).send(review);
+  res.json(response);
 });
-
