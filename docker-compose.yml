@@ -22,8 +22,6 @@ services:
       - "traefik.http.routers.srec-api.rule=Host(`${HOST}`) && PathPrefix(`/api`)"
     expose:
       - "8000"
-    volumes:
-      - ./api:/usr/api
     depends_on:
       - timescaledb
       - reverse-proxy
