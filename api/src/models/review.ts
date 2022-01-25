@@ -18,6 +18,9 @@ export default class Review extends Entity {
     Object.assign(this, review);
   }
 
+  @Column({ type: "text", nullable: true })
+  comment: string;
+  
   @Column({ type: "text", nullable: false })
   status: ReviewStatus;
 

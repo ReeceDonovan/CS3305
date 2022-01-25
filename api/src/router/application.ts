@@ -92,11 +92,10 @@ appRouter.post(
       coauthors: coauthors,
       supervisors,
     });
-
+  
     await application.save();
     if (application.id) {
       try {
-        // console.log(req.file);
         req.file.originalname.replace(" ", "%20");
         fs.mkdirSync(
           path.join(__dirname, `../../../data/pdf_store/${application.id}`)

@@ -50,8 +50,11 @@ export default class Application extends Entity {
   @JoinTable()
   reviews: Review[];
 
-  static async getById(id: number) {
-    return await dbConn.getRepository(Application).findOne(id);
+  static async getById(id: number, relations = true) {
+    return await dbConn.getRepository(Application).findOne({
+      where: { id },
+      relations: ['reviews', 'submitter', 'supervisors', 'coauthors', 'reviewers']
+    });
   }
 
   static async getByName(name: string) {
