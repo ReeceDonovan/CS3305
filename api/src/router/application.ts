@@ -36,7 +36,7 @@ appRouter.get("/", async (req: express.Request, res: express.Response) => {
 });
 
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
-  const application = await Application.getById(parseInt(req.params.id));
+  const application = await Application.getById(parseInt(req.params.id), true);
   if (!application) {
     const re: Response = {
       status: 404,

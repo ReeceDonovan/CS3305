@@ -8,16 +8,13 @@ import response from "../utils/response";
 
 const loginRouter = express.Router();
 
-loginRouter.get(
-  "/",
-  async (_req: express.Request, res: express.Response) => {
-    res.redirect(
-      `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&hd=ucc.ie&client_id=${
-        config.get().oauthConfig.oauthClientId
-      }&redirect_uri=http://localhost:8000/login/callback&response_type=code`
-    );
-  }
-);
+loginRouter.get("/", async (_req: express.Request, res: express.Response) => {
+  res.redirect(
+    `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&client_id=${
+      config.get().oauthConfig.oauthClientId
+    }&redirect_uri=http://localhost:8000/login/callback&response_type=code`
+  );
+});
 
 loginRouter.get(
   "/callback",
@@ -37,8 +34,10 @@ loginRouter.get(
       `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${access_token}`
     );
 
+    const mailDomain = resp.data.email.split("@")[1];
+
     if (
-      resp.data.email.endsWith("ucc.ie") &&
+      config.get().oauthConfig.allowedDomains.includes(mailDomain) &&
       resp.data.verified_email === true
     ) {
       const email = resp.data.email;
