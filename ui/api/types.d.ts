@@ -1,4 +1,11 @@
-export interface User {}
+export interface User {
+  name: string;
+  email: string;
+  bio: string;
+  field: string;
+  role: string;
+  reviews: Review[];
+}
 
 export interface Application {
   id: number;
@@ -12,4 +19,10 @@ export interface Application {
   reviews?: Review[];
 }
 
-export interface Review {}
+export interface Review {
+  id: number;
+  application: Application;
+  reviewer: User;
+  status: string;
+  comment: string;
+}
