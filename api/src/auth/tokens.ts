@@ -4,20 +4,16 @@ import User from "../models/user";
 
 export const decodeToken = async (
   token: string
-): Promise<User> => {
+): Promise<{ user: User; exp: Number; iat: Number }> => {
   try {
-    return jwt.verify(
-      token,
-      config.get().signingKey,
-      (err, decoded) => {
-        if (err) {
-          return null;
-        }
-        return decoded;
+    return jwt.verify(token, config.get().signingKey, (err, decoded) => {
+      if (err) {
+        return null;
       }
-    );
+      return decoded;
+    });
   } catch (err) {
-    console.error(err)
+    console.error(err);
     return null;
   }
 };

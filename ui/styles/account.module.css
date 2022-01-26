@@ -1,18 +1,19 @@
-.form{
+.form {
+    padding-top: 40px;
     max-width: 50em;
     margin: 0 auto;
-}
-
-.form:first-child{
+  }
+  
+  .form:first-child {
     margin-top: 10px;
-}
-
-.formElements{
+  }
+  
+  .formElements {
     margin-bottom: 2em;
-}
-
-.resultIcon{
+  }
+  
+  .resultIcon {
     margin-left: 2em;
-    margin-top: .5em;
-}
-
+    margin-top: 0.5em;
+  }
+  

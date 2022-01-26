@@ -55,7 +55,7 @@ loginRouter.get(
 
       jwt.sign(
         {
-          ...user,
+          user,
           exp: Math.floor(Date.now() / 1000) + 6 * 60 * 60,
         },
         config.get().signingKey,

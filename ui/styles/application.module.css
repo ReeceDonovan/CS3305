@@ -1,24 +1,37 @@
 .view {
-    width: 80%;
-    margin: 20px 0 0 10%;
-}
-
-.view h2 {
+    /* width: 80%; */
+    float: left;
+    margin: 20px 0 20px 10%;
+  }
+  
+  .view h2 {
     margin-bottom: 20px;
-}
-
-.view h4 {
+  }
+  
+  .view h4 {
     margin-bottom: 5px;
-}
-
-.view button {
+  }
+  
+  .view button {
     margin-top: 50px;
-}
-
-.edit input {
+  }
+  
+  .edit input {
     margin-bottom: 20px;
-}
-
-.edit button {
+  }
+  
+  .edit button {
     width: 0px;
-}
+  }
+  
+  .reviewTile {
+    width: 80%;
+    margin: auto;
+  }
+  
+  .reviewControls {
+    display: flex;
+    justify-content: space-evenly;
+    margin: 4em auto;
+  }
+  

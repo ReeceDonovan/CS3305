@@ -58,7 +58,7 @@ const Submit = () => {
       })
       .then((resp) => {
         if (resp.status != 201) {
-          setError_msg(resp.data.message);
+          setError_msg(resp.message);
         }
       });
   };

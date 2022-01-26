@@ -17,6 +17,7 @@ import Notification20 from "@carbon/icons-react/lib/notification/20";
 import User20 from "@carbon/icons-react/lib/user/20";
 import Home16 from "@carbon/icons-react/lib/home/16";
 import About16 from "@carbon/icons-react/lib/carousel--horizontal/16";
+import { DocumentPdf16, User16 } from "@carbon/icons-react";
 
 export default function Head() {
   return (
@@ -24,7 +25,7 @@ export default function Head() {
       render={({ isSideNavExpanded, onClickSideNavExpand }) => (
         <Header
           style={{
-            maxWidth: '100vw'
+            maxWidth: "100vw",
           }}
           aria-label="UCC SRES"
         >
@@ -59,10 +60,32 @@ export default function Head() {
           >
             <SideNavItems>
               <SideNavItem>
-                <SideNavMenuItem className={styles.sideNav} href="/"><Home16 /> &nbsp; <span>Home</span></SideNavMenuItem>
+                <SideNavItems>
+                  <SideNavMenuItem className={styles.sideNav} href="/">
+                    <Home16 /> &nbsp; <span>Home</span>
+                  </SideNavMenuItem>
+                </SideNavItems>
               </SideNavItem>
               <SideNavItem>
-                <SideNavMenuItem className={styles.sideNav} href="/about"><About16 /> &nbsp; <span>About</span></SideNavMenuItem>
+                <SideNavItems>
+                  <SideNavMenuItem className={styles.sideNav} href="/submit">
+                    <DocumentPdf16 /> &nbsp; <span>Submit Application</span>
+                  </SideNavMenuItem>
+                </SideNavItems>
+              </SideNavItem>
+              <SideNavItem>
+                <SideNavItems>
+                  <SideNavMenuItem className={styles.sideNav} href="/about">
+                    <About16 /> &nbsp; <span>About</span>
+                  </SideNavMenuItem>
+                </SideNavItems>
+              </SideNavItem>
+              <SideNavItem>
+                <SideNavItems>
+                  <SideNavMenuItem className={styles.sideNav} href="/account">
+                    <User16 /> &nbsp; <span>Account</span>
+                  </SideNavMenuItem>
+                </SideNavItems>
               </SideNavItem>
             </SideNavItems>
           </SideNav>

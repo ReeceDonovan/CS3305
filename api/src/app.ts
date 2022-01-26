@@ -61,7 +61,7 @@ app.use(async (req: express.Request, res: express.Response, next) => {
   ) {
     const token = await decodeToken(authHeader.split(" ")[1]);
     if (token !== null) {
-      const user = await User.getByEmail(token.email);
+      const user = await User.getByEmail(token.user.email);
       req.user = user;
       return next();
     }
