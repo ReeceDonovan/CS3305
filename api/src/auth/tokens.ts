@@ -16,13 +16,13 @@ export const decodeToken = async (
       }
     );
   } catch (err) {
-    console.error(err)
+    console.error(err);
     return null;
   }
 };
 
 export const createToken = async (userID: number): Promise<string> => {
-  let expiry = new Date();
+  const expiry = new Date();
   expiry.setHours(expiry.getHours() + 1);
   jwt.sign(
     {

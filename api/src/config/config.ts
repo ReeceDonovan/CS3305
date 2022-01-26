@@ -27,7 +27,7 @@ const defaultConfig: configInterface = {
   landingPageMD:
     "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))",
   databaseConfig: {
-    host: "localhost",
+    host: "pgres",
     port: 5432,
     username: "postgres",
     password: "postgres",
@@ -77,27 +77,28 @@ class Config {
       if (err) {
         this.update(defaultConfig);
         Config.currentConfig = defaultConfig;
-        return console.log(err);
-      }
-      try {
-        Config.currentConfig = JSON.parse(data);
-        if (
-          Object.keys(Config.currentConfig).sort().toString() !=
-          Object.keys(defaultConfig).sort().toString()
-        )
-          console.log("Discrepancy within the config/Missing parameters");
-      } catch (error) {
-        fs.rename(this.path, "old." + this.path, () => {
-          console.error("Failed to rename");
-        });
-        this.update(defaultConfig);
-        Config.currentConfig = defaultConfig;
+        console.log("No file found, creating new config file");
+      } else {
+        try {
+          Config.currentConfig = JSON.parse(data);
+          if (
+            Object.keys(Config.currentConfig).sort().toString() !=
+            Object.keys(defaultConfig).sort().toString()
+          )
+            console.log("Discrepancy within the config/Missing parameters");
+        } catch (error) {
+          fs.rename(this.path, "old." + this.path, () => {
+            console.error("Failed to rename");
+          });
+          this.update(defaultConfig);
+          Config.currentConfig = defaultConfig;
+        }
       }
     });
   }
 
   public update(newJSON: configInterface) {
-    fs.writeFile(this.path, JSON.stringify(newJSON), { flag: "w" }, (err) => {
+    fs.writeFile(this.path, JSON.stringify(newJSON), { flag: "w+" }, (err) => {
       if (err) return console.log(err);
       Config.currentConfig = newJSON;
     });
