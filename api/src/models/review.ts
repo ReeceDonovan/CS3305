@@ -1,9 +1,9 @@
-import { Column, Entity as OrmEntity, ManyToMany } from 'typeorm';
+import { Column, Entity as OrmEntity, ManyToMany } from "typeorm";
 
-import Application from './application';
-import { dbConn } from './database';
-import Entity from './entity';
-import User from './user';
+import Application from "./application";
+import { dbConn } from "./database";
+import Entity from "./entity";
+import User from "./user";
 
 export enum ReviewStatus {
   APPROVED = "APPROVED",
@@ -51,14 +51,14 @@ export async function createReviewers() {
     .find({ where: { type: "REVIEWER" } })) {
     if (reviewer.reviews.length > 0) continue;
 
-    let applications = dbConn
+    const applications = dbConn
       .getRepository(Application)
       .find({ relations: ["reviewers"] });
-    let application: Application = await applications[
+    const application: Application = await applications[
       i++ % (await applications).length
     ];
 
-    let review = new Review({
+    const review = new Review({
       status: ReviewStatus.PENDING,
       application: application,
       reviewer: reviewer,

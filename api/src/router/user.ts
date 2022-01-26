@@ -12,21 +12,21 @@ userRouter.get("/users", (req, res) => {
 });
 
 userRouter.patch("/users", (req, res) => {
-  let user = req.user;
+  const user = req.user;
   if (req.body.name){
-    user.name = req.body.name
+    user.name = req.body.name;
   }
 
   if (req.body.bio){
-    user.bio = req.body.bio
+    user.bio = req.body.bio;
   }
 
   if (req.body.name){
-    user.school = req.body.school
+    user.school = req.body.school;
   }
 
-  user.save()
+  user.save();
   res.sendStatus(200);
-})
+});
 
 export default userRouter;
