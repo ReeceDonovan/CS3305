@@ -7,8 +7,6 @@ import User from "../models/user";
 import response from "../utils/response";
 
 const loginRouter = express.Router();
-// sessions map of string to object with date and string
-export const sessions: { [key: string]: { date: number; email: string } } = {};
 
 loginRouter.get(
   "/login",
@@ -56,14 +54,10 @@ loginRouter.get(
         await newUser.save();
       }
 
-      // create and sign a jwt
-      var sessionId =
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
       jwt.sign(
         {
-          id: sessionId,
-          email: email,
+          ...user,
+          exp: Math.floor(Date.now() / 1000) + 6 * 60 * 60,
         },
         config.get().signingKey,
         (err: Error, token: string) => {
@@ -71,17 +65,7 @@ loginRouter.get(
             console.error(err);
             res.status(500).send("Error signing token");
           }
-          // sessions[sessionId] = {
-          //   date: new Date().setHours(new Date().getHours() + 24),
-          //   email: email,
-          // };
-          // const re: response = {
-          //   status: 200,
-          //   message: "Success",
-          //   data: token,
-          // };
           res.redirect(`http://localhost:3000/login?token=${token}`);
-          // res.json(re);
         }
       );
     }
