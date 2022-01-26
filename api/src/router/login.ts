@@ -9,7 +9,7 @@ import response from "../utils/response";
 const loginRouter = express.Router();
 
 loginRouter.get(
-  "/login",
+  "/",
   async (_req: express.Request, res: express.Response) => {
     res.redirect(
       `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&hd=ucc.ie&client_id=${
@@ -20,7 +20,7 @@ loginRouter.get(
 );
 
 loginRouter.get(
-  "/login/callback",
+  "/callback",
   async (req: express.Request, res: express.Response) => {
     const code = req.query["code"];
 

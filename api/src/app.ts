@@ -10,6 +10,8 @@ import userRouter from "./router/user";
 import User from "./models/user";
 import response from "./utils/response";
 import appRouter from "./router/application";
+import aboutRouter from "./router/landingPage";
+import reviewRouter from "./router/reviews";
 
 const PORT = 8000;
 declare global {
@@ -73,10 +75,12 @@ app.use(async (req: express.Request, res: express.Response, next) => {
   return res.status(401).json(unauthorizedResponse);
 });
 
-app.use(userRouter);
-app.use(loginRouter);
-app.use(pageRouter);
+app.use("/login", loginRouter);
+app.use("/about", aboutRouter);
+
+app.use("/users", userRouter);
 app.use("/applications", appRouter);
+app.use("/reviews", reviewRouter);
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`);

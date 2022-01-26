@@ -50,10 +50,11 @@ export default class Application extends Entity {
   @JoinTable()
   reviews: Review[];
 
-  static async getById(id: number, relations = true) {
+  static async getById(id: number, relations = false) {
     return await dbConn.getRepository(Application).findOne({
       where: { id },
-      relations: ['reviews', 'submitter', 'supervisors', 'coauthors', 'reviewers']
+      relations: (relations) ? ['reviews', 'submitter', 'supervisors', 'coauthors', 'reviewers'] 
+        : []
     });
   }
 
@@ -63,5 +64,21 @@ export default class Application extends Entity {
 
   static async getByField(field: string) {
     return await dbConn.getRepository(Application).find({ field });
+  }
+
+  async addReview(review: Review) {
+    if (review.reviewer?.id) {
+      this.reviewers.push(review.reviewer);
+      if (review.reviewer.reviews) {
+        review.reviewer.reviews.push(review);
+      } else {
+        review.reviewer.reviews = [review];
+      }
+      review.reviewer.save();
+    }
+
+    await review.save();
+    this.reviews = (this.reviews) ? [...this.reviews, review] : [review];
+    await this.save();
   }
 }

@@ -1,9 +1,15 @@
-import { Column, Entity as OrmEntity, ManyToMany } from 'typeorm';
+import {
+  Column,
+  Entity as OrmEntity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+} from "typeorm";
 
-import Application from './application';
-import { dbConn } from './database';
-import Entity from './entity';
-import User from './user';
+import Application from "./application";
+import { dbConn } from "./database";
+import Entity from "./entity";
+import User from "./user";
 
 export enum ReviewStatus {
   APPROVED = "APPROVED",
@@ -20,14 +26,16 @@ export default class Review extends Entity {
 
   @Column({ type: "text", nullable: true })
   comment: string;
-  
-  @Column({ type: "text", nullable: false })
+
+  @Column({ type: "text", nullable: true })
   status: ReviewStatus;
 
-  @ManyToMany((_type) => Application, (application) => application.reviews)
+  @ManyToOne((_type) => Application, (application) => application.reviews)
+  @JoinTable()
   application: Application;
 
   @ManyToMany((_type) => User, (user) => user.reviews)
+  @JoinTable()
   reviewer: User;
 
   static async findById(id: string) {
