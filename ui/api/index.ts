@@ -76,7 +76,7 @@ export const formRequest = async (props: RequestParams) => {
       ...props,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "authorization":
+        authorization:
           (await localStorage.getItem("token")) !== null
             ? `Bearer ${localStorage.getItem("token")}`
             : "",
@@ -95,5 +95,5 @@ export const formRequest = async (props: RequestParams) => {
       message: "Error",
       data: null,
     } as StandardResponse;
-  } 
+  }
 };
