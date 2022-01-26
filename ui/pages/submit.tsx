@@ -50,11 +50,17 @@ const Submit = () => {
     );
     console.log(form_data);
 
-    api.request({
-      method: "POST",
-      path: "/applications",
-      data: form_data,
-    });
+    api
+      .request({
+        method: "POST",
+        path: "/applications",
+        data: form_data,
+      })
+      .then((resp) => {
+        if (resp.status != 201) {
+          setError_msg(resp.data.message);
+        }
+      });
   };
 
   return (
