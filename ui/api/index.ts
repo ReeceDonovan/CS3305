@@ -19,7 +19,7 @@ const exampleResponse: StandardResponse = {
   data: { hello: "world" },
 };
 
-const API_URL = "http://localhost:8000";
+const API_URL = "/api";
 
 export const saveCredentials = async (token: string): Promise<void> => {
   await localStorage.setItem("token", token);
@@ -53,7 +53,7 @@ export const request = async (
 export const fetchPDF = async (id: string) => {
   try {
     const req = await axios({
-      url: `http://localhost:8000/applications/${id}/form`,
+      url: `/api/applications/${id}/form`,
       method: "GET",
       responseType: "blob",
       headers: {

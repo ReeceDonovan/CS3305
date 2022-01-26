@@ -19,7 +19,10 @@ services:
       context: ./api
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.srec-api.rule=Host(`${HOST}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.srec-api.rule=Host(`${HOST}`) && PathPrefix(`/api/`)"
+      - traefik.http.routers.srec-api.middlewares=srec-api
+      - "traefik.http.middlewares.srec-api.stripprefix.prefixes=/api"
+      - "traefik.http.middlewares.srec-api.stripprefix.forceSlash=false"
     expose:
       - "8000"
     depends_on:

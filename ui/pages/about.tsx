@@ -81,7 +81,7 @@ export default function About(props: { content: string }) {
               student researchers. We are open to all types of research in the
               social research domain.
             </p>
-            <Button href="http://localhost:8000/login">Log in with UCC Email</Button>
+            <Button href="/api/login">Log in with UCC Email</Button>
           </div>
         </>
       )}
@@ -90,7 +90,7 @@ export default function About(props: { content: string }) {
 }
 
 export async function getStaticProps() {
-  const data = await axios.get("http://localhost:8000/about");
+  const data = await axios.get("/api/about");
   console.log("Fetched about page");
   return {
     props: {
