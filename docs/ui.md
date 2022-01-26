@@ -1,9 +1,10 @@
 # UI Quickstart
 
 You can run the dev server using 
->```sh
->yarn dev
->```
+```sh
+yarn
+yarn dev
+```
 
 The following are required enviroment variables:
 - Sample 1

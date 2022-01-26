@@ -81,7 +81,7 @@ export default function About(props: { content: string }) {
               student researchers. We are open to all types of research in the
               social research domain.
             </p>
-            <Button href="/login">Log in with UCC Email</Button>
+            <Button href="http://localhost:8000/login">Log in with UCC Email</Button>
           </div>
         </>
       )}
