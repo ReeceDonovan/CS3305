@@ -5,6 +5,7 @@ import {
   Index,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
 } from "typeorm";
 
@@ -50,8 +51,8 @@ export default class User extends Entity {
   @Column({ default: "researcher" })
   role: string;
 
-  @ManyToMany(() => Application, (application) => application.supervisors)
-  @JoinTable()
+  @ManyToOne(() => Application, (application) => application.supervisors)
+  // @JoinTable()
   applications: Application[];
 
   @ManyToMany(() => Application, (application) => application.reviewers)

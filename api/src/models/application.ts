@@ -1,5 +1,3 @@
-import { IsEnum } from "class-validator";
-
 import { Column,
   Entity as OrmEntity,
   JoinTable,
@@ -31,7 +29,7 @@ export default class Application extends Entity {
   field: string;
 
   @ManyToOne(() => User, (user) => user.applications)
-  @JoinTable()
+  // @JoinTable()
   submitter: User;
 
   @ManyToMany(() => User, (user) => user.applications)
@@ -50,8 +48,13 @@ export default class Application extends Entity {
   @JoinTable()
   reviews: Review[];
 
-  static async getById(id: number) {
-    return await dbConn.getRepository(Application).findOne(id);
+  static async getById(id: number, relations = false) {
+    const resp = await dbConn.getRepository(Application).findOne({
+      where: { id },
+      relations: (relations) ? ['submitter', 'reviews', 'reviews.reviewer', 'supervisors'] : []
+    });
+    console.log(resp)
+    return resp
   }
 
   static async getByName(name: string) {
@@ -60,5 +63,21 @@ export default class Application extends Entity {
 
   static async getByField(field: string) {
     return await dbConn.getRepository(Application).find({ field });
+  }
+
+  async addReview(review: Review) {
+    if (review.reviewer?.id) {
+      this.reviewers.push(review.reviewer);
+      if (review.reviewer.reviews) {
+        review.reviewer.reviews.push(review);
+      } else {
+        review.reviewer.reviews = [review];
+      }
+      review.reviewer.save()
+    }
+
+    await review.save()
+    this.reviews = (this.reviews) ? [...this.reviews, review] : [review]
+    await this.save()
   }
 }

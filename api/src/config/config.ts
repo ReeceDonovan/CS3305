@@ -24,6 +24,13 @@ const defaultConfig: configInterface = {
   oauthConfig: {
     oauthClientId: "",
     oauthClientSecret: "",
+    allowedDomains: [
+      "gmail.com",
+      "umail.ucc.ie",
+      "ucc.ie",
+      "cs.ucc.ie",
+      "hse.ie",
+    ],
   },
   signingKey: "",
   landingPageMD:
@@ -60,6 +67,7 @@ interface emailConfig {
 interface oauthConfig {
   oauthClientId: string;
   oauthClientSecret: string;
+  allowedDomains: Array<string>;
 }
 
 interface databaseConfig {

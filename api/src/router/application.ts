@@ -2,16 +2,41 @@ import express from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
+import { getRepository } from "typeorm";
 
 import Application from "../models/application";
+import Review, { ReviewStatus } from "../models/review";
 import User from "../models/user";
 import Response from "../utils/response";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
 
+appRouter.get("/", async (req: express.Request, res: express.Response) => {
+  const applications = await getRepository(Application).find({
+    order: { updatedAt: "DESC" },
+    take: 15,
+    relations: ["submitter", "reviews"],
+  });
+  let resp: Response;
+  if (applications.length > 0) {
+    resp = {
+      status: 200,
+      message: "Success",
+      data: applications,
+    };
+  } else {
+    resp = {
+      status: 404,
+      message: "No applications found",
+      data: null,
+    };
+  }
+  res.json(resp);
+});
+
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
-  const application = await Application.getById(parseInt(req.params.id));
+  const application = await Application.getById(parseInt(req.params.id), true);
   if (!application) {
     const re: Response = {
       status: 404,
@@ -89,14 +114,32 @@ appRouter.post(
       name: form.name,
       description: form.description,
       field: form.field,
-      coauthors: coauthors,
+      submitter: req.user,
+      // TODO add round robin algorithm for reviewers
+      reviewers: [],
+      coauthors,
       supervisors,
     });
 
     await application.save();
+    if (!application.id) {
+      const re: Response = {
+        status: 500,
+        message: "Failed to save application",
+        data: null,
+      };
+      return res.json(re);
+    }
+
+    const defaultReview = new Review({
+      status: ReviewStatus.PENDING,
+      comment: null,
+    });
+
+    await application.addReview(defaultReview);
+
     if (application.id) {
       try {
-        // console.log(req.file);
         req.file.originalname.replace(" ", "%20");
         fs.mkdirSync(
           path.join(__dirname, `../../../data/pdf_store/${application.id}`)
