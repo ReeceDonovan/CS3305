@@ -27,7 +27,7 @@ appRouter.get("/", async (req: express.Request, res: express.Response) => {
     };
   } else {
     resp = {
-      status: 404,
+      status: 200,
       message: "No applications found",
       data: null,
     };

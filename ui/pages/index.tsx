@@ -37,31 +37,34 @@ interface RowDataType {
 
 export default function Index() {
   const [rowData, setRowdata] = useState([] as RowDataType[]);
+  const [app_loading_state, setApp_loading_state] = useState(0);
   useEffect(() => {
     (async () => {
       const resp = await api.request({
         method: "GET",
         path: "/applications",
       });
+      setApp_loading_state(1);
 
       if (resp.status == 200) {
         console.log(resp);
+        if (resp.data != null) {
+          for (let i = 0; i < resp.data.length; i++) {
+            resp.data[i].submitter = resp.data[i].submitter?.email;
+            resp.data[i].updatedAt = new Date(
+              resp.data[i].updatedAt
+            ).toLocaleDateString();
+            resp.data[i].createdAt = new Date(
+              resp.data[i].createdAt
+            ).toLocaleDateString();
+            resp.data[i].status =
+              resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
+            console.log(resp.data[i]);
+          }
 
-        for (let i = 0; i < resp.data.length; i++) {
-          resp.data[i].submitter = resp.data[i].submitter?.email;
-          resp.data[i].updatedAt = new Date(
-            resp.data[i].updatedAt
-          ).toLocaleDateString();
-          resp.data[i].createdAt = new Date(
-            resp.data[i].createdAt
-          ).toLocaleDateString();
-          resp.data[i].status =
-            resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
-          console.log(resp.data[i]);
+          setRowdata(resp.data as RowDataType[]);
+          console.log(resp.data);
         }
-
-        setRowdata(resp.data as RowDataType[]);
-        console.log(resp.data);
       } else {
         console.log(resp);
       }
@@ -99,7 +102,7 @@ export default function Index() {
     <>
       <Tabs type="container" scrollIntoView={false}>
         <Tab href="#review" id="review" label="Review">
-          {rowData.length == 0 ? (
+          {app_loading_state == 0 ? (
             <Loading />
           ) : (
             <DataTable
