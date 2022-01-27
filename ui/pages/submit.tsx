@@ -1,34 +1,60 @@
+import axios from "axios";
 import {
   Button,
   FileUploaderDropContainer,
   Form,
   Tag,
+  TextArea,
   TextInput,
 } from "carbon-components-react";
 import React, { KeyboardEvent, useState } from "react";
+import * as api from "../api";
 
 const Submit = () => {
-  const [modiflag, setModiflag] = useState(true);
+  const [modiflag, setModiflag] = useState(false);
   const [err_msg, setError_msg] = useState<string | null>(null);
 
-  const [coauthor, setCoauthor] = useState<string[]>([]);
+  const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [field, setField] = useState<string>("");
+  const [coauthors, setCoauthor] = useState<string[]>([]);
   const [supervisors, setSupervisors] = useState<string[]>([]);
 
-  let pdf_file = null;
+  const [pdfFile, setPdfFile] = useState<File>();
 
-  const user = getUser();
+  // let pdf_files: File[] = [];
 
   const emailRegexp = new RegExp(
     "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
   );
 
-  const sendApplication = () => {
-    /*post({
-      name: user.name
-      bio: user.bio
-      school: user.school
-      file: pdf_file
-    })*/
+  const sendApplication = async () => {
+    console.log(pdfFile, "bruh");
+    const form_data = new FormData();
+    // for (let i = 0; i < pdf_files.length; i++) {
+    if (pdfFile) {
+      form_data.append("pdf_form", pdfFile);
+    } else {
+      console.log("pepega");
+    }
+
+    form_data.append(
+      "meta_data",
+      JSON.stringify({
+        name,
+        description,
+        field,
+        coauthors,
+        supervisors,
+      })
+    );
+    console.log(form_data);
+
+    api.request({
+      method: "POST",
+      path: "/applications",
+      data: form_data,
+    });
   };
 
   return (
@@ -79,6 +105,35 @@ const Submit = () => {
           style={{
             marginBottom: "1em",
           }}
+          onChange={(e) => {
+            setName(e.target.value);
+          }}
+        />
+
+        <TextInput
+          id="field"
+          name="field"
+          labelText="Field of study"
+          placeholder="Field of study"
+          style={{
+            marginBottom: "1em",
+          }}
+          onChange={(e) => {
+            setField(e.target.value);
+          }}
+        />
+
+        <TextArea
+          id="description"
+          name="description"
+          labelText="Brief description of research project"
+          placeholder="Brief description"
+          style={{
+            marginBottom: "1em",
+          }}
+          onChange={(e) => {
+            setDescription(e.target.value);
+          }}
         />
 
         <TextInput
@@ -95,7 +150,7 @@ const Submit = () => {
               const t = e.target as HTMLInputElement;
               if (t.value && t.value.length > 0) {
                 if (emailRegexp.test(t.value)) {
-                  setCoauthor([...coauthor, t.value]);
+                  setCoauthor([...coauthors, t.value]);
                   t.value = "";
                 }
               }
@@ -105,13 +160,13 @@ const Submit = () => {
         />
 
         <div>
-          {coauthor.map((elem, i) => (
+          {coauthors.map((elem, i) => (
             <Tag
               key={i}
               onClick={(e) => {
                 e.preventDefault();
-                coauthor.splice(i, 1);
-                setCoauthor([...coauthor]);
+                coauthors.splice(i, 1);
+                setCoauthor([...coauthors]);
               }}
             >
               {elem}
@@ -165,26 +220,21 @@ const Submit = () => {
           }}
           labelText="Drag and drop or click to select the Submission form in the format of PDF"
           accept={[".pdf"]}
-          multiple={false}
+          multiple={true}
           onAddFiles={
             // addedFiles extends File by adding a property
             (
               _event: any,
               content: {
                 addedFiles: Array<File>;
-                
               }
             ) => {
+              // @ts-ignore
               if (!content.addedFiles[0].invalidFileType == true) {
-                console.log(content.addedFiles[0]);
-                pdf_file = content.addedFiles[0];
-                if (user.name && user.bio && user.school) {
-                  setModiflag(false);
-                } else {
-                  setError_msg(
-                    "Please ensure that all of your account fields are filled out correctly before continuing with your application"
-                  );
-                }
+                // pdf_files.push(content.addedFiles[0]);
+                setPdfFile(content.addedFiles[0]);
+                console.log(content);
+                console.log(pdfFile, "added");
               } else {
                 setModiflag(false);
               }
@@ -201,11 +251,3 @@ const Submit = () => {
 };
 
 export default Submit;
-
-const getUser = () => {
-  return {
-    name: "name",
-    bio: "bio",
-    school: "school",
-  };
-};

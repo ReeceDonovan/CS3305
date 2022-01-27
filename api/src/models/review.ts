@@ -1,9 +1,15 @@
-import { IsEnum } from "class-validator";
-import { Column, Entity as OrmEntity, ManyToOne } from "typeorm";
+import { Column, Entity as OrmEntity, ManyToMany } from 'typeorm';
 
-import Application from "./application";
-import Entity from "./entity";
-import User from "./user";
+import Application from './application';
+import { dbConn } from './database';
+import Entity from './entity';
+import User from './user';
+
+export enum ReviewStatus {
+  APPROVED = "APPROVED",
+  PENDING = "PENDING",
+  DECLINED = "DECLINED",
+}
 
 @OrmEntity("reviews")
 export default class Review extends Entity {
@@ -12,17 +18,52 @@ export default class Review extends Entity {
     Object.assign(this, review);
   }
 
-  @ManyToOne(() => User, (user) => user.reviews)
-  reviewer: User;
+  @Column({ type: "text", nullable: false })
+  status: ReviewStatus;
 
-  @ManyToOne(() => Application, (application) => application.reviews)
+  @ManyToMany((_type) => Application, (application) => application.reviews)
   application: Application;
 
-  // Review status (Approved, Rejected, Needs Action)
-  @IsEnum(["approved", "needs action", "rejected"])
-  @Column()
-  status: string;
+  @ManyToMany((_type) => User, (user) => user.reviews)
+  reviewer: User;
 
-  @Column()
-  comments: string;
+  static async findById(id: string) {
+    return await dbConn.getRepository(Review).findOne(id);
+  }
+
+  static async findByApplication(application: Application) {
+    return await dbConn.getRepository(Review).find({ application });
+  }
+
+  static async findByReviewer(reviewer: User) {
+    return await dbConn.getRepository(Review).find({ reviewer });
+  }
+
+  static async findByStatus(status: ReviewStatus) {
+    return await dbConn.getRepository(Review).find({ status });
+  }
+}
+
+export async function createReviewers() {
+  let i = 0;
+  for await (const reviewer of await dbConn
+    .getRepository(User)
+    .find({ where: { type: "REVIEWER" } })) {
+    if (reviewer.reviews.length > 0) continue;
+
+    let applications = dbConn
+      .getRepository(Application)
+      .find({ relations: ["reviewers"] });
+    let application: Application = await applications[
+      i++ % (await applications).length
+    ];
+
+    let review = new Review({
+      status: ReviewStatus.PENDING,
+      application: application,
+      reviewer: reviewer,
+    });
+
+    await dbConn.getRepository(Review).save(review);
+  }
 }
