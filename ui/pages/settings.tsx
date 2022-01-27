@@ -1,6 +1,7 @@
 import { Button, Form, Select, SelectItem, TextInput, TextArea } from "carbon-components-react";
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import * as api from "../api";
+
 
 interface configInterface {
   emailProvider: string;
@@ -35,40 +36,62 @@ interface databaseConfig {
   database: string;
 }
 
-export async function getServerSideProps() {
-  const data = await axios.get("http://localhost:8000/settings")
-  return {
-    props: { content: data.data },
-  }
-}
-
-const Settings = (props: {content: configInterface}) => {
+const Settings = () => {
+  const [isSubmitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    emailProvider: props.content.emailProvider,
-    emailUser: props.content.emailUser,
-    emailToken: props.content.emailToken,
-    oauthClientID: props.content.oauthConfig.oauthClientId,
-    oauthClientSecret: props.content.oauthConfig.oauthClientSecret,
-    landingPageMD: props.content.landingPageMD,
-    signingKey: props.content.signingKey,
-    dbUsername: props.content.databaseConfig.username,
-    dbPassword: props.content.databaseConfig.password,
-    dbHost: props.content.databaseConfig.host,
-    dbPort: props.content.databaseConfig.port,
-    dbName: props.content.databaseConfig.database,
+    emailProvider: '',
+    emailUser: '',
+    emailToken: '',
+    emailConfigs: [],
+    oauthClientID: '',
+    oauthClientSecret: '',
+    landingPageMD: '',
+    signingKey: '',
+    dbUsername: '',
+    dbPassword: '',
+    dbHost: '',
+    dbPort: 0,
+    dbName: '',
   });
+
+  useEffect(() => {
+    api.request({path: '/admin/settings', method: 'GET'}).then(
+      (res) => 
+      {
+        console.log(res)
+        if (res.status === 200) {
+        setForm({
+        emailProvider: res.data.emailProvider,
+        emailUser: res.data.emailUser,
+        emailToken: res.data.emailToken,
+        emailConfigs: res.data.emailConfigs,
+        oauthClientID: res.data.oauthConfig.oauthClientId,
+        oauthClientSecret: res.data.oauthConfig.oauthClientSecret,
+        landingPageMD: res.data.landingPageMD,
+        signingKey: res.data.signingKey,
+        dbUsername: res.data.databaseConfig.username,
+        dbPassword: res.data.databaseConfig.password,
+        dbHost: res.data.databaseConfig.host,
+        dbPort: res.data.databaseConfig.port,
+        dbName: res.data.databaseConfig.database,
+      })} 
+    }
+    )
+  }, [])
+
 
   const handleChange = (event: any) => {
     setForm({...form, [event.target.name]: event.target.value})
   }
 
   const onSubmit = (event: any) => {
+    setSubmitting(true)
     event.preventDefault()
     const newConfig: configInterface = {
       emailProvider: form.emailProvider,
       emailUser: form.emailUser,
       emailToken: form.emailToken,
-      emailConfigs: props.content.emailConfigs,
+      emailConfigs: form.emailConfigs,
       oauthConfig: {
         oauthClientId: form.oauthClientID,
         oauthClientSecret: form.oauthClientSecret
@@ -83,7 +106,16 @@ const Settings = (props: {content: configInterface}) => {
         database: form.dbName
       }
     }
-    axios.post("https://localhost:8000/settings", newConfig)
+    api.request({path: "/admin/settings", method: 'POST', data: newConfig})
+      .then(
+        (_res) => {
+          setSubmitting(false)
+        })
+      .catch(
+        (_err) => {
+          setSubmitting(false)
+        }
+      )
   }
 
   return (
@@ -103,7 +135,7 @@ const Settings = (props: {content: configInterface}) => {
               id="emailProvider"
               name="emailProvider"
               labelText="Select an Email Provider"
-              defaultValue={props.content.emailProvider}
+              defaultValue={form.emailProvider}
               onChange={handleChange}
             >
               {
@@ -121,7 +153,7 @@ const Settings = (props: {content: configInterface}) => {
               name="emailUser"
               labelText={"Email User"}  
               placeholder="Email User"
-              defaultValue={props.content.emailUser}
+              defaultValue={form.emailUser}
               onChange={handleChange}
             />
           </div>
@@ -132,7 +164,7 @@ const Settings = (props: {content: configInterface}) => {
               labelText={"Email Token/Password"}
               placeholder="Email Token/Password"
               type="password"
-              defaultValue={props.content.emailToken}
+              defaultValue={form.emailToken}
               onChange={handleChange}
             />
           </div>
@@ -145,7 +177,7 @@ const Settings = (props: {content: configInterface}) => {
               name="oauthClientID"
               labelText={"OAuth Client ID"}  
               placeholder="OAuth Client ID"
-              defaultValue={props.content.oauthConfig.oauthClientId}
+              defaultValue={form.oauthClientID}
               onChange={handleChange}
             />
           </div>
@@ -156,7 +188,7 @@ const Settings = (props: {content: configInterface}) => {
               labelText={"OAuth Secret"}
               placeholder="OAuth Secret"
               type="password"
-              defaultValue={props.content.oauthConfig.oauthClientSecret}
+              defaultValue={form.oauthClientSecret}
               onChange={handleChange}
             />
           </div>
@@ -172,7 +204,7 @@ const Settings = (props: {content: configInterface}) => {
               labelText="About Page Text"
               placeholder="# Write your first markdown"
               rows={4}
-              defaultValue={props.content.landingPageMD}
+              defaultValue={form.landingPageMD}
               onChange={handleChange}
             />
           </div>
@@ -191,7 +223,7 @@ const Settings = (props: {content: configInterface}) => {
               labelText={"Signing Key"}  
               placeholder="JWT Signing Key"
               type="password"
-              defaultValue={props.content.signingKey}
+              defaultValue={form.signingKey}
               onChange={handleChange}
             />
           </div>
@@ -204,7 +236,7 @@ const Settings = (props: {content: configInterface}) => {
               name="dbHost"
               labelText={"Database Host"}  
               placeholder="Database Host: database.example.com"
-              defaultValue={props.content.databaseConfig.host}
+              defaultValue={form.dbHost}
               onChange={handleChange}
             />
           </div>
@@ -214,7 +246,7 @@ const Settings = (props: {content: configInterface}) => {
               name="dbPort"
               labelText={"Database Port"}  
               placeholder="Database Port: 0-25565"
-              defaultValue={props.content.databaseConfig.port}
+              defaultValue={form.dbPort}
               onChange={handleChange}
             />
           </div>
@@ -226,7 +258,7 @@ const Settings = (props: {content: configInterface}) => {
               name="dbUsername"
               labelText={"Database Username"}  
               placeholder="Database Username"
-              defaultValue={props.content.databaseConfig.username}
+              defaultValue={form.dbUsername}
               onChange={handleChange}
             />
           </div>
@@ -237,7 +269,7 @@ const Settings = (props: {content: configInterface}) => {
               labelText={"Database Password"}  
               placeholder="Database Password"
               type="password"
-              defaultValue={props.content.databaseConfig.password}
+              defaultValue={form.dbPassword}
               onChange={handleChange}
             />
           </div>
@@ -247,14 +279,14 @@ const Settings = (props: {content: configInterface}) => {
               name="dbName"
               labelText={"Database Name"}  
               placeholder="Database Name"
-              defaultValue={props.content.databaseConfig.database}
+              defaultValue={form.dbName}
               onChange={handleChange}
             />
           </div>
         </div>
         <div style={{marginBottom: '2rem'}} className="bx--row">
           <div className="bx--col">
-            <Button type="submit" onClick={onSubmit}>
+            <Button type="submit" onClick={onSubmit} disabled={isSubmitting}>
               Update
             </Button>
           </div>

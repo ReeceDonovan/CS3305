@@ -20,9 +20,6 @@ import {
 } from "carbon-components-react";
 import About from "./about";
 
-import * as api from "../api";
-import { useEffect, useState } from "react";
-
 interface RowDataType {
   id: number;
   name: string;
@@ -36,37 +33,8 @@ interface RowDataType {
 }
 
 export default function Index() {
-  const [rowData, setRowdata] = useState([] as RowDataType[]);
-  useEffect(() => {
-    (async () => {
-      const resp = await api.request({
-        method: "GET",
-        path: "/applications",
-      });
-
-      if (resp.status == 200) {
-        console.log(resp);
-
-        for (let i = 0; i < resp.data.length; i++) {
-          resp.data[i].submitter = resp.data[i].submitter?.email;
-          resp.data[i].updatedAt = new Date(
-            resp.data[i].updatedAt
-          ).toLocaleDateString();
-          resp.data[i].createdAt = new Date(
-            resp.data[i].createdAt
-          ).toLocaleDateString();
-          resp.data[i].status =
-            resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
-          console.log(resp.data[i]);
-        }
-
-        setRowdata(resp.data as RowDataType[]);
-        console.log(resp.data);
-      } else {
-        console.log(resp);
-      }
-    })();
-  }, []);
+  var rowData = [] as RowDataType[];
+  // list comprehension
 
   const headerData = [
     {
@@ -140,6 +108,7 @@ export default function Index() {
                         {headers.map(
                           // @ts-expect-error
                           (header) => (
+                            // eslint-disable-next-line react/jsx-key
                             <TableHeader {...getHeaderProps({ header })}>
                               {header.header}
                             </TableHeader>
@@ -151,6 +120,7 @@ export default function Index() {
                       {rows.map(
                         // @ts-expect-error
                         (row) => (
+                          // eslint-disable-next-line react/jsx-key
                           <TableRow {...getRowProps({ row })}>
                             {row.cells.map(
                               // @ts-expect-error

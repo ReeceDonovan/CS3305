@@ -17,6 +17,7 @@ import Review from "./review";
 export enum UserType {
   RESEARCHER = "RESEARCHER",
   REVIEWER = "REVIEWER",
+  ADMIN = "ADMIN",
 }
 
 @OrmEntity("users")
