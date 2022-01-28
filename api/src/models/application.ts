@@ -1,16 +1,16 @@
-import { Column,
+import {
+  Column,
   Entity as OrmEntity,
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
-  OneToOne
- } from "typeorm";
+  OneToMany
+} from "typeorm";
 import { dbConn } from "./database";
-
 import Entity from "./entity";
 import Review from "./review";
 import User from "./user";
+
 
 @OrmEntity("applications")
 export default class Application extends Entity {
@@ -45,16 +45,16 @@ export default class Application extends Entity {
   reviewers: User[];
 
   @OneToMany(() => Review, (review) => review.application)
-  @JoinTable()
+  // @JoinTable()
   reviews: Review[];
 
-  static async getById(id: number, relations = false) {
+  static async getById(id: number, relations: string[] = []) {
     const resp = await dbConn.getRepository(Application).findOne({
       where: { id },
-      relations: (relations) ? ['submitter', 'reviews', 'reviews.reviewer', 'supervisors'] : []
+      relations,
     });
-    console.log(resp)
-    return resp
+    console.log(resp);
+    return resp;
   }
 
   static async getByName(name: string) {
@@ -66,18 +66,20 @@ export default class Application extends Entity {
   }
 
   async addReview(review: Review) {
-    if (review.reviewer?.id) {
-      this.reviewers.push(review.reviewer);
-      if (review.reviewer.reviews) {
-        review.reviewer.reviews.push(review);
-      } else {
-        review.reviewer.reviews = [review];
-      }
-      review.reviewer.save()
-    }
+    console.log("addReview");
+    // if (review.reviewer?.id) {
+    //   if (this.reviewers) {
+    //     this.reviewers.push(review.reviewer);
+    //   } else {
+    //     this.reviewers = [review.reviewer];
+    //   }
+    //   review.reviewer.save();
+    // }
 
-    await review.save()
-    this.reviews = (this.reviews) ? [...this.reviews, review] : [review]
-    await this.save()
+    await review.save();
+    this.reviews = this.reviews ? [...this.reviews, review] : [review];
+    await this.save();
+
+    console.log("got to end");
   }
 }

@@ -31,7 +31,7 @@ export default class Review extends Entity {
   status: ReviewStatus;
 
   @ManyToOne((_type) => Application, (application) => application.reviews)
-  @JoinTable()
+  // @JoinTable()
   application: Application;
 
   @ManyToMany((_type) => User, (user) => user.reviews)
