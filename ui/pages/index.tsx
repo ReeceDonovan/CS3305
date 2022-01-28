@@ -33,8 +33,43 @@ interface RowDataType {
 }
 
 export default function Index() {
-  var rowData = [] as RowDataType[];
-  // list comprehension
+  const [rowData, setRowdata] = useState([] as RowDataType[]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      const resp = await api.request({
+        method: "GET",
+        path: "/applications",
+      });
+
+      // if (resp?.status == 200) {
+      //   console.log(resp);
+      if (resp?.data != null) {
+        for (let i = 0; i < resp.data.length; i++) {
+          resp.data[i].submitter = resp.data[i].submitter?.email;
+          resp.data[i].updatedAt = new Date(
+            resp.data[i].updatedAt
+          ).toLocaleDateString();
+          resp.data[i].createdAt = new Date(
+            resp.data[i].createdAt
+          ).toLocaleDateString();
+          resp.data[i].status =
+            resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
+          console.log(resp.data[i]);
+        }
+
+        setRowdata(resp.data as RowDataType[]);
+        setLoading(false);
+      } else {
+        setRowdata([] as RowDataType[]);
+        setLoading(true);
+      }
+
+      // } else {
+      //   console.log(resp);
+      // }
+    })();
+  }, []);
 
   const headerData = [
     {
@@ -67,7 +102,7 @@ export default function Index() {
     <>
       <Tabs type="container" scrollIntoView={false}>
         <Tab href="#review" id="review" label="Review">
-          {rowData.length == 0 ? (
+          {loading == true ? (
             <Loading />
           ) : (
             <DataTable

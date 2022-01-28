@@ -36,8 +36,6 @@ const ApplicationPage: NextPage = () => {
   const [copyStatus, setCopyStatus] = useState("");
 
   const [reviews, setReviews] = useState<Review[]>([]);
-
-  const [modalCommentOpen, setModalCommentOpen] = useState(false);
   const [comment, setComment] = useState("");
 
   const [reviewStatus, setReviewStatus] = useState("");
@@ -222,31 +220,37 @@ const ApplicationPage: NextPage = () => {
           </span>
         </Tab>
         <Tab href="#review" id="review" label="Review">
-          {application.reviews.map((review: Review, i: Number) => (
-            <Tile className={styles.reviewTile}>
-              {i == 0 ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    fontSize: "1.5rem",
-                  }}
-                >
-                  <h2>Application submitted</h2>
-                </div>
-              ) : (
-                <>
-                  <div>{review.comment ? review.comment : ""}</div>
-                  <div>
-                    {review.reviewer
-                      ? review.reviewer?.name
-                        ? review.reviewer.name
-                        : review.reviewer.email
-                      : "No data"}
+          {application.reviews.map((review: Review, i: Number) =>
+            review.comment ? (
+              <Tile className={styles.reviewTile}>
+                {i == 0 ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontSize: "1.5rem",
+                    }}
+                  >
+                    <h2>Application submitted</h2>
                   </div>
-                </>
-              )}
-            </Tile>
-          ))}
+                ) : (
+                  <>
+                    <div>{review.comment ? review.comment : ""}</div>
+                    <div>
+                      {review.reviewer
+                        ? review.reviewer?.name
+                          ? review.reviewer.name
+                          : review.reviewer.email
+                        : "No data"}
+                    </div>
+                  </>
+                )}
+              </Tile>
+            ) : (
+              <h3 style={{ textAlign: "center" }}>
+                Added {review.status} status
+              </h3>
+            )
+          )}
           <div className={styles.reviewControls}>
             <ModalWrapper
               shouldSubmitOnEnter={false}
@@ -262,7 +266,6 @@ const ApplicationPage: NextPage = () => {
                   .then((resp) => {
                     if (resp.status == 201) {
                       setComment("");
-                      setModalCommentOpen(false);
                     }
                   });
                 return true;
@@ -279,7 +282,6 @@ const ApplicationPage: NextPage = () => {
                   .then((resp) => {
                     if (resp.status == 201) {
                       setComment("");
-                      setModalCommentOpen(false);
                       setReviews([...reviews, resp.data]);
                     }
                   });
@@ -330,6 +332,9 @@ const ApplicationPage: NextPage = () => {
                 onChange={(e) =>
                   setReviewStatus(e.selectedItem ? e.selectedItem : "")
                 }
+                style={{
+                  paddingBottom: "160px",
+                }}
               />
               {statusErrMsg && <div>{statusErrMsg}</div>}
             </ModalWrapper>

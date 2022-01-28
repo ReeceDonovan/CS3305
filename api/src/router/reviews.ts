@@ -2,18 +2,15 @@
 import express from "express";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
-
 import Response from "../utils/response";
+
 
 const reviewRouter = express.Router();
 
 reviewRouter.get(
   "/:id",
   async (req: express.Request, res: express.Response) => {
-    const application = await Application.getById(
-      parseInt(req.params.id),
-      true
-    );
+    const application = await Application.getById(parseInt(req.params.id), []);
 
     if (!application) {
       res.status(404).send("Application not found");
@@ -36,10 +33,9 @@ reviewRouter.get(
 reviewRouter.post(
   "/:id",
   async (req: express.Request, res: express.Response) => {
-    const application = await Application.getById(
-      parseInt(req.params.id),
-      true
-    );
+    const application = await Application.getById(parseInt(req.params.id), [
+      "reviews",
+    ]);
 
     if (!application) {
       res.status(404).send("Application not found");
@@ -53,8 +49,12 @@ reviewRouter.post(
       application: application,
     });
 
-    application.reviews.push(review);
-    application.save();
+    // application.reviews
+    //   ? application.reviews.push(review)
+    //   : (application.reviews = [review]);
+    // application.save();
+
+    application.addReview(review);
 
     const response: Response = {
       status: 201,

@@ -3,11 +3,11 @@ import fs from "fs";
 import multer from "multer";
 import path from "path";
 import { getRepository } from "typeorm";
-
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
 import User from "../models/user";
 import Response from "../utils/response";
+
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
@@ -27,7 +27,7 @@ appRouter.get("/", async (req: express.Request, res: express.Response) => {
     };
   } else {
     resp = {
-      status: 404,
+      status: 200,
       message: "No applications found",
       data: null,
     };
@@ -36,13 +36,19 @@ appRouter.get("/", async (req: express.Request, res: express.Response) => {
 });
 
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
-  const application = await Application.getById(parseInt(req.params.id), true);
+  const application = await Application.getById(parseInt(req.params.id), [
+    "submitter",
+    "reviews",
+    "reviews.reviewer",
+    "supervisors",
+  ]);
   if (!application) {
     const re: Response = {
       status: 404,
       message: "Application not found",
       data: null,
     };
+    console.log(application);
     return res.send(JSON.stringify(re));
   }
 
@@ -73,13 +79,6 @@ appRouter.get(
     }
   }
 );
-
-// const uploadSchema: Array<multer.Field> = [
-//   // maximum of one form allowed
-//   { name: "pdf_form", maxCount: 1 },
-//   // any number of generics "files" allowed
-//   { name: "files" },
-// ];
 
 appRouter.post(
   "/",
