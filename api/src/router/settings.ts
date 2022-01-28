@@ -9,7 +9,12 @@ const settingsRouter = express.Router();
 
 settingsRouter.get("/settings", (req: express.Request, res: express.Response) => {
   if (req.user.type === "ADMIN") {
-    res.send(config.get())
+    const authorizedResponse: response = {
+      data: config.get(),
+      message: "Success",
+      status: 200
+    }
+    res.status(200).send(authorizedResponse)
   } else {
     const unauthorizedResponse: response = {
       data: null,
@@ -22,9 +27,14 @@ settingsRouter.get("/settings", (req: express.Request, res: express.Response) =>
 
 settingsRouter.post("/settings", (req: express.Request, res: express.Response) => {
   if (req.user.type === "ADMIN") {
+    const authorizedResponse: response = {
+      data: null,
+      message: "Success",
+      status: 200
+    }
     const data: configInterface = req.body
     config.update(data)
-    res.status(200).send()
+    res.status(200).send(authorizedResponse)
   } else {
     const unauthorizedResponse: response = {
       data: null,

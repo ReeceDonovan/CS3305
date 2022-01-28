@@ -1,98 +1,66 @@
 import { Button, Form, Select, SelectItem, TextInput, TextArea, Tag } from "carbon-components-react";
 import React, { useEffect, useState } from "react";
 import * as api from "../api";
-
-interface configInterface {
-  emailProvider: string;
-  emailUser: string;
-  emailToken: string;
-  emailConfigs: Array<emailConfig>;
-  oauthConfig: oauthConfig;
-  signingKey: string;
-  landingPageMD: string;
-  databaseConfig: databaseConfig;
-}
-
-interface emailConfig {
-  host: string;
-  port: number;
-  secure?: boolean;
-  tls?: {
-    ciphers?: string;
-  };
-}
-
-interface oauthConfig {
-  oauthClientId: string;
-  oauthClientSecret: string;
-  allowedDomains: Array<string>;
-}
-
-interface databaseConfig {
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-}
+import { configInterface, emailConfig } from "../api/types";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
-  const [emailProvider, setEmailProvider] = useState<string>('')
-  const [emailUser, setEmailUser] = useState<string>('')
-  const [emailToken, setEmailToken] = useState<string>('')
+  const [emailProvider, setEmailProvider] = useState<string>("")
+  const [emailUser, setEmailUser] = useState<string>("")
+  const [emailToken, setEmailToken] = useState<string>("")
   const [emailConfigs, setEmailConfigs] = useState<emailConfig[]>([])
-  const [oauthClientID, setOAuthClientID] = useState<string>('')
-  const [oauthClientSecret, setOAuthClientSecret] = useState<string>('')
+  const [oauthClientID, setOAuthClientID] = useState<string>("")
+  const [oauthClientSecret, setOAuthClientSecret] = useState<string>("")
   const [allowedDomains, setAllowedDomains] = useState<string[]>([])
-  const [landingPageMD, setLandingPageMD] = useState<string>('')
-  const [signingKey, setSigningKey] = useState<string>('')
-  const [dbUsername, setDBUsername] = useState<string>('')
-  const [dbPassword, setDBPassword] = useState<string>('')
-  const [dbHost, setDBHost] = useState<string>('')
+  const [landingPageMD, setLandingPageMD] = useState<string>("")
+  const [signingKey, setSigningKey] = useState<string>("")
+  const [dbUsername, setDBUsername] = useState<string>("")
+  const [dbPassword, setDBPassword] = useState<string>("")
+  const [dbHost, setDBHost] = useState<string>("")
   const [dbPort, setDBPort] = useState<number>(0)
-  const [dbName, setDBName] = useState<string>('')
+  const [dbName, setDBName] = useState<string>("")
 
   useEffect(() => {
-    api.request({path: '/admin/settings', method: 'GET'}).then(
-      (res) => 
-      {
-        console.log(res)
-        if (res.status === 200) {
-        setEmailProvider(res.data.emailProvider)
-        setEmailUser(res.data.emailUser)
-        setEmailToken(res.data.emailToken)
-        setEmailConfigs(res.data.emailConfigs)
-        setOAuthClientID(res.data.oauthConfig.oauthClientId)
-        setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret)
-        setAllowedDomains(res.data.oauthConfig.allowedDomains)
-        setLandingPageMD(res.data.landingPageMD)
-        setSigningKey(res.data.signingKey)
-        setDBUsername(res.data.databaseConfig.username)
-        setDBPassword(res.data.databaseConfig.password)
-        setDBHost(res.data.databaseConfig.host)
-        setDBPort(res.data.databaseConfig.port)
-        setDBName(res.data.databaseConfig.database)
+    (async () => {
+      await api.request({ path: '/admin/settings', method: 'GET' })
+        .then((res) => {
+          console.log(res)
+          if (res.status === 200) {
+            setEmailProvider(res.data.emailProvider)
+            setEmailUser(res.data.emailUser)
+            setEmailToken(res.data.emailToken)
+            setEmailConfigs(res.data.emailConfigs)
+            setOAuthClientID(res.data.oauthConfig.oauthClientId)
+            setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret)
+            setAllowedDomains(res.data.oauthConfig.allowedDomains)
+            setLandingPageMD(res.data.landingPageMD)
+            setSigningKey(res.data.signingKey)
+            setDBUsername(res.data.databaseConfig.username)
+            setDBPassword(res.data.databaseConfig.password)
+            setDBHost(res.data.databaseConfig.host)
+            setDBPort(res.data.databaseConfig.port)
+            setDBName(res.data.databaseConfig.database)
+          }
         }
-      }
-    )
+        )
+    })
   }, [])
 
   const onSubmit = (event: any) => {
     setSubmitting(true)
     event.preventDefault()
     const newConfig: configInterface = {
-      emailProvider: emailProvider,
-      emailUser: emailUser,
-      emailToken: emailToken,
-      emailConfigs: emailConfigs,
+      emailProvider,
+      emailUser,
+      emailToken,
+      emailConfigs,
       oauthConfig: {
         oauthClientId: oauthClientID,
         oauthClientSecret: oauthClientSecret,
         allowedDomains: allowedDomains
       },
-      signingKey: signingKey,
-      landingPageMD: landingPageMD,
+      signingKey,
+      landingPageMD,
       databaseConfig: {
         host: dbHost,
         port: dbPort,
@@ -101,7 +69,7 @@ const Settings = () => {
         database: dbName
       }
     }
-    api.request({path: "/admin/settings", method: 'POST', data: newConfig})
+    api.request({ path: "/admin/settings", method: 'POST', data: newConfig })
       .then(
         (_res) => {
           setSubmitting(false)
@@ -124,32 +92,32 @@ const Settings = () => {
         }}
       >
         <h3 className="bx--row"> Email Settings </h3>
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col-lg">
             <Select
               id="emailProvider"
               name="emailProvider"
               labelText="Select an Email Provider"
               defaultValue={emailProvider}
-              onChange={(e) => {setEmailProvider(e.target.value)}}
+              onChange={(e) => { setEmailProvider(e.target.value) }}
             >
               {
                 ["Gmail", "Outlook"].map((e, i) => {
-                  return (<SelectItem value={e.toLowerCase()} text={e} key={i}/>)
+                  return (<SelectItem value={e.toLowerCase()} text={e} key={i} />)
                 })
               }
             </Select>
           </div>
         </div>
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col">
-            <TextInput 
+            <TextInput
               id="emailUser"
               name="emailUser"
-              labelText={"Email User"}  
+              labelText={"Email User"}
               placeholder="Email User"
               defaultValue={emailUser}
-              onChange={(e) => {setEmailUser(e.target.value)}}
+              onChange={(e) => { setEmailUser(e.target.value) }}
             />
           </div>
           <div className="bx--col">
@@ -159,16 +127,16 @@ const Settings = () => {
               labelText={"Email Token/Password"}
               placeholder="Email Token/Password"
               defaultValue={emailToken}
-              onChange={(e) => {setEmailToken(e.target.value)}}
+              onChange={(e) => { setEmailToken(e.target.value) }}
             />
           </div>
         </div>
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col">
             <TextInput
               id="allowedDomains"
               name="allowedDomains"
-              labelText="Allowed Domains"
+              labelText="Allowed Email Domains for logging in"
               placeholder="Example: gmail.com"
               style={{
                 marginBottom: "1em",
@@ -179,6 +147,7 @@ const Settings = () => {
                   const t = e.target as HTMLInputElement;
                   if (t.value && t.value.length > 0 && t.value.split(".").length > 1) {
                     setAllowedDomains([...allowedDomains, t.value]);
+                    t.value = ""
                   }
                   e.preventDefault();
                 }
@@ -201,16 +170,16 @@ const Settings = () => {
             </div>
           </div>
         </div>
-        <h3 className="bx--row"> oauth Settings </h3> 
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <h3 className="bx--row"> oauth Settings </h3>
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col">
-            <TextInput 
+            <TextInput
               id="oauthClientID"
               name="oauthClientID"
-              labelText={"OAuth Client ID"}  
+              labelText={"OAuth Client ID"}
               placeholder="OAuth Client ID"
               defaultValue={oauthClientID}
-              onChange={(e) => {setOAuthClientID(e.target.value)}}
+              onChange={(e) => { setOAuthClientID(e.target.value) }}
             />
           </div>
           <div className="bx--col">
@@ -220,12 +189,12 @@ const Settings = () => {
               labelText={"OAuth Secret"}
               placeholder="OAuth Secret"
               defaultValue={oauthClientSecret}
-              onChange={(e) => {setOAuthClientSecret(e.target.value)}}
+              onChange={(e) => { setOAuthClientSecret(e.target.value) }}
             />
           </div>
         </div>
-        <h3 className="bx--row"> About Page Customization </h3> 
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <h3 className="bx--row"> About Page Customization </h3>
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col-lg-6">
             <TextArea
               helperText={["You can use markdown here! Click ", <a key="help" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet">here</a>, " for help."]}
@@ -236,84 +205,84 @@ const Settings = () => {
               placeholder="# Write your first markdown"
               rows={4}
               defaultValue={landingPageMD}
-              onChange={(e) => {setLandingPageMD(e.target.value)}}
+              onChange={(e) => { setLandingPageMD(e.target.value) }}
             />
           </div>
           <div className="bx--col-lg-6">
             <div>
               Markdown Preview Placeholder
             </div>
-         </div>
+          </div>
         </div>
         <h3 className="bx--row"> JWT Settings </h3>
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col">
             <TextInput.PasswordInput
               id="signingKey"
               name="signingKey"
-              labelText={"Signing Key"}  
+              labelText={"Signing Key"}
               placeholder="JWT Signing Key"
               defaultValue={signingKey}
-              onChange={(e) => {setSigningKey(e.target.value)}}
+              onChange={(e) => { setSigningKey(e.target.value) }}
             />
           </div>
         </div>
         <h3 className="bx--row"> Database Settings </h3>
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col">
-            <TextInput 
+            <TextInput
               id="dbHost"
               name="dbHost"
-              labelText={"Database Host"}  
+              labelText={"Database Host"}
               placeholder="Database Host: database.example.com"
               defaultValue={dbHost}
-              onChange={(e) => {setDBHost(e.target.value)}}
+              onChange={(e) => { setDBHost(e.target.value) }}
             />
           </div>
           <div className="bx--col">
-            <TextInput 
+            <TextInput
               id="dbPort"
               name="dbPort"
-              labelText={"Database Port"}  
+              labelText={"Database Port"}
               placeholder="Database Port: 0-25565"
               defaultValue={dbPort}
-              onChange={(e) => {setDBPort(parseInt(e.target.value))}}
+              onChange={(e) => { setDBPort(parseInt(e.target.value)) }}
             />
           </div>
         </div>
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col">
             <TextInput
               id="dbUsername"
               name="dbUsername"
-              labelText={"Database Username"}  
+              labelText={"Database Username"}
               placeholder="Database Username"
               defaultValue={dbUsername}
-              onChange={(e) => {setDBUsername(e.target.value)}}
+              onChange={(e) => { setDBUsername(e.target.value) }}
             />
           </div>
           <div className="bx--col">
             <TextInput.PasswordInput
               id="dbPassword"
               name="dbPassword"
-              labelText={"Database Password"}  
+              labelText={"Database Password"}
               placeholder="Database Password"
               defaultValue={dbPassword}
-              onChange={(e) => {setDBPassword(e.target.value)}}
+              onChange={(e) => { setDBPassword(e.target.value) }}
             />
           </div>
           <div className="bx--col">
-            <TextInput 
+            <TextInput
               id="dbName"
               name="dbName"
-              labelText={"Database Name"}  
+              labelText={"Database Name"}
               placeholder="Database Name"
               defaultValue={dbName}
-              onChange={(e) => {setDBName(e.target.value)}}
+              onChange={(e) => { setDBName(e.target.value) }}
             />
           </div>
         </div>
-        <div style={{marginBottom: '2rem'}} className="bx--row">
+        <div style={{ marginBottom: '2rem' }} className="bx--row">
           <div className="bx--col">
             <Button type="submit" onClick={onSubmit} disabled={isSubmitting}>
               Update
