@@ -84,14 +84,14 @@ appRouter.post(
   "/",
   // upload.fields(uploadSchema),
   upload.single("pdf_form"),
-  async (req: express.Request, res: express.Response) => {
+  async (req: any, res: express.Response) => {
     const form = JSON.parse(req.body.meta_data);
     // console.log(form);
     const coauthorEmails: string[] = form.coauthors;
     const supervisorEmails: string[] = form.supervisors;
 
-    let coauthors: Array<User> = [];
-    let supervisors: Array<User> = [];
+    const coauthors: Array<User> = [];
+    const supervisors: Array<User> = [];
 
     coauthorEmails.forEach((coauthorEmail: string) => {
       User.getByEmail(coauthorEmail).then((user: User) => {
@@ -173,7 +173,7 @@ appRouter.post(
 appRouter.patch("/:id", async (req: express.Request, res: express.Response) => {
   // console.log(req.body)
   const body = req.body as Application;
-  let application = await Application.getById(parseInt(req.params.id));
+  const application = await Application.getById(parseInt(req.params.id));
   console.log(application);
 
   if (application) {

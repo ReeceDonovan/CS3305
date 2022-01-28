@@ -50,7 +50,7 @@ export default class User extends Entity {
 
   @IsEnum(["researcher", "reviewer", "admin"])
   @Column({ default: "researcher" })
-  role: string;
+    role: string;
 
   @ManyToMany(() => Application, (application) => application.submitter)
   @JoinTable()

@@ -11,7 +11,6 @@ import {
   Save32,
 } from "@carbon/icons-react";
 import styles from "../styles/account.module.css";
-import { User } from "../api/types";
 
 const AccountPage: NextPage = () => {
   const [name, setName] = useState("");

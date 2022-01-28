@@ -1,6 +1,43 @@
-version: "3.7"
-
+version: "3.9"
 services:
+  reverse-proxy:
+    container_name: reverse-proxy
+    image: traefik:latest
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--providers.docker.exposedByDefault=false"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  srec-api:
+    container_name: srec-api
+    image: srec-api
+    build:
+      context: ./api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.srec-api.rule=Host(`${HOST}`) && PathPrefix(`/api/`)"
+      - traefik.http.routers.srec-api.middlewares=srec-api
+      - "traefik.http.middlewares.srec-api.stripprefix.prefixes=/api"
+      - "traefik.http.middlewares.srec-api.stripprefix.forceSlash=false"
+    expose:
+      - "8000"
+    depends_on:
+      - timescaledb
+      - reverse-proxy
+  srec-ui:
+    container_name: srec-ui
+    image: srec-ui
+    build:
+      context: ./ui
+    environment:
+      - BASE_URL=${BASE_URL}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.srec-ui.rule=Host(`${HOST}`)"
   timescaledb:
     container_name: pgres
     image: "timescale/timescaledb:latest-pg14"

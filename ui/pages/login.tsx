@@ -16,7 +16,7 @@ export default function Login() {
         api.saveCredentials(token);
         window.location.href = "/";
       } else {
-        window.location.href = "http://localhost:8000/login";
+        window.location.href = "/api/login";
       }
     })();
   }, []);

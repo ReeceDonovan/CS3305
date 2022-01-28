@@ -5,15 +5,14 @@ import config from "../config/config";
 export var dbConn: Connection;
 
 export const createConn = async (): Promise<void> => {
-  await config.get();
   try {
     dbConn = await createConnection({
       type: "postgres",
-      host: config.read().databaseConfig.host,
-      port: config.read().databaseConfig.port,
-      username: config.read().databaseConfig.username,
-      password: config.read().databaseConfig.password,
-      database: config.read().databaseConfig.database,
+      host: config.get().databaseConfig.host,
+      port: config.get().databaseConfig.port,
+      username: config.get().databaseConfig.username,
+      password: config.get().databaseConfig.password,
+      database: config.get().databaseConfig.database,
       synchronize: true,
       logging: true,
       entities: [__dirname + "/../models/*.ts"],

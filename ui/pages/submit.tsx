@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   Button,
   FileUploaderDropContainer,
@@ -7,6 +6,7 @@ import {
   TextArea,
   TextInput,
 } from "carbon-components-react";
+import Link from "next/link";
 import React, { KeyboardEvent, useState } from "react";
 import * as api from "../api";
 
@@ -82,9 +82,9 @@ const Submit = () => {
           }}
         >
           Ensure that the document you are submitting is in PDF format and
-          <a href="/about#form"> up to date</a>. By submitting an application,
+          <Link href="/about#form"> up to date </Link>. By submitting an application,
           you agree to the
-          <a href="/about#terms"> terms and conditions</a>.
+          <Link href="/about#terms"> terms and conditions </Link>.
         </p>
 
         <p

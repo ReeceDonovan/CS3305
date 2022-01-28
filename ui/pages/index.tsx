@@ -1,10 +1,6 @@
-import type { NextPage } from "next";
 import {
   DataTable,
-  DataTableRow,
   Loading,
-  OverflowMenu,
-  OverflowMenuItem,
   Tab,
   Table,
   TableBody,
@@ -21,6 +17,7 @@ import {
 import About from "./about";
 import * as api from "../api";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface RowDataType {
   id: number;
@@ -164,18 +161,20 @@ export default function Index() {
                               (cell, i) => (
                                 <TableCell key={cell.id}>
                                   {i === 0 ? (
-                                    <a href={`/application/${row.id}`}>
-                                      <span>
-                                        {row.cells[0].value
-                                          ? row.cells[0].length > 30
-                                            ? row.cells[0].value.substring(
-                                                0,
-                                                30
-                                              ) + "..."
-                                            : row.cells[0].value
-                                          : `No name ${row.id}`}
-                                      </span>
-                                    </a>
+                                    <Link href={`/application/${row.id}`}>
+                                      <a>
+                                        <span>
+                                          {row.cells[0].value
+                                            ? row.cells[0].length > 30
+                                              ? row.cells[0].value.substring(
+                                                  0,
+                                                  30
+                                                ) + "..."
+                                              : row.cells[0].value
+                                            : `No name ${row.id}`}
+                                        </span>
+                                      </a>
+                                    </Link>
                                   ) : (
                                     <span>
                                       {cell.value

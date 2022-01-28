@@ -1,14 +1,15 @@
 import { Button } from "carbon-components-react";
 import styles from "../styles/about.module.css";
 import axios from "axios";
+import Link from "next/link";
 
-export default function About(props: {content: string}) {
+export default function About(props: { content: string }) {
   return (
     <>
       {props.content.length > 0 ? (
         <>
           <div className={styles.info}>
-            <div dangerouslySetInnerHTML={{__html: props.content}} />
+            <div dangerouslySetInnerHTML={{ __html: props.content }} />
             <Button href="/login">Log in with UCC Email</Button>
           </div>
         </>
@@ -39,10 +40,11 @@ export default function About(props: {content: string}) {
               research, animal experimentation, and clinical research). If you
               are unsure which University ethics committee you should apply to,
               please
-              <a href="https://www.ucc.ie/en/research/support/ethics/">
-                {" "}
-                click here
-              </a>
+              <Link href="https://www.ucc.ie/en/research/support/ethics/">
+                <a>
+                  click here
+                </a>
+              </Link>
               . UCC academic staff and postgraduate research students can apply
               to SREC when undertaking social research where the methodology is
               not clinical or therapeutic in nature and proposes to involve:
@@ -77,11 +79,11 @@ export default function About(props: {content: string}) {
             </p>
             <p>
               SREC @ UCC considers itself an enabling committee, promoting
-              strong research ethics amongst UCC's community of staff and
+              strong research ethics amongst UCC&apos;s community of staff and
               student researchers. We are open to all types of research in the
               social research domain.
             </p>
-            <Button href="http://localhost:8000/login">Log in with UCC Email</Button>
+            <Button href="/api/login">Log in with UCC Email</Button>
           </div>
         </>
       )}
@@ -89,9 +91,9 @@ export default function About(props: {content: string}) {
   );
 }
 
-export async function getStaticProps() {
-  const data = await axios.get("http://localhost:8000/about");
-  console.log("Fetched about page")
+export async function getServerSideProps() {
+  const data = await axios.get("/api/about");
+  console.log("Fetched about page");
   return {
     props: {
       content: data.data,

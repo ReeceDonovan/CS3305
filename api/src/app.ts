@@ -36,8 +36,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.use(express.json());
-
 // middleware to check for Authorization header, to get token.
 // gets user from id in token, then sends user object to next handler
 app.use(async (req: express.Request, res: express.Response, next) => {
