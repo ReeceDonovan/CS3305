@@ -19,6 +19,8 @@ import {
   Tabs,
 } from "carbon-components-react";
 import About from "./about";
+import * as api from "../api";
+import { useEffect, useState } from "react";
 
 interface RowDataType {
   id: number;
