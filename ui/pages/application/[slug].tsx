@@ -20,6 +20,7 @@ import styles from "../../styles/application.module.css";
 import type { NextPage } from "next";
 import { Review, User } from "../../api/types";
 import { Add16, Chat16 } from "@carbon/icons-react";
+import Link from "next/link";
 
 const ApplicationPage: NextPage = () => {
   const router = useRouter();
@@ -195,9 +196,9 @@ const ApplicationPage: NextPage = () => {
             <p>Shareable URL (only to co-authors and supervisors):</p>
             <br />
             <p>
-              <a
-                href={`http://localhost:3000/application/${application.id}`}
-              >{`http://localhost:3000/application/${application.id}`}</a>
+              <Link
+                href={`/application/${application.id}`}
+              >{`/application/${application.id}`}</Link>
             </p>
             <br />
             <Button
