@@ -1,7 +1,6 @@
-import { Button, Form, Select, SelectItem, TextInput, TextArea } from "carbon-components-react";
+import { Button, Form, Select, SelectItem, TextInput, TextArea, Tag } from "carbon-components-react";
 import React, { useEffect, useState } from "react";
 import * as api from "../api";
-
 
 interface configInterface {
   emailProvider: string;
@@ -26,6 +25,7 @@ interface emailConfig {
 interface oauthConfig {
   oauthClientId: string;
   oauthClientSecret: string;
+  allowedDomains: Array<string>;
 }
 
 interface databaseConfig {
@@ -38,21 +38,20 @@ interface databaseConfig {
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    emailProvider: '',
-    emailUser: '',
-    emailToken: '',
-    emailConfigs: [],
-    oauthClientID: '',
-    oauthClientSecret: '',
-    landingPageMD: '',
-    signingKey: '',
-    dbUsername: '',
-    dbPassword: '',
-    dbHost: '',
-    dbPort: 0,
-    dbName: '',
-  });
+  const [emailProvider, setEmailProvider] = useState<string>('')
+  const [emailUser, setEmailUser] = useState<string>('')
+  const [emailToken, setEmailToken] = useState<string>('')
+  const [emailConfigs, setEmailConfigs] = useState<emailConfig[]>([])
+  const [oauthClientID, setOAuthClientID] = useState<string>('')
+  const [oauthClientSecret, setOAuthClientSecret] = useState<string>('')
+  const [allowedDomains, setAllowedDomains] = useState<string[]>([])
+  const [landingPageMD, setLandingPageMD] = useState<string>('')
+  const [signingKey, setSigningKey] = useState<string>('')
+  const [dbUsername, setDBUsername] = useState<string>('')
+  const [dbPassword, setDBPassword] = useState<string>('')
+  const [dbHost, setDBHost] = useState<string>('')
+  const [dbPort, setDBPort] = useState<number>(0)
+  const [dbName, setDBName] = useState<string>('')
 
   useEffect(() => {
     api.request({path: '/admin/settings', method: 'GET'}).then(
@@ -60,50 +59,46 @@ const Settings = () => {
       {
         console.log(res)
         if (res.status === 200) {
-        setForm({
-        emailProvider: res.data.emailProvider,
-        emailUser: res.data.emailUser,
-        emailToken: res.data.emailToken,
-        emailConfigs: res.data.emailConfigs,
-        oauthClientID: res.data.oauthConfig.oauthClientId,
-        oauthClientSecret: res.data.oauthConfig.oauthClientSecret,
-        landingPageMD: res.data.landingPageMD,
-        signingKey: res.data.signingKey,
-        dbUsername: res.data.databaseConfig.username,
-        dbPassword: res.data.databaseConfig.password,
-        dbHost: res.data.databaseConfig.host,
-        dbPort: res.data.databaseConfig.port,
-        dbName: res.data.databaseConfig.database,
-      })} 
-    }
+        setEmailProvider(res.data.emailProvider)
+        setEmailUser(res.data.emailUser)
+        setEmailToken(res.data.emailToken)
+        setEmailConfigs(res.data.emailConfigs)
+        setOAuthClientID(res.data.oauthConfig.oauthClientId)
+        setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret)
+        setAllowedDomains(res.data.oauthConfig.allowedDomains)
+        setLandingPageMD(res.data.landingPageMD)
+        setSigningKey(res.data.signingKey)
+        setDBUsername(res.data.databaseConfig.username)
+        setDBPassword(res.data.databaseConfig.password)
+        setDBHost(res.data.databaseConfig.host)
+        setDBPort(res.data.databaseConfig.port)
+        setDBName(res.data.databaseConfig.database)
+        }
+      }
     )
   }, [])
-
-
-  const handleChange = (event: any) => {
-    setForm({...form, [event.target.name]: event.target.value})
-  }
 
   const onSubmit = (event: any) => {
     setSubmitting(true)
     event.preventDefault()
     const newConfig: configInterface = {
-      emailProvider: form.emailProvider,
-      emailUser: form.emailUser,
-      emailToken: form.emailToken,
-      emailConfigs: form.emailConfigs,
+      emailProvider: emailProvider,
+      emailUser: emailUser,
+      emailToken: emailToken,
+      emailConfigs: emailConfigs,
       oauthConfig: {
-        oauthClientId: form.oauthClientID,
-        oauthClientSecret: form.oauthClientSecret
+        oauthClientId: oauthClientID,
+        oauthClientSecret: oauthClientSecret,
+        allowedDomains: allowedDomains
       },
-      signingKey: form.signingKey,
-      landingPageMD: form.landingPageMD,
+      signingKey: signingKey,
+      landingPageMD: landingPageMD,
       databaseConfig: {
-        host: form.dbHost,
-        port: form.dbPort,
-        username: form.dbUsername,
-        password: form.dbPassword,
-        database: form.dbName
+        host: dbHost,
+        port: dbPort,
+        username: dbUsername,
+        password: dbPassword,
+        database: dbName
       }
     }
     api.request({path: "/admin/settings", method: 'POST', data: newConfig})
@@ -135,8 +130,8 @@ const Settings = () => {
               id="emailProvider"
               name="emailProvider"
               labelText="Select an Email Provider"
-              defaultValue={form.emailProvider}
-              onChange={handleChange}
+              defaultValue={emailProvider}
+              onChange={(e) => {setEmailProvider(e.target.value)}}
             >
               {
                 ["Gmail", "Outlook"].map((e, i) => {
@@ -153,20 +148,57 @@ const Settings = () => {
               name="emailUser"
               labelText={"Email User"}  
               placeholder="Email User"
-              defaultValue={form.emailUser}
-              onChange={handleChange}
+              defaultValue={emailUser}
+              onChange={(e) => {setEmailUser(e.target.value)}}
             />
           </div>
           <div className="bx--col">
-            <TextInput 
+            <TextInput.PasswordInput
               id="emailToken"
               name="emailToken"
               labelText={"Email Token/Password"}
               placeholder="Email Token/Password"
-              type="password"
-              defaultValue={form.emailToken}
-              onChange={handleChange}
+              defaultValue={emailToken}
+              onChange={(e) => {setEmailToken(e.target.value)}}
             />
+          </div>
+        </div>
+        <div style={{marginBottom: '2rem'}} className="bx--row">
+          <div className="bx--col">
+            <TextInput
+              id="allowedDomains"
+              name="allowedDomains"
+              labelText="Allowed Domains"
+              placeholder="Example: gmail.com"
+              style={{
+                marginBottom: "1em",
+              }}
+              onKeyDown={(e) => {
+                const t = e.target as HTMLInputElement;
+                if ((e.code === "Enter" || e.code === "Tab") && t.value) {
+                  const t = e.target as HTMLInputElement;
+                  if (t.value && t.value.length > 0 && t.value.split(".").length > 1) {
+                    setAllowedDomains([...allowedDomains, t.value]);
+                  }
+                  e.preventDefault();
+                }
+              }}
+            />
+
+            <div>
+              {allowedDomains.map((elem, i) => (
+                <Tag
+                  key={i}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    allowedDomains.splice(i, 1);
+                    setAllowedDomains([...allowedDomains]);
+                  }}
+                >
+                  {elem}
+                </Tag>
+              ))}
+            </div>
           </div>
         </div>
         <h3 className="bx--row"> oauth Settings </h3> 
@@ -177,19 +209,18 @@ const Settings = () => {
               name="oauthClientID"
               labelText={"OAuth Client ID"}  
               placeholder="OAuth Client ID"
-              defaultValue={form.oauthClientID}
-              onChange={handleChange}
+              defaultValue={oauthClientID}
+              onChange={(e) => {setOAuthClientID(e.target.value)}}
             />
           </div>
           <div className="bx--col">
-            <TextInput 
+            <TextInput.PasswordInput
               id="oauthClientSecret"
               name="oauthClientSecret"
               labelText={"OAuth Secret"}
               placeholder="OAuth Secret"
-              type="password"
-              defaultValue={form.oauthClientSecret}
-              onChange={handleChange}
+              defaultValue={oauthClientSecret}
+              onChange={(e) => {setOAuthClientSecret(e.target.value)}}
             />
           </div>
         </div>
@@ -204,8 +235,8 @@ const Settings = () => {
               labelText="About Page Text"
               placeholder="# Write your first markdown"
               rows={4}
-              defaultValue={form.landingPageMD}
-              onChange={handleChange}
+              defaultValue={landingPageMD}
+              onChange={(e) => {setLandingPageMD(e.target.value)}}
             />
           </div>
           <div className="bx--col-lg-6">
@@ -217,14 +248,13 @@ const Settings = () => {
         <h3 className="bx--row"> JWT Settings </h3>
         <div style={{marginBottom: '2rem'}} className="bx--row">
           <div className="bx--col">
-            <TextInput 
+            <TextInput.PasswordInput
               id="signingKey"
               name="signingKey"
               labelText={"Signing Key"}  
               placeholder="JWT Signing Key"
-              type="password"
-              defaultValue={form.signingKey}
-              onChange={handleChange}
+              defaultValue={signingKey}
+              onChange={(e) => {setSigningKey(e.target.value)}}
             />
           </div>
         </div>
@@ -236,8 +266,8 @@ const Settings = () => {
               name="dbHost"
               labelText={"Database Host"}  
               placeholder="Database Host: database.example.com"
-              defaultValue={form.dbHost}
-              onChange={handleChange}
+              defaultValue={dbHost}
+              onChange={(e) => {setDBHost(e.target.value)}}
             />
           </div>
           <div className="bx--col">
@@ -246,31 +276,30 @@ const Settings = () => {
               name="dbPort"
               labelText={"Database Port"}  
               placeholder="Database Port: 0-25565"
-              defaultValue={form.dbPort}
-              onChange={handleChange}
+              defaultValue={dbPort}
+              onChange={(e) => {setDBPort(parseInt(e.target.value))}}
             />
           </div>
         </div>
         <div style={{marginBottom: '2rem'}} className="bx--row">
           <div className="bx--col">
-            <TextInput 
+            <TextInput
               id="dbUsername"
               name="dbUsername"
               labelText={"Database Username"}  
               placeholder="Database Username"
-              defaultValue={form.dbUsername}
-              onChange={handleChange}
+              defaultValue={dbUsername}
+              onChange={(e) => {setDBUsername(e.target.value)}}
             />
           </div>
           <div className="bx--col">
-            <TextInput 
+            <TextInput.PasswordInput
               id="dbPassword"
               name="dbPassword"
               labelText={"Database Password"}  
               placeholder="Database Password"
-              type="password"
-              defaultValue={form.dbPassword}
-              onChange={handleChange}
+              defaultValue={dbPassword}
+              onChange={(e) => {setDBPassword(e.target.value)}}
             />
           </div>
           <div className="bx--col">
@@ -279,8 +308,8 @@ const Settings = () => {
               name="dbName"
               labelText={"Database Name"}  
               placeholder="Database Name"
-              defaultValue={form.dbName}
-              onChange={handleChange}
+              defaultValue={dbName}
+              onChange={(e) => {setDBName(e.target.value)}}
             />
           </div>
         </div>
