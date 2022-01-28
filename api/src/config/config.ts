@@ -2,8 +2,10 @@ import * as fs from "fs";
 import path from "path";
 
 // Add onto this as needed
-var defaultConfig: configInterface = {
+const defaultConfig: configInterface = {
   emailProvider: "gmail",
+  emailUser: "",
+  emailToken: "",
   emailConfigs: [
     {
       host: "smtp.gmail.com",
@@ -42,8 +44,10 @@ var defaultConfig: configInterface = {
   },
 };
 
-interface configInterface {
+export interface configInterface {
   emailProvider: string;
+  emailUser: string;
+  emailToken: string;
   emailConfigs: Array<emailConfig>;
   oauthConfig: oauthConfig;
   signingKey: string;

@@ -19,7 +19,6 @@ import {
   Tabs,
 } from "carbon-components-react";
 import About from "./about";
-
 import * as api from "../api";
 import { useEffect, useState } from "react";
 
@@ -146,6 +145,7 @@ export default function Index() {
                         {headers.map(
                           // @ts-expect-error
                           (header) => (
+                            // eslint-disable-next-line react/jsx-key
                             <TableHeader {...getHeaderProps({ header })}>
                               {header.header}
                             </TableHeader>
@@ -157,6 +157,7 @@ export default function Index() {
                       {rows.map(
                         // @ts-expect-error
                         (row) => (
+                          // eslint-disable-next-line react/jsx-key
                           <TableRow {...getRowProps({ row })}>
                             {row.cells.map(
                               // @ts-expect-error

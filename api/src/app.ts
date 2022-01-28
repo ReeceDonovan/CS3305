@@ -4,8 +4,8 @@ import cors from "cors";
 import { createConn } from "./models/database";
 import { decodeToken } from "./auth/tokens";
 
-import pageRouter from "./router/landingPage";
 import loginRouter from "./router/login";
+import settingsRouter from "./router/settings";
 import userRouter from "./router/user";
 import User from "./models/user";
 import response from "./utils/response";
@@ -77,6 +77,7 @@ app.use(async (req: express.Request, res: express.Response, next) => {
 
 app.use("/login", loginRouter);
 app.use("/about", aboutRouter);
+app.use("/admin", settingsRouter);
 
 app.use("/users", userRouter);
 app.use("/applications", appRouter);
