@@ -1,6 +1,6 @@
 /**
  * Route to save login credentials passed through url params
- */
+*/
 
 import { Loading } from "carbon-components-react";
 import { useEffect } from "react";
@@ -16,7 +16,7 @@ export default function Login() {
         api.saveCredentials(token);
         window.location.href = "/";
       } else {
-          window.location.href= "/api/login"
+        window.location.href = "http://localhost:8000/login";
       }
     })();
   }, []);

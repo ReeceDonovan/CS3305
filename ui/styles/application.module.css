@@ -1,6 +1,7 @@
 .view {
-  width: 80%;
-  margin: 20px 0 0 10%;
+  /* width: 80%; */
+  float: left;
+  margin: 20px 0 20px 10%;
 }
 
 .view h2 {
@@ -21,4 +22,16 @@
 
 .edit button {
   width: 0px;
+}
+
+.reviewTile {
+  width: 80%;
+  margin: 1em auto;
+  font-size: 1.2em;
+}
+
+.reviewControls {
+  display: flex;
+  justify-content: space-evenly;
+  margin: 4em auto;
 }

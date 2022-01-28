@@ -22,7 +22,11 @@ const exampleResponse: StandardResponse = {
 const API_URL = "/api";
 
 export const saveCredentials = async (token: string): Promise<void> => {
-  await localStorage.setItem("token", token);
+  return await localStorage.setItem("token", token);
+};
+
+export const deleteCredentials = async (): Promise<void> => {
+  return await localStorage.clear();
 };
 
 export const request = async (
@@ -35,11 +39,7 @@ export const request = async (
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
-    return {
-      data: req.data,
-      message: "Success",
-      status: req.status,
-    };
+    return req.data as StandardResponse;
   } catch (e) {
     console.log(e);
     return {
@@ -90,10 +90,10 @@ export const formRequest = async (props: RequestParams) => {
     }
   } catch (e) {
     console.log(e);
-    return {
-      status: 500,
-      message: "Error",
-      data: null,
-    } as StandardResponse;
   }
+  return {
+    status: 500,
+    message: "Error",
+    data: null,
+  } as StandardResponse;
 };

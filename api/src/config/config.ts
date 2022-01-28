@@ -4,6 +4,8 @@ import path from "path";
 // Add onto this as needed
 const defaultConfig: configInterface = {
   emailProvider: "gmail",
+  emailUser: "",
+  emailToken: "",
   emailConfigs: [
     {
       host: "smtp.gmail.com",
@@ -22,6 +24,13 @@ const defaultConfig: configInterface = {
   oauthConfig: {
     oauthClientId: "",
     oauthClientSecret: "",
+    allowedDomains: [
+      "gmail.com",
+      "umail.ucc.ie",
+      "ucc.ie",
+      "cs.ucc.ie",
+      "hse.ie",
+    ],
   },
   signingKey: "",
   landingPageMD:
@@ -35,8 +44,10 @@ const defaultConfig: configInterface = {
   },
 };
 
-interface configInterface {
+export interface configInterface {
   emailProvider: string;
+  emailUser: string;
+  emailToken: string;
   emailConfigs: Array<emailConfig>;
   oauthConfig: oauthConfig;
   signingKey: string;
@@ -56,6 +67,7 @@ interface emailConfig {
 interface oauthConfig {
   oauthClientId: string;
   oauthClientSecret: string;
+  allowedDomains: Array<string>;
 }
 
 interface databaseConfig {
