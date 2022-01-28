@@ -3,15 +3,15 @@ import User from "../models/user";
 
 const userRouter = express.Router();
 
-userRouter.get("/users/:id", async (req, res) => {
+userRouter.get("/:id", async (req, res) => {
   res.json(await User.getById(parseInt(req.params.id)));
 });
 
-userRouter.get("/users", (req, res) => {
+userRouter.get("/", (req, res) => {
   res.send(req.user);
 });
 
-userRouter.patch("/users", (req, res) => {
+userRouter.patch("/", (req, res) => {
   let user = req.user;
   if (req.body.name){
     user.name = req.body.name

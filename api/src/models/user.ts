@@ -5,6 +5,7 @@ import {
   Index,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
 } from "typeorm";
 
@@ -50,7 +51,7 @@ export default class User extends Entity {
   @Column({ default: "researcher" })
   role: string;
 
-  @ManyToMany(() => Application, (application) => application.supervisors)
+  @ManyToMany(() => Application, (application) => application.submitter)
   @JoinTable()
   applications: Application[];
 
@@ -66,8 +67,11 @@ export default class User extends Entity {
     return await dbConn.getRepository(User).findOne({ email });
   }
 
-  static async getById(id: number) {
-    return await dbConn.getRepository(User).findOne(id);
+  static async getById(id: number, relations: string[] = []) {
+    return await dbConn.getRepository(User).findOne({
+      where: { id },
+      relations,
+    });
   }
 
   static async getByType(type: UserType) {

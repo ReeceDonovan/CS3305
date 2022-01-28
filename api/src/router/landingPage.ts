@@ -7,12 +7,12 @@ import showdown from "showdown";
 
 import config from "../config/config";
 
-const pageRouter = express.Router();
+const aboutRouter = express.Router();
 
-pageRouter.get("/about", (_req, res) => {
+aboutRouter.get("/", (_req, res) => {
   const converter = new showdown.Converter();
   res.set("Content-Type", "text/html");
   res.send(DOMPurify.sanitize(converter.makeHtml(config.get().landingPageMD)));
 });
 
-export default pageRouter;
+export default aboutRouter;

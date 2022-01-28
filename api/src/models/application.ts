@@ -1,18 +1,16 @@
-import { IsEnum } from "class-validator";
-
-import { Column,
+import {
+  Column,
   Entity as OrmEntity,
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
-  OneToOne
- } from "typeorm";
+  OneToMany
+} from "typeorm";
 import { dbConn } from "./database";
-
 import Entity from "./entity";
 import Review from "./review";
 import User from "./user";
+
 
 @OrmEntity("applications")
 export default class Application extends Entity {
@@ -31,7 +29,7 @@ export default class Application extends Entity {
   field: string;
 
   @ManyToOne(() => User, (user) => user.applications)
-  @JoinTable()
+  // @JoinTable()
   submitter: User;
 
   @ManyToMany(() => User, (user) => user.applications)
@@ -47,11 +45,16 @@ export default class Application extends Entity {
   reviewers: User[];
 
   @OneToMany(() => Review, (review) => review.application)
-  @JoinTable()
+  // @JoinTable()
   reviews: Review[];
 
-  static async getById(id: number) {
-    return await dbConn.getRepository(Application).findOne(id);
+  static async getById(id: number, relations: string[] = []) {
+    const resp = await dbConn.getRepository(Application).findOne({
+      where: { id },
+      relations,
+    });
+    console.log(resp);
+    return resp;
   }
 
   static async getByName(name: string) {
@@ -60,5 +63,23 @@ export default class Application extends Entity {
 
   static async getByField(field: string) {
     return await dbConn.getRepository(Application).find({ field });
+  }
+
+  async addReview(review: Review) {
+    console.log("addReview");
+    // if (review.reviewer?.id) {
+    //   if (this.reviewers) {
+    //     this.reviewers.push(review.reviewer);
+    //   } else {
+    //     this.reviewers = [review.reviewer];
+    //   }
+    //   review.reviewer.save();
+    // }
+
+    await review.save();
+    this.reviews = this.reviews ? [...this.reviews, review] : [review];
+    await this.save();
+
+    console.log("got to end");
   }
 }

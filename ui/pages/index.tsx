@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import {
   DataTable,
   DataTableRow,
+  Loading,
   OverflowMenu,
   OverflowMenuItem,
   Tab,
@@ -19,32 +20,59 @@ import {
 } from "carbon-components-react";
 import About from "./about";
 
-import * as faker from "@faker-js/faker";
+import * as api from "../api";
+import { useEffect, useState } from "react";
 
 interface RowDataType {
-  id: string;
+  id: number;
   name: string;
   title: string;
-  school: string;
-  submitted: string;
+  field: string;
+  submitter: string;
+  createdAt: string;
+  updatedAt: string;
   reviewed: string;
   status: string;
 }
 
 export default function Index() {
-  var rowData = [] as RowDataType[];
-  // list comprehension
-  for (let i = 0; i < 10; i++) {
-    rowData.push({
-      id: i.toString(),
-      name: faker.name.findName(),
-      title: faker.lorem.words(4),
-      school: faker.word.noun(),
-      submitted: faker.date.past(1).toDateString(),
-      reviewed: faker.date.recent(1).toDateString(),
-      status: faker.random.arrayElement(["In Review", "Inactive", "Reviewed"]),
-    });
-  }
+  const [rowData, setRowdata] = useState([] as RowDataType[]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      const resp = await api.request({
+        method: "GET",
+        path: "/applications",
+      });
+
+      // if (resp?.status == 200) {
+      //   console.log(resp);
+      if (resp?.data != null) {
+        for (let i = 0; i < resp.data.length; i++) {
+          resp.data[i].submitter = resp.data[i].submitter?.email;
+          resp.data[i].updatedAt = new Date(
+            resp.data[i].updatedAt
+          ).toLocaleDateString();
+          resp.data[i].createdAt = new Date(
+            resp.data[i].createdAt
+          ).toLocaleDateString();
+          resp.data[i].status =
+            resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
+          console.log(resp.data[i]);
+        }
+
+        setRowdata(resp.data as RowDataType[]);
+        setLoading(false);
+      } else {
+        setRowdata([] as RowDataType[]);
+        setLoading(true);
+      }
+
+      // } else {
+      //   console.log(resp);
+      // }
+    })();
+  }, []);
 
   const headerData = [
     {
@@ -52,100 +80,124 @@ export default function Index() {
       header: "Name",
     },
     {
-      key: "title",
-      header: "Title",
+      key: "submitter",
+      header: "Submitter",
     },
     {
-      key: "school",
-      header: "School",
+      key: "field",
+      header: "Field",
     },
     {
-      key: "submitted",
+      key: "createdAt",
       header: "Submitted",
     },
     {
-      key: "reviewed",
-      header: "Reviewed",
+      key: "updatedAt",
+      header: "Updated",
     },
     {
       key: "status",
       header: "Status",
     },
   ];
-  
+
   return (
     <>
       <Tabs type="container" scrollIntoView={false}>
-        <Tab
-          href="#review"
-          style={{ marginTop: "8px" }}
-          id="review"
-          label="Review"
-        >
-          <DataTable
-            isSortable
-            useZebraStyles
-            rows={rowData}
-            headers={headerData}
-          >
-            {({
-              rows,
-              headers,
-              getTableProps,
-              getHeaderProps,
-              getRowProps,
-            }) => (
-              <TableContainer
-                title="Applications"
-                description="Manage applications"
-              >
-                <TableToolbarContent>
-                  <TableToolbar aria-label="data table toolbar">
-                    <TableToolbarSearch
-                      onChange={(e) => {
-                        console.log(e);
-                      }}
-                    />
-                  </TableToolbar>
-                </TableToolbarContent>
-                <Table {...getTableProps()}>
-                  <TableHead>
-                    <TableRow>
-                      {headers.map((header) => (
-                        <TableHeader {...getHeaderProps({ header })}>
-                          {header.header}
-                        </TableHeader>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {rows.map((row) => (
-                      <TableRow {...getRowProps({ row })}>
-                        {row.cells.map((cell) => (
-                          <TableCell key={cell.id}>{cell.value}</TableCell>
-                        ))}
-                        <TableCell className="bx--table-column-menu">
-                          <OverflowMenu size="sm" flipped>
-                            <OverflowMenuItem itemText="View" href="/application#view" />
-                            <OverflowMenuItem itemText="Edit" href="/application#edit" />
-                            <OverflowMenuItem itemText="Share" href="/application#share" />
-                          </OverflowMenu>
-                        </TableCell>
+        <Tab href="#review" id="review" label="Review">
+          {loading == true ? (
+            <Loading />
+          ) : (
+            <DataTable
+              isSortable
+              useZebraStyles
+              // @ts-expect-error
+              rows={rowData}
+              headers={headerData}
+            >
+              {({
+                // @ts-expect-error
+                rows,
+                // @ts-expect-error
+                headers,
+                // @ts-expect-error
+                getTableProps,
+                // @ts-expect-error
+                getHeaderProps,
+                // @ts-expect-error
+                getRowProps,
+              }) => (
+                <TableContainer
+                  title="Applications"
+                  description="Manage applications"
+                >
+                  <TableToolbarContent>
+                    <TableToolbar aria-label="data table toolbar">
+                      <TableToolbarSearch
+                        onChange={(e) => {
+                          console.log(e);
+                        }}
+                      />
+                    </TableToolbar>
+                  </TableToolbarContent>
+                  <Table {...getTableProps()}>
+                    <TableHead>
+                      <TableRow>
+                        {headers.map(
+                          // @ts-expect-error
+                          (header) => (
+                            <TableHeader {...getHeaderProps({ header })}>
+                              {header.header}
+                            </TableHeader>
+                          )
+                        )}
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </DataTable>
+                    </TableHead>
+                    <TableBody>
+                      {rows.map(
+                        // @ts-expect-error
+                        (row) => (
+                          <TableRow {...getRowProps({ row })}>
+                            {row.cells.map(
+                              // @ts-expect-error
+                              (cell, i) => (
+                                <TableCell key={cell.id}>
+                                  {i === 0 ? (
+                                    <a href={`/application/${row.id}`}>
+                                      <span>
+                                        {row.cells[0].value
+                                          ? row.cells[0].length > 30
+                                            ? row.cells[0].value.substring(
+                                                0,
+                                                30
+                                              ) + "..."
+                                            : row.cells[0].value
+                                          : `No name ${row.id}`}
+                                      </span>
+                                    </a>
+                                  ) : (
+                                    <span>
+                                      {cell.value
+                                        ? cell.value.length > 30
+                                          ? cell.value.substring(0, 30) + "..."
+                                          : cell.value
+                                        : "No data"}
+                                    </span>
+                                  )}
+                                </TableCell>
+                              )
+                            )}
+                          </TableRow>
+                        )
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </DataTable>
+          )}
         </Tab>
-        <Tab
-          href="#research"
-          id="research"
-          label="Research"
-          style={{ marginTop: "8px" }}
-        >
-          {/* TODO this is a placeholder */}
+        <Tab href="#research" id="research" label="Research">
           <About content={""} />
         </Tab>
       </Tabs>

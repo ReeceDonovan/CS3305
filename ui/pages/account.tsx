@@ -1,13 +1,19 @@
 import type { NextPage } from "next";
 import { Button, Form, TextInput } from "carbon-components-react";
 import React, { useEffect, useState } from "react";
-import get_me, { User } from "../api/user";
+import * as api from "../api";
 import { request } from "../api/index";
-import { Checkmark32, Error32, InProgress32 } from "@carbon/icons-react";
+import {
+  Checkmark32,
+  Error32,
+  InProgress32,
+  Login32,
+  Save32,
+} from "@carbon/icons-react";
 import styles from "../styles/account.module.css";
+import { User } from "../api/types";
 
 const AccountPage: NextPage = () => {
-  console.log(styles);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
@@ -27,14 +33,17 @@ const AccountPage: NextPage = () => {
   }
 
   useEffect(() => {
-    get_me().then((user: User) => {
-      if (user) {
-        console.log("yes", user);
-        setName(user.name);
-        setBio(user.bio);
-        setSchool(user.field);
+    (async () => {
+      const user = await api.request({
+        path: "/users",
+        method: "GET",
+      });
+      if (user.status == 200) {
+        setName(user.data.name);
+        setBio(user.data.bio);
+        setSchool(user.data.school);
       }
-    });
+    })();
   }, []);
 
   return (
@@ -44,14 +53,14 @@ const AccountPage: NextPage = () => {
           className={styles.formElements}
           id="name"
           labelText="Name"
-          placeholder={name}
+          value={name}
           onChange={(e) => setName(e.target.value)}
         />
 
         <TextInput
           id="bio"
           labelText="Bio"
-          placeholder={bio}
+          value={bio}
           onChange={(e) => setBio(e.target.value)}
           className={styles.formElements}
         />
@@ -59,35 +68,57 @@ const AccountPage: NextPage = () => {
         <TextInput
           id="school"
           labelText="School"
-          placeholder={school}
+          value={school}
           onChange={(e) => setSchool(e.target.value)}
           className={styles.formElements}
         />
 
-        <Button
-          className={styles.formElements}
-          type="submit"
-          disabled={!name && !bio && !school}
-          onClick={(e) => {
-            e.preventDefault();
-            setSubmit_success(1);
-            request({
-              method: "PATCH",
-              path: "/users",
-              data: { name: name, bio: bio, school: school },
-            }).then((res) => {
-              if ((res.status = 200)) {
-                setSubmit_success(3);
-              } else {
-                setSubmit_success(2);
-              }
-            });
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          Save
-        </Button>
+          <Button
+            kind="secondary"
+            type="submit"
+            style={{
+              marginRight: 0,
+            }}
+            onClick={() => {
+              api.deleteCredentials();
+              window.location.href = "/";
+            }}
+            renderIcon={Login32}
+          >
+            Logout
+          </Button>
 
-        {save_state}
+          <Button
+            type="submit"
+            disabled={!name && !bio && !school}
+            onClick={(e) => {
+              e.preventDefault();
+              setSubmit_success(1);
+              request({
+                method: "PATCH",
+                path: "/users",
+                data: { name: name, bio: bio, school: school },
+              }).then((res) => {
+                if ((res.status == 200)) {
+                  setSubmit_success(3);
+                } else {
+                  setSubmit_success(2);
+                }
+              });
+            }}
+            renderIcon={Save32}
+          >
+            Save
+          </Button>
+        </div>
+        <span>{save_state}</span>
       </Form>
     </>
   );
