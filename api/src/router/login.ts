@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 
 import config from "../config/config";
 import User from "../models/user";
-import response from "../utils/response";
 
 const loginRouter = express.Router();
 
@@ -26,7 +25,7 @@ loginRouter.get(
       client_id: config.get().oauthConfig.oauthClientId,
       client_secret: config.get().oauthConfig.oauthClientSecret,
       grant_type: "authorization_code",
-      redirect_uri: "/api/login/callback",
+      redirect_uri: `${config.get().apiURL}/login/callback`,
     });
 
     const access_token = r.data.access_token;
@@ -43,14 +42,14 @@ loginRouter.get(
       const email = resp.data.email;
       const avatar = resp.data.picture;
 
-      const user = await User.getByEmail(email);
+      let user = await User.getByEmail(email);
 
       if (user === undefined) {
-        const newUser = new User({
+        user = new User({
           email: email,
           avatar: avatar,
         });
-        await newUser.save();
+        await user.save();
       }
 
       jwt.sign(

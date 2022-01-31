@@ -3,6 +3,8 @@ import styles from "../styles/about.module.css";
 import axios from "axios";
 import Link from "next/link";
 
+import * as api from "../api";
+
 export default function About(props: { content: string }) {
   return (
     <>
@@ -41,9 +43,7 @@ export default function About(props: { content: string }) {
               are unsure which University ethics committee you should apply to,
               please
               <Link href="https://www.ucc.ie/en/research/support/ethics/">
-                <a>
-                  click here
-                </a>
+                <a>click here</a>
               </Link>
               . UCC academic staff and postgraduate research students can apply
               to SREC when undertaking social research where the methodology is
@@ -83,7 +83,7 @@ export default function About(props: { content: string }) {
               student researchers. We are open to all types of research in the
               social research domain.
             </p>
-            <Button href="/api/login">Log in with UCC Email</Button>
+            <Button href={`${api.API_URL}/login`}>Log in with UCC Email</Button>
           </div>
         </>
       )}
@@ -92,12 +92,12 @@ export default function About(props: { content: string }) {
 }
 
 export async function getServerSideProps() {
-  const data = await axios.get("/api/about");
+  const data = await axios.get(`${api.API_URL}/about`);
   console.log("Fetched about page");
+  console.log(data.data)
   return {
     props: {
       content: data.data,
-    },
-    revalidate: 10,
+    }
   };
 }

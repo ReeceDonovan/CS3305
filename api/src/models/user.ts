@@ -17,7 +17,7 @@ import Review from "./review";
 export enum UserType {
   RESEARCHER = "RESEARCHER",
   REVIEWER = "REVIEWER",
-  ADMIN = "ADMIN",
+  COORDINATOR = "COORDINATOR",
 }
 
 @OrmEntity("users")
@@ -29,7 +29,7 @@ export default class User extends Entity {
 
   @Column({ type: "text", nullable: false, default: "RESEARCHER" })
   @IsEnum(UserType)
-  type: UserType;
+  role: UserType;
 
   @Index({ unique: true })
   @IsEmail()
@@ -47,10 +47,6 @@ export default class User extends Entity {
 
   @Column({ type: "text", nullable: true })
   avatar: string;
-
-  @IsEnum(["researcher", "reviewer", "admin"])
-  @Column({ default: "researcher" })
-    role: string;
 
   @ManyToMany(() => Application, (application) => application.submitter)
   @JoinTable()
@@ -75,7 +71,7 @@ export default class User extends Entity {
     });
   }
 
-  static async getByType(type: UserType) {
-    return await dbConn.getRepository(User).find({ type });
+  static async getByType(role: UserType) {
+    return await dbConn.getRepository(User).find({ role });
   }
 }

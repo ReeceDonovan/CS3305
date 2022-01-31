@@ -3,6 +3,7 @@
  */
 import express from "express";
 import config, { configInterface } from "../config/config";
+import { UserType } from "../models/user";
 import response from "../utils/response";
 
 const settingsRouter = express.Router();
@@ -10,7 +11,7 @@ const settingsRouter = express.Router();
 settingsRouter.get(
   "/settings",
   (req: express.Request, res: express.Response) => {
-    if (req.user.type === "ADMIN") {
+    if (req.user.role === UserType.COORDINATOR) {
       const authorizedResponse: response = {
         data: config.get(),
         message: "Success",
@@ -31,7 +32,7 @@ settingsRouter.get(
 settingsRouter.post(
   "/settings",
   (req: express.Request, res: express.Response) => {
-    if (req.user.type === "ADMIN") {
+    if (req.user.role === UserType.COORDINATOR) {
       const authorizedResponse: response = {
         data: null,
         message: "Success",
