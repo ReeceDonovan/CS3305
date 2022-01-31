@@ -48,87 +48,84 @@ export interface configInterface {
   emailProvider: string;
   emailUser: string;
   emailToken: string;
-  emailConfigs: Array<emailConfig>;
-  oauthConfig: oauthConfig;
+  emailConfigs: emailConfigInterface[];
+  oauthConfig: {
+    oauthClientId: string;
+    oauthClientSecret: string;
+    allowedDomains: string[];
+  };
   signingKey: string;
   landingPageMD: string;
-  databaseConfig: databaseConfig;
+  databaseConfig: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    database: string;
+  };
 }
 
-interface emailConfig {
+interface emailConfigInterface {
   host: string;
   port: number;
   secure?: boolean;
   tls?: {
-    ciphers?: string;
+    ciphers: string;
   };
 }
 
-interface oauthConfig {
-  oauthClientId: string;
-  oauthClientSecret: string;
-  allowedDomains: Array<string>;
-}
-
-interface databaseConfig {
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-}
-
 class Config {
-  private path: string;
-  private static currentConfig: configInterface;
+  private static path: string = path.join("config.json");
+  private static config: configInterface;
 
   constructor() {
-    this.path = path.join("config.json");
-    Config.currentConfig = defaultConfig;
-    fs.readFile(this.path, "utf-8", (err, data) => {
-      if (err) {
-        this.update(defaultConfig);
-        Config.currentConfig = defaultConfig;
-        console.log("No file found, creating new config file");
+    if (!Config.config) {
+      var newConfig: configInterface = Config.readConfig();
+      if (this.validate(newConfig)) {
+        Config.config = newConfig;
       } else {
-        try {
-          Config.currentConfig = JSON.parse(data);
-          if (
-            Object.keys(Config.currentConfig).sort().toString() !=
-            Object.keys(defaultConfig).sort().toString()
-          )
-            console.log("Discrepancy within the config/Missing parameters");
-        } catch (error) {
-          fs.rename(this.path, "old." + this.path, () => {
-            console.error("Failed to rename");
-          });
-          this.update(defaultConfig);
-          Config.currentConfig = defaultConfig;
-        }
+        Config.config = defaultConfig;
+        Config.writeConfig(Config.config);
       }
-    });
+    }
   }
 
-  public update(newJSON: configInterface) {
-    fs.writeFile(this.path, JSON.stringify(newJSON), { flag: "w+" }, (err) => {
-      if (err) return console.log(err);
-      Config.currentConfig = newJSON;
-    });
+  // read config
+  public static readConfig(): configInterface {
+    if (!fs.existsSync(Config.path)) {
+      Config.writeConfig(defaultConfig);
+    }
+    return JSON.parse(fs.readFileSync(Config.path, "utf8"));
   }
 
+  // write config
+  public static writeConfig(config: configInterface): void {
+    // if there is already a config file, create a backup before writing
+    if (fs.existsSync(Config.path)) {
+      fs.writeFileSync(Config.path + ".bak", fs.readFileSync(Config.path));
+    }
+    fs.writeFileSync(Config.path, JSON.stringify(config, null, 2));
+  }
+
+  // get config
   public get(): configInterface {
-    return Config.currentConfig;
+    return Config.config;
   }
 
-  public read(): configInterface {
-    fs.readFile(this.path, "utf-8", (err, data) => {
-      if (err) return console.log(err);
-      Config.currentConfig = JSON.parse(data);
-    });
-    return Config.currentConfig;
+  // set config
+  public set(config: configInterface): void {
+    if (this.validate(config)) {
+      Config.writeConfig(config);
+      Config.config = config;
+    }
+  }
+
+  // validate config
+  private validate(newConfig: configInterface): boolean {
+    var newKeys = Object.keys(newConfig).sort();
+    var defaultKeys = Object.keys(defaultConfig).sort();
+    return JSON.stringify(newKeys) === JSON.stringify(defaultKeys);
   }
 }
 
-const config = new Config();
-
-export default config;
+export default new Config();
