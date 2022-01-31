@@ -3,6 +3,8 @@ import path from "path";
 
 // Add onto this as needed
 const defaultConfig: configInterface = {
+  apiURL: "http://localhost:8000",
+  uiURL: "http://localhost:3000",
   emailProvider: "gmail",
   emailUser: "",
   emailToken: "",
@@ -45,6 +47,8 @@ const defaultConfig: configInterface = {
 };
 
 export interface configInterface {
+  uiURL: string;
+  apiURL: string;
   emailProvider: string;
   emailUser: string;
   emailToken: string;

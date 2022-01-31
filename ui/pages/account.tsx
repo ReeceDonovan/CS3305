@@ -105,7 +105,7 @@ const AccountPage: NextPage = () => {
                 path: "/users",
                 data: { name: name, bio: bio, school: school },
               }).then((res) => {
-                if ((res.status == 200)) {
+                if (res.status == 200) {
                   setSubmit_success(3);
                 } else {
                   setSubmit_success(2);

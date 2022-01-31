@@ -1,10 +1,12 @@
 import axios, { Method } from "axios";
+import { User } from "./types";
+
+export const API_URL = process.env.API_URL || "http://localhost:8000";
 
 export interface RequestParams {
   path: string;
   method: Method;
   data?: any;
-  // headers?: any
 }
 
 export interface StandardResponse {
@@ -19,7 +21,17 @@ const exampleResponse: StandardResponse = {
   data: { hello: "world" },
 };
 
-const API_URL = "/api";
+export const getToken = async (): Promise<User | null> => {
+  const jwt = await localStorage.getItem("token");
+  if (jwt) {
+    console.log(jwt);
+    const claims = jwt.split(".")[1];
+    const parsedClaims: User = JSON.parse(atob(claims))?.user;
+    console.log(parsedClaims);
+    return parsedClaims;
+  }
+  return null;
+};
 
 export const saveCredentials = async (token: string): Promise<void> => {
   return await localStorage.setItem("token", token);
@@ -53,7 +65,7 @@ export const request = async (
 export const fetchPDF = async (id: string) => {
   try {
     const req = await axios({
-      url: `/api/applications/${id}/form`,
+      url: `${API_URL}/applications/${id}/form`,
       method: "GET",
       responseType: "blob",
       headers: {
