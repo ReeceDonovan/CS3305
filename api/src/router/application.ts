@@ -2,37 +2,74 @@ import express from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
-import { getRepository } from "typeorm";
+import { getRepository, Connection, In } from "typeorm";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
-import User from "../models/user";
+import User, { UserType } from "../models/user";
 import Response from "../utils/response";
-
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
 
 appRouter.get("/", async (req: express.Request, res: express.Response) => {
-  const applications = await getRepository(Application).find({
-    order: { updatedAt: "DESC" },
-    take: 15,
-    relations: ["submitter", "reviews"],
-  });
-  let resp: Response;
-  if (applications.length > 0) {
-    resp = {
-      status: 200,
-      message: "Success",
-      data: applications,
-    };
-  } else {
-    resp = {
-      status: 200,
-      message: "No applications found",
+  let applications: Array<Application>;
+  try {
+    switch (req.user.role) {
+      case UserType.COORDINATOR:
+        applications = await getRepository(Application).find({
+          relations: ["submitter", "reviews", "reviewers"],
+          where: {
+            status: ReviewStatus.PENDING,
+          },
+        });
+
+      case UserType.REVIEWER:
+        applications = await getRepository(Application).find({
+          relations: ["submitter", "reviews", "reviewers"],
+          where: {
+            status: ReviewStatus.INREVIEW,
+          },
+        });
+
+        applications.forEach((application) => {
+          if (!application.reviewers.includes(req.user)) {
+            applications.splice(applications.indexOf(application), 1);
+          }
+        });
+
+      default:
+        applications = await getRepository(Application).find({
+          relations: ["submitter", "reviews", "reviewers"],
+          where: {
+            submitter: req.user,
+          },
+        });
+    }
+    let response: Response;
+
+    applications.length > 0
+      ? (response = {
+          status: 200,
+          message: "Success",
+          data: applications,
+        })
+      : (response = {
+          status: 404,
+          data: null,
+          message: "No applications found",
+        });
+
+    res.json(response);
+  } catch (err) {
+    console.error(err);
+
+    const response: Response = {
+      status: 500,
       data: null,
+      message: "Internal server error",
     };
+    res.json(response);
   }
-  res.json(resp);
 });
 
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
