@@ -7,9 +7,6 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  TableToolbar,
-  TableToolbarContent,
-  TableToolbarSearch,
 } from "carbon-components-react";
 
 import Link from "next/link";
