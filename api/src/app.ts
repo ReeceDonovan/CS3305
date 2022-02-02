@@ -28,6 +28,11 @@ const app = express();
 
 const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about"];
 
+//allow lists btw
+const researcher_routes = ["/", "/applications", "/users"];
+const reviewer_routes = ["/", "/applications", "/users", "/reviews"];
+const admin_routes = ["/", "/applications", "/users", "/admin", "/reviews"];
+
 const corsOptions = {
   origin: "http://localhost:3000",
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -61,7 +66,25 @@ app.use(async (req: express.Request, res: express.Response, next) => {
     if (token !== null) {
       const user = await User.getByEmail(token.user.email);
       req.user = user;
-      return next();
+      
+      // general sec
+      let path = req.url.split("?")[0];
+      console.log(path)
+      if (user.role === "RESEARCHER" && researcher_routes.includes(path)){
+        return next();
+      }else if (user.role === "REVIEWER" && reviewer_routes.includes(path)){
+        return next();
+      }else if (user.role === "COORDINATOR" && admin_routes.includes(path)){
+        return next();
+      }else{
+        const unauthorizedResponse: response = {
+          data: null,
+          message: "Unauthorized",
+          status: 401,
+        };
+        return res.status(401).json(unauthorizedResponse);
+      }
+      
     }
   }
 
