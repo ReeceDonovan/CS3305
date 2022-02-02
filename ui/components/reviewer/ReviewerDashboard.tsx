@@ -48,6 +48,16 @@ export default function ReviewerDashboard() {
   }, []);
 
   return (
-    <>{loading == true ? <Loading /> : <ApplicationTable rows={rowData} />}</>
+    <>
+      {loading == true ? (
+        <Loading />
+      ) : (
+        <ApplicationTable
+          title="Application Table"
+          description="Applications for you to review"
+          rows={rowData}
+        />
+      )}
+    </>
   );
 }

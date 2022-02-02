@@ -26,8 +26,11 @@ interface RowDataType {
   status: string;
 }
 
-export default function ApplicationTable(props: { rows: RowDataType[] }) {
-
+export default function ApplicationTable(props: {
+  title: string;
+  description: string;
+  rows: RowDataType[];
+}) {
   const headerData = [
     {
       key: "name",
@@ -77,18 +80,9 @@ export default function ApplicationTable(props: { rows: RowDataType[] }) {
           getRowProps,
         }) => (
           <TableContainer
-            title="Applications"
-            description="Manage applications"
+            title={props.title || "Applications"}
+            description={props.description || "Manage Applications"}
           >
-            <TableToolbarContent>
-              <TableToolbar aria-label="data table toolbar">
-                <TableToolbarSearch
-                  onChange={(e) => {
-                    console.log(e);
-                  }}
-                />
-              </TableToolbar>
-            </TableToolbarContent>
             <Table {...getTableProps()}>
               <TableHead>
                 <TableRow>
@@ -96,7 +90,7 @@ export default function ApplicationTable(props: { rows: RowDataType[] }) {
                     // @ts-expect-error
                     (header) => (
                       // eslint-disable-next-line react/jsx-key
-                      <TableHeader {...getHeaderProps({ header })}>
+                      <TableHeader {...getHeaderProps({ header })} isSortable>
                         {header.header}
                       </TableHeader>
                     )
