@@ -1,9 +1,19 @@
 import express from "express";
 import User from "../models/user";
+import Response from "../utils/response";
 
 const userRouter = express.Router();
 
 userRouter.get("/:id", async (req, res) => {
+  let user = await User.getById(parseInt(req.params.id))
+  if (!user || req.user != user){
+    const re: Response = {
+      status: 404,
+      message: "User not found",
+      data: null,
+    };
+    return res.send(JSON.stringify(re));
+  }
   res.json(await User.getById(parseInt(req.params.id)));
 });
 
@@ -23,6 +33,10 @@ userRouter.patch("/", (req, res) => {
 
   if (req.body.name){
     user.school = req.body.school;
+  }
+
+  if (req.body.role){
+    user.role = req.body.role;
   }
 
   user.save();
