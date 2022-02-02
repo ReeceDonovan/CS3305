@@ -79,22 +79,45 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
     "reviews.reviewer",
     "supervisors",
   ]);
-  if (!application) {
-    const re: Response = {
-      status: 404,
-      message: "Application not found",
-      data: null,
-    };
-    console.log(application);
-    return res.send(JSON.stringify(re));
-  }
 
-  const re = {
+  const OkResponse: Response = {
     status: 200,
     message: "Success",
     data: application,
   };
-  return res.json(re);
+
+  const UnauthorizedResponse: Response = {
+    status: 403,
+    message: "Forbidden",
+    data: null,
+  };
+
+  if (req.user.role === UserType.COORDINATOR) {
+    if (!application) {
+      const re: Response = {
+        status: 404,
+        message: "Application not found",
+        data: null,
+      };
+      return res.send(UnauthorizedResponse);
+    }
+
+    return res.json(OkResponse);
+  } else if (req.user.role === UserType.REVIEWER) {
+    if (!application.reviewers.includes(req.user)) {
+      return res.json(UnauthorizedResponse);
+    }
+  } else {
+    if (
+      application.submitter.id === req.user.id ||
+      application.supervisors.includes(req.user) ||
+      application.coauthors.includes(req.user)
+    ) {
+      return res.json(OkResponse);
+    }
+  }
+
+  return res.json(UnauthorizedResponse);
 });
 
 appRouter.get(
