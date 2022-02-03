@@ -15,6 +15,7 @@ import {
 import * as api from "../../api";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import ApplicationTable from "../ApplicationTable";
 
 interface RowDataType {
   id: number;
@@ -90,102 +91,6 @@ export default function ReviewerDataTable() {
   ];
 
   return (
-    <>
-      {loading == true ? (
-        <Loading />
-      ) : (
-        <DataTable
-          // isSortable
-          useZebraStyles
-          // @ts-expect-error
-          rows={rowData}
-          headers={headerData}
-        >
-          {({
-            // @ts-expect-error
-            rows,
-            // @ts-expect-error
-            headers,
-            // @ts-expect-error
-            getTableProps,
-            // @ts-expect-error
-            getHeaderProps,
-            // @ts-expect-error
-            getRowProps,
-          }) => (
-            <TableContainer
-              title="Applications"
-              description="Manage applications"
-            >
-              <TableToolbarContent>
-                <TableToolbar aria-label="data table toolbar">
-                  <TableToolbarSearch
-                    onChange={(e) => {
-                      console.log(e);
-                    }}
-                  />
-                </TableToolbar>
-              </TableToolbarContent>
-              <Table {...getTableProps()}>
-                <TableHead>
-                  <TableRow>
-                    {headers.map(
-                      // @ts-expect-error
-                      (header) => (
-                        // eslint-disable-next-line react/jsx-key
-                        <TableHeader {...getHeaderProps({ header })}>
-                          {header.header}
-                        </TableHeader>
-                      )
-                    )}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map(
-                    // @ts-expect-error
-                    (row) => (
-                      // eslint-disable-next-line react/jsx-key
-                      <TableRow {...getRowProps({ row })}>
-                        {row.cells.map(
-                          // @ts-expect-error
-                          (cell, i) => (
-                            <TableCell key={cell.id}>
-                              {i === 0 ? (
-                                <Link href={`/application/${row.id}`}>
-                                  <a>
-                                    <span>
-                                      {row.cells[0].value
-                                        ? row.cells[0].length > 30
-                                          ? row.cells[0].value.substring(
-                                              0,
-                                              30
-                                            ) + "..."
-                                          : row.cells[0].value
-                                        : `No name ${row.id}`}
-                                    </span>
-                                  </a>
-                                </Link>
-                              ) : (
-                                <span>
-                                  {cell.value
-                                    ? cell.value.length > 30
-                                      ? cell.value.substring(0, 30) + "..."
-                                      : cell.value
-                                    : "No data"}
-                                </span>
-                              )}
-                            </TableCell>
-                          )
-                        )}
-                      </TableRow>
-                    )
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </DataTable>
-      )}
-    </>
+    <>{loading == true ? <Loading /> : <ApplicationTable title={"My Applications"} rows={rowData} />}</>
   );
 }

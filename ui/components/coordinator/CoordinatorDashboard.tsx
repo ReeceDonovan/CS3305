@@ -15,7 +15,7 @@ interface RowDataType {
   status: string;
 }
 
-export default function ReviewerDashboard() {
+export default function CoordinatorDashboard() {
   const [rowData, setRowdata] = useState([] as RowDataType[]);
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +48,6 @@ export default function ReviewerDashboard() {
   }, []);
 
   return (
-    <>{loading == true ? <Loading /> : <ApplicationTable title={"Reviewer Panel"} rows={rowData} />}</>
+    <>{loading == true ? <Loading /> : <ApplicationTable title={"Coordinator Panel"} rows={rowData} />}</>
   );
 }

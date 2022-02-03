@@ -26,7 +26,7 @@ interface RowDataType {
   status: string;
 }
 
-export default function ApplicationTable(props: { rows: RowDataType[] }) {
+export default function ApplicationTable(props: { title:String; rows: RowDataType[] }) {
 
   const headerData = [
     {
@@ -77,7 +77,7 @@ export default function ApplicationTable(props: { rows: RowDataType[] }) {
           getRowProps,
         }) => (
           <TableContainer
-            title="Applications"
+            title={props.title}
             description="Manage applications"
           >
             <TableToolbarContent>
