@@ -1,20 +1,8 @@
 import {
-  DataTable,
   Loading,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableToolbar,
-  TableToolbarContent,
-  TableToolbarSearch,
 } from "carbon-components-react";
 import * as api from "../../api";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import ApplicationTable from "../ApplicationTable";
 
 interface RowDataType {
@@ -62,33 +50,6 @@ export default function ReviewerDataTable() {
       }
     })();
   }, []);
-
-  const headerData = [
-    {
-      key: "name",
-      header: "Name",
-    },
-    {
-      key: "submitter",
-      header: "Submitter",
-    },
-    {
-      key: "field",
-      header: "Field",
-    },
-    {
-      key: "createdAt",
-      header: "Submitted",
-    },
-    {
-      key: "updatedAt",
-      header: "Updated",
-    },
-    {
-      key: "status",
-      header: "Status",
-    },
-  ];
 
   return (
     <>{loading == true ? <Loading /> : <ApplicationTable title={"My Applications"} rows={rowData} />}</>
