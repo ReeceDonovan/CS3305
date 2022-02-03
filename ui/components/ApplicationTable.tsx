@@ -18,6 +18,7 @@ import { useState } from "react";
 ApplicationTable.defaultProps = {
   title: "Applications",
   description: "",
+  rows: [],
   headers: [
     {
       key: "name",
@@ -52,8 +53,6 @@ export default function ApplicationTable(props: {
   headers: Array<{ key: string; header: string }>;
   rows: Array<Object>;
 }) {
-  const [rowData, setRowdata] = useState(props.rows);
-  setRowdata(props.rows);
 
   const headerData = props.headers;
 
@@ -63,7 +62,7 @@ export default function ApplicationTable(props: {
         // isSortable
         useZebraStyles
         // @ts-expect-error
-        rows={rowData}
+        rows={props.rows}
         headers={headerData}
       >
         {({

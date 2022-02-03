@@ -29,13 +29,11 @@ const Submit = () => {
   );
 
   const sendApplication = async () => {
-    console.log(pdfFile, "bruh");
     const form_data = new FormData();
-    // for (let i = 0; i < pdf_files.length; i++) {
     if (pdfFile) {
       form_data.append("pdf_form", pdfFile);
     } else {
-      console.log("pepega");
+      console.error("No pdf file");
     }
 
     form_data.append(
@@ -82,8 +80,8 @@ const Submit = () => {
           }}
         >
           Ensure that the document you are submitting is in PDF format and
-          <Link href="/about#form"> up to date </Link>. By submitting an application,
-          you agree to the
+          <Link href="/about#form"> up to date </Link>. By submitting an
+          application, you agree to the
           <Link href="/about#terms"> terms and conditions </Link>.
         </p>
 
