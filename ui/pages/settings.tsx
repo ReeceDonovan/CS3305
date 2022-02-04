@@ -7,9 +7,10 @@ import {
   TextArea,
   Tag
 } from "carbon-components-react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import * as api from "../api";
 import { configInterface, emailConfig } from "../api/types";
+import NetworkManager from "../components/NetworkManager";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -28,29 +29,28 @@ const Settings = () => {
   const [dbPort, setDBPort] = useState<number>(0);
   const [dbName, setDBName] = useState<string>("");
 
+  const nm_ctx = useContext(NetworkManager)
+
   useEffect(() => {
     async () => {
-      await api
-        .request({ path: "/admin/settings", method: "GET" })
+      
+      nm_ctx.request({ path: "/admin/settings", method: "GET" })
         .then((res) => {
-          console.log(res);
-          if (res.status === 200) {
-            setEmailProvider(res.data.emailProvider);
-            setEmailUser(res.data.emailUser);
-            setEmailToken(res.data.emailToken);
-            setEmailConfigs(res.data.emailConfigs);
-            setOAuthClientID(res.data.oauthConfig.oauthClientId);
-            setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
-            setAllowedDomains(res.data.oauthConfig.allowedDomains);
-            setLandingPageMD(res.data.landingPageMD);
-            setSigningKey(res.data.signingKey);
-            setDBUsername(res.data.databaseConfig.username);
-            setDBPassword(res.data.databaseConfig.password);
-            setDBHost(res.data.databaseConfig.host);
-            setDBPort(res.data.databaseConfig.port);
-            setDBName(res.data.databaseConfig.database);
-          }
-        });
+          setEmailProvider(res.data.emailProvider);
+          setEmailUser(res.data.emailUser);
+          setEmailToken(res.data.emailToken);
+          setEmailConfigs(res.data.emailConfigs);
+          setOAuthClientID(res.data.oauthConfig.oauthClientId);
+          setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
+          setAllowedDomains(res.data.oauthConfig.allowedDomains);
+          setLandingPageMD(res.data.landingPageMD);
+          setSigningKey(res.data.signingKey);
+          setDBUsername(res.data.databaseConfig.username);
+          setDBPassword(res.data.databaseConfig.password);
+          setDBHost(res.data.databaseConfig.host);
+          setDBPort(res.data.databaseConfig.port);
+          setDBName(res.data.databaseConfig.database);
+        }).catch((_)=>{});
     };
   }, []);
 
@@ -77,7 +77,7 @@ const Settings = () => {
         database: dbName,
       },
     };
-    api
+    nm_ctx
       .request({ path: "/admin/settings", method: "POST", data: newConfig })
       .then((_res) => {
         setSubmitting(false);

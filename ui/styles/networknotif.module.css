@@ -1,0 +1,18 @@
+.notif {
+    /* background-color: red; */
+    bottom: 0.75em;
+    right: 0.75em;
+    position: absolute;
+    transform: translate(-0%, -0%);
+    background-color: white;
+    color: black;
+    border-radius: 0.25em;
+    padding:0.5em;
+}
+
+
+.notif p {
+    display: inline;
+    top:50%;
+    transform: translateY(-50%);
+}

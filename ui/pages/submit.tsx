@@ -7,8 +7,9 @@ import {
   TextInput,
 } from "carbon-components-react";
 import Link from "next/link";
-import React, { KeyboardEvent, useState } from "react";
+import React, { KeyboardEvent, useContext, useState } from "react";
 import * as api from "../api";
+import NetworkManager from "../components/NetworkManager";
 
 const Submit = () => {
   const [modiflag, setModiflag] = useState(false);
@@ -21,6 +22,8 @@ const Submit = () => {
   const [supervisors, setSupervisors] = useState<string[]>([]);
 
   const [pdfFile, setPdfFile] = useState<File>();
+
+  const nm_ctx = useContext(NetworkManager)
 
   // let pdf_files: File[] = [];
 
@@ -50,7 +53,7 @@ const Submit = () => {
     );
     console.log(form_data);
 
-    api
+    nm_ctx
       .request({
         method: "POST",
         path: "/applications",
@@ -60,7 +63,7 @@ const Submit = () => {
         if (resp.status != 201) {
           setError_msg(resp.message);
         }
-      });
+      }).catch((_)=>{});
   };
 
   return (

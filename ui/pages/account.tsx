@@ -1,49 +1,35 @@
 import type { NextPage } from "next";
 import { Button, Form, TextInput } from "carbon-components-react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import * as api from "../api";
-import { request } from "../api/index";
 import {
-  Checkmark32,
-  Error32,
-  InProgress32,
   Login32,
   Save32,
 } from "@carbon/icons-react";
 import styles from "../styles/account.module.css";
+import NetworkManager, { NiceParams } from "../components/NetworkManager";
 
 const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
 
-  // 0 is nothing, 1 is in progress, 2 is failure, 3 is success
-  const [submit_success, setSubmit_success] = useState<number>(0);
+  const nm_ctx = useContext(NetworkManager);
 
-  let save_state = <> </>;
-  if (submit_success === 1) {
-    save_state = <InProgress32 className={styles.resultIcon} />;
-  } else if (submit_success == 2) {
-    save_state = <Error32 className={styles.resultIcon} />;
-  } else if (submit_success == 3) {
-    save_state = <Checkmark32 className={styles.resultIcon} />;
-  } else {
-    save_state = <> </>;
-  }
 
   useEffect(() => {
-    (async () => {
-      const user = await api.request({
-        path: "/users",
-        method: "GET",
-      });
+    nm_ctx.request({
+      path: "/users",
+      method: "GET",
+    }).then((user)=> {
       if (user.status == 200) {
         setName(user.data.name);
         setBio(user.data.bio);
         setSchool(user.data.school);
-      }
-    })();
+    }}).catch((_)=>{});
   }, []);
+
+  
 
   return (
     <>
@@ -99,25 +85,18 @@ const AccountPage: NextPage = () => {
             disabled={!name && !bio && !school}
             onClick={(e) => {
               e.preventDefault();
-              setSubmit_success(1);
-              request({
+              nm_ctx.request({
                 method: "PATCH",
                 path: "/users",
                 data: { name: name, bio: bio, school: school },
-              }).then((res) => {
-                if (res.status == 200) {
-                  setSubmit_success(3);
-                } else {
-                  setSubmit_success(2);
-                }
-              });
+                show_progress: true
+              }).catch();
             }}
             renderIcon={Save32}
           >
             Save
           </Button>
         </div>
-        <span>{save_state}</span>
       </Form>
     </>
   );
