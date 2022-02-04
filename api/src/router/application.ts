@@ -1,8 +1,9 @@
+import e from "express";
 import express from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
-import { getRepository, Connection, In } from "typeorm";
+import { getRepository } from "typeorm";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
 import User, { UserType } from "../models/user";
@@ -12,64 +13,59 @@ const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
 
 appRouter.get("/", async (req: express.Request, res: express.Response) => {
+  const target = req.query.t;
   let applications: Array<Application>;
-  try {
-    switch (req.user.role) {
-      case UserType.COORDINATOR:
-        applications = await getRepository(Application).find({
-          relations: ["submitter", "reviews", "reviewers"],
-          where: {
-            status: ReviewStatus.PENDING,
-          },
-        });
+  let response: Response;
 
-      case UserType.REVIEWER:
-        applications = await getRepository(Application).find({
+  // depending on target and user type, return different applications
+  switch (target) {
+    case "review":
+      if (req.user.role == UserType.REVIEWER) {
+        applications = await Application.find({
           relations: ["submitter", "reviews", "reviewers"],
           where: {
             status: ReviewStatus.INREVIEW,
           },
         });
 
-        applications.forEach((application) => {
-          if (!application.reviewers.includes(req.user)) {
-            applications.splice(applications.indexOf(application), 1);
-          }
-        });
-
-      default:
-        applications = await getRepository(Application).find({
-          relations: ["submitter", "reviews", "reviewers"],
-          where: {
-            submitter: req.user,
-          },
-        });
-    }
-    let response: Response;
-
-    applications.length > 0
-      ? (response = {
+        response = {
           status: 200,
-          message: "Success",
+          message: "Successfully retrieved applications.",
           data: applications,
-        })
-      : (response = {
-          status: 404,
+        };
+      } else {
+        response = {
+          status: 403,
+          message: "You are not authorized to view this page.",
           data: null,
-          message: "No applications found",
-        });
+        };
+      }
 
-    res.json(response);
-  } catch (err) {
-    console.error(err);
+    case "all":
+      if (req.user.role == UserType.COORDINATOR) {
+        applications = await Application.find();
+        response = {
+          message: "Success",
+          status: 200,
+          data: applications,
+        };
+      }
 
-    const response: Response = {
-      status: 500,
-      data: null,
-      message: "Internal server error",
-    };
-    res.json(response);
+    default:
+      applications = await Application.find({
+        relations: ["submitter", "reviews", "reviewers"],
+        where: {
+          submitter: req.user,
+        },
+      });
+      response = {
+        message: "Success",
+        status: 200,
+        data: applications,
+      };
   }
+
+  res.json(response);
 });
 
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
