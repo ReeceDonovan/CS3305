@@ -13,6 +13,7 @@ import User from "./user";
 
 export enum ReviewStatus {
   APPROVED = "APPROVED",
+  INREVIEW = "INREVIEW",
   PENDING = "PENDING",
   DECLINED = "DECLINED",
 }

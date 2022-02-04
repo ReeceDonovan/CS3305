@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import { dbConn } from "./database";
 import Entity from "./entity";
-import Review from "./review";
+import Review, { ReviewStatus } from "./review";
 import User from "./user";
 
 
@@ -24,6 +24,9 @@ export default class Application extends Entity {
 
   @Column({ type: "text", nullable: true })
   description: string;
+  
+  @Column({ type: "text", nullable: true })
+  status: ReviewStatus;
 
   @Column({ type: "text", nullable: true })
   field: string;

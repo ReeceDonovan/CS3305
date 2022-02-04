@@ -8,12 +8,10 @@ import {
   TableHeader,
   TableRow,
   TableToolbar,
-  TableToolbarContent,
-  TableToolbarSearch,
+  TableToolbarContent
 } from "carbon-components-react";
 
 import Link from "next/link";
-import { useState } from "react";
 
 ApplicationTable.defaultProps = {
   title: "Applications",
@@ -80,11 +78,6 @@ export default function ApplicationTable(props: {
           <TableContainer title={props.title} description={props.description}>
             <TableToolbarContent>
               <TableToolbar aria-label="data table toolbar">
-                <TableToolbarSearch
-                  onChange={(e) => {
-                    console.log(e);
-                  }}
-                />
               </TableToolbar>
             </TableToolbarContent>
             <Table {...getTableProps()}>
@@ -94,7 +87,7 @@ export default function ApplicationTable(props: {
                     // @ts-expect-error
                     (header) => (
                       // eslint-disable-next-line react/jsx-key
-                      <TableHeader {...getHeaderProps({ header })}>
+                      <TableHeader {...getHeaderProps({ header })} isSortable>
                         {header.header}
                       </TableHeader>
                     )
