@@ -23,7 +23,7 @@ export default function CoordinatorDashboard() {
     (async () => {
       const resp = await api.request({
         method: "GET",
-        path: "/applications",
+        path: "/applications?t=all",
       });
 
       if (resp?.data) {
@@ -36,8 +36,6 @@ export default function CoordinatorDashboard() {
           resp.data[i].createdAt = new Date(
             resp.data[i].createdAt
           ).toLocaleDateString();
-          resp.data[i].status =
-            resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
           console.log(resp.data[i]);
         }
 
@@ -48,6 +46,12 @@ export default function CoordinatorDashboard() {
   }, []);
 
   return (
-    <>{loading == true ? <Loading /> : <ApplicationTable title={"Coordinator Panel"} rows={rowData} />}</>
+    <>
+      {loading == true ? (
+        <Loading />
+      ) : (
+        <ApplicationTable title={"Coordinator Panel"} rows={rowData} />
+      )}
+    </>
   );
 }

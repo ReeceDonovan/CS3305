@@ -23,7 +23,7 @@ export default function ReviewerDashboard() {
     (async () => {
       const resp = await api.request({
         method: "GET",
-        path: "/applications",
+        path: "/applications?t=review",
       });
 
       if (resp?.data) {

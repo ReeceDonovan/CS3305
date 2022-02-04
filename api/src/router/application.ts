@@ -28,6 +28,13 @@ appRouter.get("/", async (req: express.Request, res: express.Response) => {
           },
         });
 
+        applications.forEach((application) => {
+          // filter out applications that the user is not assigned to review
+          if (!application.reviewers.includes(req.user)) {
+            applications.splice(applications.indexOf(application), 1);
+          }
+        });
+
         response = {
           status: 200,
           message: "Successfully retrieved applications.",
@@ -40,6 +47,7 @@ appRouter.get("/", async (req: express.Request, res: express.Response) => {
           data: null,
         };
       }
+      break;
 
     case "all":
       if (req.user.role == UserType.COORDINATOR) {
@@ -49,7 +57,14 @@ appRouter.get("/", async (req: express.Request, res: express.Response) => {
           status: 200,
           data: applications,
         };
+      } else {
+        response = {
+          status: 403,
+          message: "You are not authorized to view this page.",
+          data: null,
+        };
       }
+      break;
 
     default:
       applications = await Application.find({
