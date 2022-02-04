@@ -23,6 +23,7 @@ import { Add16, Chat16 } from "@carbon/icons-react";
 import Link from "next/link";
 
 const ApplicationPage: NextPage = () => {
+  const [user, setUser] = useState<User>();
   const router = useRouter();
   const [application, setApplication] = useState<any>();
   const [pdf, setPDF] = useState<ArrayBuffer>();
@@ -39,6 +40,15 @@ const ApplicationPage: NextPage = () => {
 
   const [reviewStatus, setReviewStatus] = useState("");
   const [statusErrMsg, setstatusErrMsg] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const user = await api.getToken();
+      if (user) {
+        setUser(user);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const slug = router.query.slug as string;
@@ -151,46 +161,49 @@ const ApplicationPage: NextPage = () => {
             </div>
           )}
         </Tab>
-        <Tab href="#edit" id="edit" label="Edit">
-          <Form
-            className={styles.edit}
-            style={{
-              height: "90vh",
-              width: "100%",
-            }}
-          >
-            <TextInput
-              id="title"
-              labelText="Application Title"
-              placeholder="Title"
-              value={name ? name : ""}
-              onChange={(e) => setName(e.target.value)}
-            />
 
-            <TextArea
-              id="description"
-              labelText="Description"
-              placeholder="Description"
-              value={description ? description : ""}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-
-            <TextInput
-              id="supervisor"
-              labelText="Supervisors"
-              placeholder="Supervisor"
-              value={supervisors ? supervisors : ""}
-              onChange={(e) => setSupervisors(e.target.value)}
-            />
-
-            <Button
-              type="submit"
-              disabled={(name === "" || author === "") && supervisors === ""}
+        {user?.email == application.submitter?.email && 
+          <Tab href="#edit" id="edit" label="Edit">
+            <Form
+              className={styles.edit}
+              style={{
+                height: "90vh",
+                width: "100%",
+              }}
             >
-              Update
-            </Button>
-          </Form>
-        </Tab>
+              <TextInput
+                id="title"
+                labelText="Application Title"
+                placeholder="Title"
+                value={name ? name : ""}
+                onChange={(e) => setName(e.target.value)}
+              />
+
+              <TextArea
+                id="description"
+                labelText="Description"
+                placeholder="Description"
+                value={description ? description : ""}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+
+              <TextInput
+                id="supervisor"
+                labelText="Supervisors"
+                placeholder="Supervisor"
+                value={supervisors ? supervisors : ""}
+                onChange={(e) => setSupervisors(e.target.value)}
+              />
+
+              <Button
+                type="submit"
+                disabled={(name === "" || author === "") && supervisors === ""}
+              >
+                Update
+              </Button>
+            </Form>
+          </Tab>
+}
         <Tab href="#share" id="share" label="Share">
           <span>
             <p>Shareable URL (only to co-authors and supervisors):</p>
