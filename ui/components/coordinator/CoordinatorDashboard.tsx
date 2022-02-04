@@ -3,8 +3,20 @@ import * as api from "../../api";
 import { useEffect, useState } from "react";
 import ApplicationTable from "../ApplicationTable";
 
-export default function ReviewerDataTable() {
-  const [rowData, setRowdata] = useState([]);
+interface RowDataType {
+  id: number;
+  name: string;
+  title: string;
+  field: string;
+  submitter: string;
+  createdAt: string;
+  updatedAt: string;
+  reviewed: string;
+  status: string;
+}
+
+export default function CoordinatorDashboard() {
+  const [rowData, setRowdata] = useState([] as RowDataType[]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,7 +26,8 @@ export default function ReviewerDataTable() {
         path: "/applications",
       });
 
-      if (resp?.data != null) {
+      if (resp?.data) {
+        console.log(resp.data);
         for (let i = 0; i < resp.data.length; i++) {
           resp.data[i].submitter = resp.data[i].submitter?.email;
           resp.data[i].updatedAt = new Date(
@@ -28,26 +41,13 @@ export default function ReviewerDataTable() {
           console.log(resp.data[i]);
         }
 
-        setRowdata(resp.data);
+        setRowdata(resp.data as RowDataType[]);
         setLoading(false);
-      } else {
-        setRowdata([]);
-        setLoading(true);
       }
     })();
   }, []);
 
   return (
-    <>
-      {loading == true ? (
-        <Loading />
-      ) : (
-        <ApplicationTable
-          title={"My Applications"}
-          description={"Applications you've submitted"}
-          rows={rowData}
-        />
-      )}
-    </>
+    <>{loading == true ? <Loading /> : <ApplicationTable title={"Coordinator Panel"} rows={rowData} />}</>
   );
 }

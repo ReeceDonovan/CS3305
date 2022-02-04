@@ -7,28 +7,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableToolbar,
+  TableToolbarContent
 } from "carbon-components-react";
 
 import Link from "next/link";
 
-interface RowDataType {
-  id: number;
-  name: string;
-  title: string;
-  field: string;
-  submitter: string;
-  createdAt: string;
-  updatedAt: string;
-  reviewed: string;
-  status: string;
-}
-
-export default function ApplicationTable(props: {
-  title: string;
-  description: string;
-  rows: RowDataType[];
-}) {
-  const headerData = [
+ApplicationTable.defaultProps = {
+  title: "Applications",
+  description: "",
+  rows: [],
+  headers: [
     {
       key: "name",
       header: "Name",
@@ -53,7 +42,17 @@ export default function ApplicationTable(props: {
       key: "status",
       header: "Status",
     },
-  ];
+  ],
+};
+
+export default function ApplicationTable(props: {
+  title: String;
+  description: String;
+  headers: Array<{ key: string; header: string }>;
+  rows: Array<Object>;
+}) {
+
+  const headerData = props.headers;
 
   return (
     <>
@@ -76,10 +75,11 @@ export default function ApplicationTable(props: {
           // @ts-expect-error
           getRowProps,
         }) => (
-          <TableContainer
-            title={props.title || "Applications"}
-            description={props.description || "Manage Applications"}
-          >
+          <TableContainer title={props.title} description={props.description}>
+            <TableToolbarContent>
+              <TableToolbar aria-label="data table toolbar">
+              </TableToolbar>
+            </TableToolbarContent>
             <Table {...getTableProps()}>
               <TableHead>
                 <TableRow>
