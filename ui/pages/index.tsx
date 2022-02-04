@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import CoordinatorDashboard from "../components/coordinator/CoordinatorDashboard";
 import ResearcherDashboard from "../components/researcher/ResearcherDashboard";
 import ReviewerDashboard from "../components/reviewer/ReviewerDashboard";
+import style from "../styles/index.module.css";
 
 export default function Index() {
   const [user, setUser] = useState<User>();
@@ -20,12 +21,18 @@ export default function Index() {
   return (
     <>
     {user?.role == "COORDINATOR" && (
-        <CoordinatorDashboard />
+        <div className={style.panel}>
+          <CoordinatorDashboard />
+        </div>
       )}
       {user?.role == "REVIEWER" && (
-        <ReviewerDashboard />
+        <div className={style.panel}>
+          <ReviewerDashboard />
+        </div>
       )}
-        <ResearcherDashboard />
+        <div className={style.panel}>
+          <ResearcherDashboard />
+        </div>
     </>
   );
 }
