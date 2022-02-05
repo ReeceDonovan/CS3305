@@ -17,8 +17,13 @@ reviewRouter.get(
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id), []);
     
-    if (!application || check_access(application, req.user)) {
+    if (!application) {
       res.status(404).send("Application not found");
+      return;
+    }
+
+    if(check_access(application, req.user)){
+      res.status(401).send("Unautenticated");
       return;
     }
 
@@ -42,8 +47,13 @@ reviewRouter.post(
       "reviews",
     ]);
 
-    if (!application || check_access(application, req.user)) {
+    if (!application) {
       res.status(404).send("Application not found");
+      return;
+    }
+
+    if(check_access(application, req.user)){
+      res.status(401).send("Unautenticated");
       return;
     }
 

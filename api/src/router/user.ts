@@ -6,10 +6,18 @@ const userRouter = express.Router();
 
 userRouter.get("/:id", async (req, res) => {
   let user = await User.getById(parseInt(req.params.id))
-  if (!user || req.user != user){
+  if (!user || ){
     const re: Response = {
       status: 404,
       message: "User not found",
+      data: null,
+    };
+    return res.send(JSON.stringify(re));
+  }
+  if (req.user != user){
+    const re: Response = {
+      status: 401,
+      message: "Unauthorized",
       data: null,
     };
     return res.send(JSON.stringify(re));
