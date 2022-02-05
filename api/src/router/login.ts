@@ -8,7 +8,6 @@ import User from "../models/user";
 const loginRouter = express.Router();
 
 loginRouter.get("/", async (_req: express.Request, res: express.Response) => {
-  console.log(config.get().oauthConfig.oauthClientId)
   res.redirect(
     `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&client_id=${
       config.get().oauthConfig.oauthClientId
@@ -20,7 +19,6 @@ loginRouter.get(
   "/callback",
   async (req: express.Request, res: express.Response) => {
     const code = req.query["code"];
-    console.log(config.get())
     const r = await axios.post("https://oauth2.googleapis.com/token", {
       code,
       client_id: config.get().oauthConfig.oauthClientId,

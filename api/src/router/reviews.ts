@@ -5,7 +5,6 @@ import Review, { ReviewStatus } from "../models/review";
 import User from "../models/user";
 import Response from "../utils/response";
 
-
 const reviewRouter = express.Router();
 
 const check_access = (application: Application, user: User) => {

@@ -1,7 +1,6 @@
 import express from "express";
 import fs from "fs";
 import multer from "multer";
-import { userInfo } from "os";
 import path from "path";
 import { getRepository } from "typeorm";
 import Application from "../models/application";
