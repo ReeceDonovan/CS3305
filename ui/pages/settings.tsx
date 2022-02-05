@@ -5,7 +5,7 @@ import {
   SelectItem,
   TextInput,
   TextArea,
-  Tag
+  Tag,
 } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
 import * as api from "../api";
@@ -29,13 +29,13 @@ const Settings = () => {
   const [dbPort, setDBPort] = useState<number>(0);
   const [dbName, setDBName] = useState<string>("");
 
-  const nm_ctx = useContext(NetworkManager)
+  const nm_ctx = useContext(NetworkManager);
 
   useEffect(() => {
     async () => {
-      
-      nm_ctx.request({ path: "/admin/settings", method: "GET" })
-        .then((res) => {
+      nm_ctx
+        .request({ path: "/admin/settings", method: "GET" })
+        .then(([res, err_code]) => {
           setEmailProvider(res.data.emailProvider);
           setEmailUser(res.data.emailUser);
           setEmailToken(res.data.emailToken);
@@ -50,7 +50,8 @@ const Settings = () => {
           setDBHost(res.data.databaseConfig.host);
           setDBPort(res.data.databaseConfig.port);
           setDBName(res.data.databaseConfig.database);
-        }).catch((_)=>{});
+        })
+        .catch((_) => {});
     };
   }, []);
 
@@ -105,7 +106,9 @@ const Settings = () => {
               name="emailProvider"
               labelText="Select an Email Provider"
               defaultValue={emailProvider}
-              onChange={(e) => { setEmailProvider(e.target.value) }}
+              onChange={(e) => {
+                setEmailProvider(e.target.value);
+              }}
             >
               {["Gmail", "Outlook"].map((e, i) => {
                 return <SelectItem value={e.toLowerCase()} text={e} key={i} />;
@@ -121,7 +124,9 @@ const Settings = () => {
               labelText={"Email User"}
               placeholder="Email User"
               defaultValue={emailUser}
-              onChange={(e) => { setEmailUser(e.target.value) }}
+              onChange={(e) => {
+                setEmailUser(e.target.value);
+              }}
             />
           </div>
           <div className="bx--col">

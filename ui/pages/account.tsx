@@ -2,12 +2,10 @@ import type { NextPage } from "next";
 import { Button, Form, TextInput } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
 import * as api from "../api";
-import {
-  Login32,
-  Save32,
-} from "@carbon/icons-react";
+import { Login32, Save32 } from "@carbon/icons-react";
 import styles from "../styles/account.module.css";
 import NetworkManager, { NiceParams } from "../components/NetworkManager";
+import { User } from "../api/types";
 
 const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
@@ -16,20 +14,20 @@ const AccountPage: NextPage = () => {
 
   const nm_ctx = useContext(NetworkManager);
 
-
   useEffect(() => {
-    nm_ctx.request({
-      path: "/users",
-      method: "GET",
-    }).then((user)=> {
-      if (user.status == 200) {
-        setName(user.data.name);
-        setBio(user.data.bio);
-        setSchool(user.data.school);
-    }}).catch((_)=>{});
+    async () => {
+      const [res, err_code] = await nm_ctx.request({
+        path: "/users",
+        method: "GET",
+      });
+      const user: User = res.data;
+      if (err_code === 0) {
+        setName(user.name);
+        setBio(user.bio);
+        setSchool(user.field);
+      }
+    };
   }, []);
-
-  
 
   return (
     <>
@@ -85,12 +83,14 @@ const AccountPage: NextPage = () => {
             disabled={!name && !bio && !school}
             onClick={(e) => {
               e.preventDefault();
-              nm_ctx.request({
-                method: "PATCH",
-                path: "/users",
-                data: { name: name, bio: bio, school: school },
-                show_progress: true
-              }).catch();
+              nm_ctx
+                .request({
+                  method: "PATCH",
+                  path: "/users",
+                  data: { name: name, bio: bio, school: school },
+                  show_progress: true,
+                })
+                .catch();
             }}
             renderIcon={Save32}
           >
