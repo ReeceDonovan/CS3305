@@ -6,7 +6,7 @@ const userRouter = express.Router();
 
 userRouter.get("/:id", async (req, res) => {
   let user = await User.getById(parseInt(req.params.id))
-  if (!user || ){
+  if (!user){
     const re: Response = {
       status: 404,
       message: "User not found",

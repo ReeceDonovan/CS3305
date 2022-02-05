@@ -48,13 +48,20 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
     "reviews.reviewer",
     "supervisors",
   ]);
-  if (!application || !check_access(application, req.user)) {
+  if (!application) {
     const re: Response = {
       status: 404,
       message: "Application not found",
       data: null,
     };
-    console.log(application);
+    return res.send(JSON.stringify(re));
+  }
+  if (!check_access(application, req.user)){
+    const re: Response = {
+      status: 401,
+      message: "Unauthorized",
+      data: null,
+    };
     return res.send(JSON.stringify(re));
   }
 
@@ -70,13 +77,20 @@ appRouter.get(
   "/:id/form",
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id));
-    if (!application || !check_access(application, req.user)) {
+    if (!application) {
       const re: Response = {
         status: 404,
         message: "Application not found",
         data: null,
       };
-      console.log(application);
+      return res.send(JSON.stringify(re));
+    }
+    if (!check_access(application, req.user)){
+      const re: Response = {
+        status: 401,
+        message: "Unauthorized",
+        data: null,
+      };
       return res.send(JSON.stringify(re));
     }
     const files = fs.readdirSync(
@@ -189,17 +203,22 @@ appRouter.patch("/:id", async (req: express.Request, res: express.Response) => {
   // console.log(req.body)
   const body = req.body as Application;
   const application = await Application.getById(parseInt(req.params.id));
-  if (!application || !check_access(application, req.user)) {
+  if (!application) {
     const re: Response = {
       status: 404,
       message: "Application not found",
       data: null,
     };
-    console.log(application);
     return res.send(JSON.stringify(re));
   }
-  console.log(application);
-
+  if (!check_access(application, req.user)){
+    const re: Response = {
+      status: 401,
+      message: "Unauthorized",
+      data: null,
+    };
+    return res.send(JSON.stringify(re));
+  }
   if (application) {
     application.name = body.name ? body.name : application.name;
     application.description = body.description
@@ -234,13 +253,20 @@ appRouter.delete(
   "/:id",
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id));
-    if (!application || !check_access(application, req.user)) {
+    if (!application) {
       const re: Response = {
         status: 404,
         message: "Application not found",
         data: null,
       };
-      console.log(application);
+      return res.send(JSON.stringify(re));
+    }
+    if (!check_access(application, req.user)){
+      const re: Response = {
+        status: 401,
+        message: "Unauthorized",
+        data: null,
+      };
       return res.send(JSON.stringify(re));
     }
     if (application) {
