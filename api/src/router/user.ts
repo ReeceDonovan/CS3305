@@ -1,6 +1,6 @@
 import express from "express";
 import User from "../models/user";
-import Response from "../utils/response";
+import Response, { sample_401_res } from "../utils/response";
 
 const userRouter = express.Router();
 
@@ -15,12 +15,7 @@ userRouter.get("/:id", async (req, res) => {
     return res.send(JSON.stringify(re));
   }
   if (req.user != user){
-    const re: Response = {
-      status: 401,
-      message: "Unauthorized",
-      data: null,
-    };
-    return res.send(JSON.stringify(re));
+    return res.status(401).json(sample_401_res);
   }
   res.json(await User.getById(parseInt(req.params.id)));
 });

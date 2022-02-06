@@ -3,7 +3,7 @@ import express from "express";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
 import User from "../models/user";
-import Response from "../utils/response";
+import Response, { sample_401_res } from "../utils/response";
 
 const reviewRouter = express.Router();
 
@@ -22,8 +22,7 @@ reviewRouter.get(
     }
 
     if(check_access(application, req.user)){
-      res.status(401).send("Unautenticated");
-      return;
+      return res.status(401).json(sample_401_res);
     }
 
     if (application.reviews) {
@@ -52,8 +51,7 @@ reviewRouter.post(
     }
 
     if(check_access(application, req.user)){
-      res.status(401).send("Unautenticated");
-      return;
+      return res.status(401).json(sample_401_res);
     }
 
     const review = new Review({

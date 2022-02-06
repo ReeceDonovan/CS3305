@@ -6,7 +6,7 @@ import { getRepository } from "typeorm";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
 import User from "../models/user";
-import Response from "../utils/response";
+import Response, { sample_401_res } from "../utils/response";
 
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -56,12 +56,7 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
     return res.send(JSON.stringify(re));
   }
   if (!check_access(application, req.user)){
-    const re: Response = {
-      status: 401,
-      message: "Unauthorized",
-      data: null,
-    };
-    return res.send(JSON.stringify(re));
+    return res.status(401).json(sample_401_res);
   }
 
   const re = {
@@ -85,12 +80,7 @@ appRouter.get(
       return res.send(JSON.stringify(re));
     }
     if (!check_access(application, req.user)){
-      const re: Response = {
-        status: 401,
-        message: "Unauthorized",
-        data: null,
-      };
-      return res.send(JSON.stringify(re));
+      return res.status(401).json(sample_401_res);
     }
     const files = fs.readdirSync(
       path.join(
@@ -211,12 +201,7 @@ appRouter.patch("/:id", async (req: express.Request, res: express.Response) => {
     return res.send(JSON.stringify(re));
   }
   if (!check_access(application, req.user)){
-    const re: Response = {
-      status: 401,
-      message: "Unauthorized",
-      data: null,
-    };
-    return res.send(JSON.stringify(re));
+    return res.status(401).json(sample_401_res);
   }
   if (application) {
     application.name = body.name ? body.name : application.name;
@@ -261,12 +246,7 @@ appRouter.delete(
       return res.send(JSON.stringify(re));
     }
     if (!check_access(application, req.user)){
-      const re: Response = {
-        status: 401,
-        message: "Unauthorized",
-        data: null,
-      };
-      return res.send(JSON.stringify(re));
+      return res.status(401).json(sample_401_res);
     }
     if (application) {
       await application.remove();
