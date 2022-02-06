@@ -3,11 +3,11 @@ import express from "express";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
 import User from "../models/user";
-import Response, { sample_401_res } from "../utils/response";
+import Response, { sample_401_res, sample_404_res } from "../utils/response";
 
 const reviewRouter = express.Router();
 
-const check_access = (application: Application, user: User) => {
+const check_access_rev = (application: Application, user: User) => {
   return application.reviewers.includes(user) || user.role === "COORDINATOR"
 }
 
@@ -17,11 +17,10 @@ reviewRouter.get(
     const application = await Application.getById(parseInt(req.params.id), []);
     
     if (!application) {
-      res.status(404).send("Application not found");
-      return;
+      return res.status(404).json(sample_404_res);
     }
 
-    if(check_access(application, req.user)){
+    if(check_access_rev(application, req.user)){
       return res.status(401).json(sample_401_res);
     }
 
@@ -46,11 +45,10 @@ reviewRouter.post(
     ]);
 
     if (!application) {
-      res.status(404).send("Application not found");
-      return;
+      return res.status(404).json(sample_404_res);
     }
 
-    if(check_access(application, req.user)){
+    if(check_access_rev(application, req.user)){
       return res.status(401).json(sample_401_res);
     }
 

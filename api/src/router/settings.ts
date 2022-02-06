@@ -4,7 +4,7 @@
 import express from "express";
 import config, { configInterface } from "../config/config";
 import { UserType } from "../models/user";
-import response from "../utils/response";
+import response, { sample_401_res } from "../utils/response";
 
 const settingsRouter = express.Router();
 
@@ -19,12 +19,7 @@ settingsRouter.get(
       };
       res.status(200).send(authorizedResponse);
     } else {
-      const unauthorizedResponse: response = {
-        data: null,
-        message: "Unauthorized",
-        status: 401,
-      };
-      res.status(401).send(unauthorizedResponse);
+      return res.status(401).json(sample_401_res);
     }
   }
 );
@@ -42,12 +37,7 @@ settingsRouter.post(
       config.set(data);
       res.status(200).send(authorizedResponse);
     } else {
-      const unauthorizedResponse: response = {
-        data: null,
-        message: "Unauthorized",
-        status: 401,
-      };
-      res.status(401).send(unauthorizedResponse);
+      return res.status(401).json(sample_401_res);
     }
   }
 );

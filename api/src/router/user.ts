@@ -1,20 +1,15 @@
 import express from "express";
 import User from "../models/user";
-import Response, { sample_401_res } from "../utils/response";
+import Response, { sample_401_res, sample_404_res } from "../utils/response";
 
 const userRouter = express.Router();
 
 userRouter.get("/:id", async (req, res) => {
   let user = await User.getById(parseInt(req.params.id))
   if (!user){
-    const re: Response = {
-      status: 404,
-      message: "User not found",
-      data: null,
-    };
-    return res.send(JSON.stringify(re));
+    return res.status(404).json(sample_404_res);
   }
-  if (req.user != user){
+  if (req.user != user || req.user.role != "COORDINATOR"){
     return res.status(401).json(sample_401_res);
   }
   res.json(await User.getById(parseInt(req.params.id)));

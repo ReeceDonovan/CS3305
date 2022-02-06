@@ -7,14 +7,14 @@ import { getRepository } from "typeorm";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
 import User, { UserType} from "../models/user";
-import Response, { sample_401_res } from "../utils/response";
+import Response, { sample_401_res, sample_404_res } from "../utils/response";
 
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
 
 
-const check_access = (application: Application, user: User) => {
+const check_access_app = (application: Application, user: User) => {
   return application.submitter === user || application.supervisors.includes(user) || application.coauthors.includes(user) || application.reviewers.includes(user) || user.role === "COORDINATOR"
 }
 
@@ -98,14 +98,9 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
   ]);
   
   if (!application) {
-    const re: Response = {
-      status: 404,
-      message: "Application not found",
-      data: null,
-    };
-    return res.send(JSON.stringify(re));
+    return res.status(404).json(sample_404_res);
   }
-  if (!check_access(application, req.user)){
+  if (!check_access_app(application, req.user)){
     return res.status(401).json(sample_401_res);
   }
 
@@ -154,14 +149,9 @@ appRouter.get(
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id));
     if (!application) {
-      const re: Response = {
-        status: 404,
-        message: "Application not found",
-        data: null,
-      };
-      return res.send(JSON.stringify(re));
+      return res.status(404).json(sample_404_res);
     }
-    if (!check_access(application, req.user)){
+    if (!check_access_app(application, req.user)){
       return res.status(401).json(sample_401_res);
     }
     const files = fs.readdirSync(
@@ -275,14 +265,9 @@ appRouter.patch("/:id", async (req: express.Request, res: express.Response) => {
   const body = req.body as Application;
   const application = await Application.getById(parseInt(req.params.id));
   if (!application) {
-    const re: Response = {
-      status: 404,
-      message: "Application not found",
-      data: null,
-    };
-    return res.send(JSON.stringify(re));
+    return res.status(404).json(sample_404_res);
   }
-  if (!check_access(application, req.user)){
+  if (!check_access_app(application, req.user)){
     return res.status(401).json(sample_401_res);
   }
   if (application) {
@@ -320,14 +305,9 @@ appRouter.delete(
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id));
     if (!application) {
-      const re: Response = {
-        status: 404,
-        message: "Application not found",
-        data: null,
-      };
-      return res.send(JSON.stringify(re));
+      return res.status(404).json(sample_404_res);
     }
-    if (!check_access(application, req.user)){
+    if (!check_access_app(application, req.user)){
       return res.status(401).json(sample_401_res);
     }
     if (application) {
