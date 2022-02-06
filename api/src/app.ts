@@ -8,7 +8,7 @@ import loginRouter from "./router/login";
 import settingsRouter from "./router/settings";
 import userRouter from "./router/user";
 import User from "./models/user";
-import response from "./utils/response";
+import response, { sample_401_res } from "./utils/response";
 import appRouter from "./router/application";
 import aboutRouter from "./router/landingPage";
 import reviewRouter from "./router/reviews";
@@ -27,6 +27,11 @@ createConn();
 const app = express();
 
 const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about"];
+
+//allow lists for the first level rba mechanism, they must have the route in the list to be allowed to visit
+const researcher_routes = ["/", "/applications", "/users"];
+const reviewer_routes = ["/", "/applications", "/users", "/reviews"];
+const admin_routes = ["/", "/applications", "/users", "/admin", "/reviews"];
 
 const corsOptions = {
   origin: "http://localhost:3000",
@@ -61,16 +66,25 @@ app.use(async (req: express.Request, res: express.Response, next) => {
     if (token !== null) {
       const user = await User.getByEmail(token.user.email);
       req.user = user;
-      return next();
+      
+      // general sec
+      let path = req.url.split("?")[0];
+      console.log(path)
+
+      // filters users and gives rejecctions if they try to acess top level path which no  permissions based on above allow lists
+      if (user.role === "RESEARCHER" && researcher_routes.includes(path)) {
+        return next();
+      } else if (user.role === "REVIEWER" && reviewer_routes.includes(path)) {
+        return next();
+      } else if (user.role === "COORDINATOR" && admin_routes.includes(path)) {
+        return next();
+      } else {
+        return res.status(401).json(sample_401_res);
+      }
+      
     }
   }
-
-  const unauthorizedResponse: response = {
-    data: null,
-    message: "Unauthorized",
-    status: 401,
-  };
-  return res.status(401).json(unauthorizedResponse);
+  return res.status(401).json(sample_401_res);
 });
 
 app.use("/login", loginRouter);

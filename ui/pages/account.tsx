@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { Button, Form, TextInput } from "carbon-components-react";
+import { Button, Dropdown, Form, TextInput } from "carbon-components-react";
 import React, { useEffect, useState } from "react";
 import * as api from "../api";
 import { request } from "../api/index";
@@ -16,6 +16,7 @@ const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
+  const [role, setRole] = useState("");
 
   // 0 is nothing, 1 is in progress, 2 is failure, 3 is success
   const [submit_success, setSubmit_success] = useState<number>(0);
@@ -41,9 +42,12 @@ const AccountPage: NextPage = () => {
         setName(user.data.name);
         setBio(user.data.bio);
         setSchool(user.data.school);
+        setRole(user.data.role)
       }
     })();
   }, []);
+
+  let dropdown_items = [{id: "RESEARCHER", text: "RESEARCHER"}, {id: "REVIEWER", text: "REVIEWER"}, {id: "COORDINATOR", text: "COORDINATOR"}]
 
   return (
     <>
@@ -72,6 +76,20 @@ const AccountPage: NextPage = () => {
           className={styles.formElements}
         />
 
+        <Dropdown 
+           id="role"
+           titleText="Role Select"
+           helperText="Select your Role"
+           label={role}
+           items={dropdown_items}
+           itemToString={(item) => (item ? item.text : '')}
+           onChange={(e)=>{
+             if (e.selectedItem){
+              setRole(e.selectedItem.id)
+             }
+           }}
+        />
+
         <div
           style={{
             display: "flex",
@@ -96,14 +114,14 @@ const AccountPage: NextPage = () => {
 
           <Button
             type="submit"
-            disabled={!name && !bio && !school}
+            disabled={!name && !bio && !school && !role}
             onClick={(e) => {
               e.preventDefault();
               setSubmit_success(1);
               request({
                 method: "PATCH",
                 path: "/users",
-                data: { name: name, bio: bio, school: school },
+                data: { name: name, bio: bio, school: school, role: role},
               }).then((res) => {
                 if (res.status == 200) {
                   setSubmit_success(3);

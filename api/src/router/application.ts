@@ -6,11 +6,17 @@ import path from "path";
 import { getRepository } from "typeorm";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
-import User, { UserType } from "../models/user";
-import Response from "../utils/response";
+import User, { UserType} from "../models/user";
+import Response, { sample_401_res, sample_404_res } from "../utils/response";
+
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
+
+
+const check_access_app = (application: Application, user: User) => {
+  return application.submitter === user || application.supervisors.includes(user) || application.coauthors.includes(user) || application.reviewers.includes(user) || user.role === "COORDINATOR"
+}
 
 appRouter.get("/", async (req: express.Request, res: express.Response) => {
   const target = req.query.t;
@@ -90,6 +96,13 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
     "reviews.reviewer",
     "supervisors",
   ]);
+  
+  if (!application) {
+    return res.status(404).json(sample_404_res);
+  }
+  if (!check_access_app(application, req.user)){
+    return res.status(401).json(sample_401_res);
+  }
 
   const OkResponse: Response = {
     status: 200,
@@ -135,6 +148,12 @@ appRouter.get(
   "/:id/form",
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id));
+    if (!application) {
+      return res.status(404).json(sample_404_res);
+    }
+    if (!check_access_app(application, req.user)){
+      return res.status(401).json(sample_401_res);
+    }
     const files = fs.readdirSync(
       path.join(
         path.join(__dirname, `../../../data/pdf_store/${application.id}`)
@@ -245,8 +264,12 @@ appRouter.patch("/:id", async (req: express.Request, res: express.Response) => {
   // console.log(req.body)
   const body = req.body as Application;
   const application = await Application.getById(parseInt(req.params.id));
-  console.log(application);
-
+  if (!application) {
+    return res.status(404).json(sample_404_res);
+  }
+  if (!check_access_app(application, req.user)){
+    return res.status(401).json(sample_401_res);
+  }
   if (application) {
     application.name = body.name ? body.name : application.name;
     application.description = body.description
@@ -281,6 +304,12 @@ appRouter.delete(
   "/:id",
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id));
+    if (!application) {
+      return res.status(404).json(sample_404_res);
+    }
+    if (!check_access_app(application, req.user)){
+      return res.status(401).json(sample_401_res);
+    }
     if (application) {
       await application.remove();
       const response: Response = {
