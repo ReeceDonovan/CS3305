@@ -3,18 +3,31 @@ import * as api from "../../api";
 import { useEffect, useState } from "react";
 import ApplicationTable from "../ApplicationTable";
 
-export default function ReviewerDataTable() {
-  const [rowData, setRowdata] = useState([]);
+interface RowDataType {
+  id: number;
+  name: string;
+  title: string;
+  field: string;
+  submitter: string;
+  createdAt: string;
+  updatedAt: string;
+  reviewed: string;
+  status: string;
+}
+
+export default function CoordinatorDashboard() {
+  const [rowData, setRowdata] = useState([] as RowDataType[]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const resp = await api.request({
         method: "GET",
-        path: "/applications",
+        path: "/applications?t=all",
       });
 
-      if (resp?.data != null) {
+      if (resp?.data) {
+        console.log(resp.data);
         for (let i = 0; i < resp.data.length; i++) {
           resp.data[i].submitter = resp.data[i].submitter?.email;
           resp.data[i].updatedAt = new Date(
@@ -23,16 +36,11 @@ export default function ReviewerDataTable() {
           resp.data[i].createdAt = new Date(
             resp.data[i].createdAt
           ).toLocaleDateString();
-          resp.data[i].status =
-            resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
           console.log(resp.data[i]);
         }
 
-        setRowdata(resp.data);
+        setRowdata(resp.data as RowDataType[]);
         setLoading(false);
-      } else {
-        setRowdata([]);
-        setLoading(true);
       }
     })();
   }, []);
@@ -42,11 +50,7 @@ export default function ReviewerDataTable() {
       {loading == true ? (
         <Loading />
       ) : (
-        <ApplicationTable
-          title={"My Applications"}
-          description={"Applications you've submitted"}
-          rows={rowData}
-        />
+        <ApplicationTable title={"Coordinator Panel"} rows={rowData} />
       )}
     </>
   );
