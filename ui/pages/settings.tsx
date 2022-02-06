@@ -8,7 +8,6 @@ import {
   Tag,
 } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
-import * as api from "../api";
 import { configInterface, emailConfig } from "../api/types";
 import NetworkManager from "../components/NetworkManager";
 
