@@ -20,7 +20,7 @@ reviewRouter.get(
       return res.status(404).json(sample_404_res);
     }
 
-    if(check_access_rev(application, req.user)){
+    if(check_access_rev(application, req.user)) {
       return res.status(401).json(sample_401_res);
     }
 
@@ -48,7 +48,7 @@ reviewRouter.post(
       return res.status(404).json(sample_404_res);
     }
 
-    if(check_access_rev(application, req.user)){
+    if(check_access_rev(application, req.user)) {
       return res.status(401).json(sample_401_res);
     }
 

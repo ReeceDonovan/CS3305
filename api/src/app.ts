@@ -72,11 +72,11 @@ app.use(async (req: express.Request, res: express.Response, next) => {
       console.log(path)
 
       // filters users and gives rejecctions if they try to acess top level path which no  permissions based on above allow lists
-      if (user.role === "RESEARCHER" && researcher_routes.includes(path)){
+      if (user.role === "RESEARCHER" && researcher_routes.includes(path)) {
         return next();
-      } else if (user.role === "REVIEWER" && reviewer_routes.includes(path)){
+      } else if (user.role === "REVIEWER" && reviewer_routes.includes(path)) {
         return next();
-      } else if (user.role === "COORDINATOR" && admin_routes.includes(path)){
+      } else if (user.role === "COORDINATOR" && admin_routes.includes(path)) {
         return next();
       } else {
         return res.status(401).json(sample_401_res);

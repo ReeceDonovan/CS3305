@@ -6,10 +6,10 @@ const userRouter = express.Router();
 
 userRouter.get("/:id", async (req, res) => {
   let user = await User.getById(parseInt(req.params.id))
-  if (!user){
+  if (!user) {
     return res.status(404).json(sample_404_res);
   }
-  if (req.user != user || req.user.role != "COORDINATOR"){
+  if (req.user != user || req.user.role != "COORDINATOR") {
     return res.status(401).json(sample_401_res);
   }
   res.json(await User.getById(parseInt(req.params.id)));
