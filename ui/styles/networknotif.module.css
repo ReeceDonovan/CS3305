@@ -1,13 +1,6 @@
 .notif {
     bottom: 0.75em;
     right: 0.75em;
-    position: absolute;
+    position: fixed;
     transform: translate(-0%, -0%);
-}
-
-
-.notif p {
-    display: inline;
-    top:50%;
-    transform: translateY(-50%);
 }

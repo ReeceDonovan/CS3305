@@ -1,4 +1,8 @@
-import { ToastNotification } from "carbon-components-react";
+import {
+  InlineNotification,
+  NotificationActionButton,
+  ToastNotification,
+} from "carbon-components-react";
 import React, { createContext } from "react";
 import { RequestParams, StandardResponse } from "../api";
 import styles from "../styles/networknotif.module.css";
@@ -17,51 +21,40 @@ const NetworkManager = createContext({
 });
 
 export const NetworkNotification = (props: {
-  req_state: [number, string];
-  close_fn: () => void;
+  req_state: [number, string, any];
+  close_fn: (e: any) => boolean;
 }) => {
   if (props.req_state[0] === 0) {
     return <></>;
   } else if (props.req_state[0] === 1) {
     return (
       <div className={styles.notif}>
-        <ToastNotification
+        <InlineNotification
           kind="info"
-          timeout={0}
           title={props.req_state[1] ? props.req_state[1] : "In Progress"}
-          onClose={(e) => {
-            e.preventDefault();
-            return true;
-          }}
+          onClose={props.close_fn}
+          hideCloseButton={true}
         />
       </div>
     );
   } else if (props.req_state[0] === 2) {
     return (
       <div className={styles.notif}>
-        <ToastNotification
+        <InlineNotification
           kind="error"
-          timeout={0}
           title={props.req_state[1] ? props.req_state[1] : "Error"}
-          onClose={(e) => {
-            e.preventDefault();
-            return true;
-          }}
+          onClose={props.close_fn}
+          actions={props.req_state[2]}
         />
       </div>
     );
   } else if (props.req_state[0] === 3) {
     return (
       <div className={styles.notif}>
-        <ToastNotification
+        <InlineNotification
           kind="success"
-          timeout={0}
           title={props.req_state[1] ? props.req_state[1] : "Success"}
-          onClose={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            return true;
-          }}
+          onClose={props.close_fn}
         />
       </div>
     );
