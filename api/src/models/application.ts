@@ -26,15 +26,19 @@ export default class Application extends Entity {
 
   @OneToMany(
     () => UsersApplications,
-    (usersApplications) => usersApplications.user
+    (usersApplications) => usersApplications.user,
+    {
+      onDelete: "CASCADE",
+    }
   )
   usersApplications: UsersApplications[];
 
-  @OneToMany(() => Review, (review) => review.application)
+  @OneToMany(() => Review, (review) => review.application, {
+    onDelete: "CASCADE",
+  })
   reviews: Review[];
 
   // TODO: Clean up methods
-
   static async getById(id: number, relations: string[] = []) {
     const resp = await dbConn.getRepository(Application).findOne({
       where: { id },

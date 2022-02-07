@@ -1,4 +1,10 @@
-import { Column, Entity as OrmEntity, JoinTable, ManyToMany, ManyToOne } from "typeorm";
+import {
+  Column,
+  Entity as OrmEntity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+} from "typeorm";
 
 import Application from "./application";
 import { dbConn } from "./database";
@@ -12,6 +18,7 @@ export enum ReviewStatus {
   DECLINED = "DECLINED",
 }
 
+// TODO: Nuke most of this cause reviews are just internal comments now.
 @OrmEntity("reviews")
 export default class Review extends Entity {
   constructor(review: Partial<Review>) {
