@@ -2,7 +2,7 @@
  * Temporary file, until there is a better place to put this
  */
 import express from "express";
-import { protectedRoute } from "src/middleware/protected-route";
+import { protectedRoute } from "../middleware/protected-route";
 
 import config, { configInterface } from "../config/config";
 

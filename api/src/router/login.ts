@@ -1,9 +1,7 @@
 import axios from "axios";
 import express from "express";
 import jwt from "jsonwebtoken";
-import { BadRequestError } from "src/errors";
-import { InternalError } from "src/errors/internal-error";
-import { TokenClaims } from "src/middleware/auth-user";
+import { BadRequestError, InternalError} from "../errors";
 
 import config from "../config/config";
 import User from "../models/user";
@@ -68,7 +66,7 @@ loginRouter.get(
           exp: Math.floor(Date.now() / 1000) + 6 * 60 * 60,
         },
         config.get().signingKey,
-        (err: Error, token: TokenClaims) => {
+        (err: Error|null, token: string|undefined) => {
           if (err) {
             throw new InternalError("Error signing token");
           } else {

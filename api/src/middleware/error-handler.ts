@@ -10,12 +10,15 @@ export const errorHandler = (
 ) => {
   if (err instanceof CustomError) {
     res.status(err.statusCode).json({
-      errors: err.serializeErrors(),
+      status: err.statusCode,
+      message: err.serializeErrors(),
     });
   }
 
   res.status(400).json({
-    errors: [{ message: "Something went wrong" }],
+    status: 400,
+    message: "Something went wrong",
   });
+   
   next(err);
 };

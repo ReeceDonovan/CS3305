@@ -2,7 +2,7 @@ import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
 
 import { dbConn } from "./database";
 import Entity from "./entity";
-import Review, { ReviewStatus } from "./review";
+import { /*Review,*/ ReviewStatus } from "./review";
 import UsersApplications from "./usersApplications";
 
 @OrmEntity("applications")
@@ -33,10 +33,10 @@ export default class Application extends Entity {
   )
   usersApplications: UsersApplications[];
 
-  @OneToMany(() => Review, (review) => review.application, {
-    onDelete: "CASCADE",
-  })
-  reviews: Review[];
+  // @OneToMany(() => Review, (review) => review.application, {
+  //   onDelete: "CASCADE",
+  // })
+  // reviews: Review[];
 
   // TODO: Clean up methods
   static async getById(id: number, relations: string[] = []) {
@@ -56,19 +56,19 @@ export default class Application extends Entity {
     return await dbConn.getRepository(Application).find({ field });
   }
 
-  async addReview(review: Review) {
-    console.log("addReview");
-    // if (review.reviewer?.id) {
-    //   if (this.reviewers) {
-    //     this.reviewers.push(review.reviewer);
-    //   } else {
-    //     this.reviewers = [review.reviewer];
-    //   }
-    //   review.reviewer.save();
-    // }
+  // async addReview(review: Review) {
+  //   console.log("addReview");
+  //   // if (review.reviewer?.id) {
+  //   //   if (this.reviewers) {
+  //   //     this.reviewers.push(review.reviewer);
+  //   //   } else {
+  //   //     this.reviewers = [review.reviewer];
+  //   //   }
+  //   //   review.reviewer.save();
+  //   // }
 
-    await review.save();
-    this.reviews = this.reviews ? [...this.reviews, review] : [review];
-    await this.save();
-  }
+  //   await review.save();
+  //   this.reviews = this.reviews ? [...this.reviews, review] : [review];
+  //   await this.save();
+  // }
 }

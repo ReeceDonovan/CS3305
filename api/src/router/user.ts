@@ -1,6 +1,6 @@
 import express from "express";
-import { NotAuthorizedError, NotFoundError } from "src/errors";
-import { protectedRoute } from "src/middleware/protected-route";
+import { NotAuthorizedError, NotFoundError } from "../errors";
+import { protectedRoute } from "../middleware/protected-route";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 
 import User, { UserType } from "../models/user";

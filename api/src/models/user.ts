@@ -3,7 +3,7 @@ import { Column, Entity as OrmEntity, Index, OneToMany } from "typeorm";
 
 import { dbConn } from "./database";
 import Entity from "./entity";
-import Review from "./review";
+// import Review from "./review";
 import UsersApplications from "./usersApplications";
 
 export enum UserType {
@@ -46,9 +46,9 @@ export default class User extends Entity {
   )
   usersApplications: UsersApplications[];
 
-  @OneToMany(() => Review, (review) => review.reviewer)
-  reviews: Review[];
-
+  // @OneToMany(() => Review, (review) => review.reviewer)
+  // reviews: Review[];
+  //
   static async getByEmail(email: string) {
     return await dbConn.getRepository(User).findOne({ email });
   }

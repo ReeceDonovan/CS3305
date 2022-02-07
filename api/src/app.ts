@@ -7,7 +7,7 @@ import { createConn } from "./models/database";
 import appRouter from "./router/application";
 import aboutRouter from "./router/landingPage";
 import loginRouter from "./router/login";
-import reviewRouter from "./router/reviews";
+// import reviewRouter from "./router/reviews";
 import settingsRouter from "./router/settings";
 import userRouter from "./router/user";
 
@@ -32,7 +32,7 @@ app.use("/admin", settingsRouter);
 
 app.use("/users", userRouter);
 app.use("/applications", appRouter);
-app.use("/reviews", reviewRouter);
+// app.use("/reviews", reviewRouter);
 
 app.use(errorHandler);
 

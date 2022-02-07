@@ -10,6 +10,7 @@ import Application from "../models/application";
 import User, { UserType } from "../models/user";
 import UsersApplications, { RoleType } from "../models/usersApplications";
 import Response from "../utils/response";
+import ReqUser from "../middleware/store-user";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
@@ -33,6 +34,7 @@ const check_access_app = async (application: Application, user: User) => {
 
 appRouter.get(
   "/",
+  ReqUser,
   async (
     req: express.Request,
     res: express.Response,
@@ -99,6 +101,7 @@ appRouter.get(
 
 appRouter.get(
   "/:id",
+  ReqUser,
   async (
     req: express.Request,
     res: express.Response,
@@ -127,6 +130,7 @@ appRouter.get(
 
 appRouter.get(
   "/:id/form",
+  ReqUser,
   async (
     req: express.Request,
     res: express.Response,
@@ -162,6 +166,7 @@ appRouter.get(
 
 appRouter.post(
   "/",
+  ReqUser,
   // upload.fields(uploadSchema),
   upload.single("pdf_form"),
   async (req: any, res: express.Response, next: express.NextFunction) => {
@@ -223,6 +228,8 @@ appRouter.post(
         await userApplicationRepository.save(userApplication);
       }
 
+      console.log(user);
+
       const userApplication = new UsersApplications({
         application,
         user,
@@ -261,6 +268,7 @@ appRouter.post(
 
 appRouter.patch(
   "/:id",
+  ReqUser,
   async (
     req: express.Request,
     res: express.Response,
@@ -299,6 +307,7 @@ appRouter.patch(
 
 appRouter.delete(
   "/:id",
+  ReqUser,
   async (
     req: express.Request,
     res: express.Response,
