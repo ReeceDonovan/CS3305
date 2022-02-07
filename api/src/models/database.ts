@@ -2,7 +2,7 @@ import { Connection, createConnection } from "typeorm";
 
 import config from "../config/config";
 
-export var dbConn: Connection;
+export const dbConn: Connection;
 
 export const createConn = async (): Promise<void> => {
   try {

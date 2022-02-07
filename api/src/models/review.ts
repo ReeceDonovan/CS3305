@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity as OrmEntity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-} from "typeorm";
+import { Column, Entity as OrmEntity, JoinTable, ManyToMany, ManyToOne } from "typeorm";
 
 import Application from "./application";
 import { dbConn } from "./database";
@@ -13,8 +7,8 @@ import User from "./user";
 
 export enum ReviewStatus {
   APPROVED = "APPROVED",
-  INREVIEW = "INREVIEW",
   PENDING = "PENDING",
+  INREVIEW = "INREVIEW",
   DECLINED = "DECLINED",
 }
 
@@ -31,11 +25,10 @@ export default class Review extends Entity {
   @Column({ type: "text", nullable: true })
   status: ReviewStatus;
 
-  @ManyToOne((_type) => Application, (application) => application.reviews)
-  // @JoinTable()
+  @ManyToOne(() => Application, (application) => application.reviews)
   application: Application;
 
-  @ManyToMany((_type) => User, (user) => user.reviews)
+  @ManyToMany(() => User, (user) => user.reviews)
   @JoinTable()
   reviewer: User;
 
@@ -56,6 +49,7 @@ export default class Review extends Entity {
   }
 }
 
+// TODO: Clean up methods
 export async function createReviewers() {
   let i = 0;
   for await (const reviewer of await dbConn

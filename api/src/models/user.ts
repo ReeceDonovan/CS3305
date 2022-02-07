@@ -1,18 +1,10 @@
 import { IsEmail, IsEnum } from "class-validator";
-import {
-  Column,
-  Entity as OrmEntity,
-  Index,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-} from "typeorm";
+import { Column, Entity as OrmEntity, Index, OneToMany } from "typeorm";
 
-import Application from "./application";
 import { dbConn } from "./database";
 import Entity from "./entity";
 import Review from "./review";
+import UsersApplications from "./usersApplications";
 
 export enum UserType {
   RESEARCHER = "RESEARCHER",
@@ -48,16 +40,13 @@ export default class User extends Entity {
   @Column({ type: "text", nullable: true })
   avatar: string;
 
-  @ManyToMany(() => Application, (application) => application.submitter)
-  @JoinTable()
-  applications: Application[];
-
-  @ManyToMany(() => Application, (application) => application.reviewers)
-  @JoinTable()
-  reviewerApplications: Application[];
+  @OneToMany(
+    () => UsersApplications,
+    (usersApplications) => usersApplications.application
+  )
+  usersApplications: UsersApplications[];
 
   @OneToMany(() => Review, (review) => review.reviewer)
-  @JoinTable()
   reviews: Review[];
 
   static async getByEmail(email: string) {

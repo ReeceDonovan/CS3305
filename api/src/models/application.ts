@@ -1,16 +1,9 @@
-import {
-  Column,
-  Entity as OrmEntity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany
-} from "typeorm";
+import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
+
 import { dbConn } from "./database";
 import Entity from "./entity";
 import Review, { ReviewStatus } from "./review";
-import User from "./user";
-
+import UsersApplications from "./usersApplications";
 
 @OrmEntity("applications")
 export default class Application extends Entity {
@@ -24,32 +17,23 @@ export default class Application extends Entity {
 
   @Column({ type: "text", nullable: true })
   description: string;
-  
+
   @Column({ type: "text", nullable: true })
   status: ReviewStatus;
 
   @Column({ type: "text", nullable: true })
   field: string;
 
-  @ManyToOne(() => User, (user) => user.applications)
-  // @JoinTable()
-  submitter: User;
-
-  @ManyToMany(() => User, (user) => user.applications)
-  @JoinTable()
-  supervisors: User[];
-
-  @ManyToMany(() => User, (user) => user.applications)
-  @JoinTable()
-  coauthors: User[];
-
-  @ManyToMany(() => User, (user) => user.reviewerApplications)
-  @JoinTable()
-  reviewers: User[];
+  @OneToMany(
+    () => UsersApplications,
+    (usersApplications) => usersApplications.user
+  )
+  usersApplications: UsersApplications[];
 
   @OneToMany(() => Review, (review) => review.application)
-  // @JoinTable()
   reviews: Review[];
+
+  // TODO: Clean up methods
 
   static async getById(id: number, relations: string[] = []) {
     const resp = await dbConn.getRepository(Application).findOne({
@@ -82,7 +66,5 @@ export default class Application extends Entity {
     await review.save();
     this.reviews = this.reviews ? [...this.reviews, review] : [review];
     await this.save();
-
-    console.log("got to end");
   }
 }

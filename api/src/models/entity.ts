@@ -1,17 +1,12 @@
-import {
-  BaseEntity,
-  CreateDateColumn,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from "typeorm";
+import { BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export default abstract class Entity extends BaseEntity {
   @PrimaryGeneratedColumn("increment")
-    id: number;
+  id: number;
 
   @CreateDateColumn()
-    createdAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-    updatedAt: Date;
+  updatedAt: Date;
 }
