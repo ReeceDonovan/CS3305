@@ -8,7 +8,7 @@ import {
 } from "carbon-components-react";
 import Link from "next/link";
 import React, { KeyboardEvent, useContext, useState } from "react";
-import NetworkManager from "../components/NetworkManager";
+import { NetworkManagerContext } from "../components/NetworkManager";
 
 const Submit = () => {
   const [modiflag, setModiflag] = useState(false);
@@ -21,7 +21,7 @@ const Submit = () => {
 
   const [pdfFile, setPdfFile] = useState<File>();
 
-  const nm_ctx = useContext(NetworkManager);
+  const nm_ctx = useContext(NetworkManagerContext);
 
   // let pdf_files: File[] = [];
 

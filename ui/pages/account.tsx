@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useState } from "react";
 import * as api from "../api";
 import { Login32, Save32 } from "@carbon/icons-react";
 import styles from "../styles/account.module.css";
-import NetworkManager, { NiceParams } from "../components/NetworkManager";
+import { NetworkManagerContext } from "../components/NetworkManager";
 import { User } from "../api/types";
 
 const AccountPage: NextPage = () => {
@@ -12,7 +12,7 @@ const AccountPage: NextPage = () => {
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
 
-  const nm_ctx = useContext(NetworkManager);
+  const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
     async () => {

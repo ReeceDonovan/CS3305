@@ -11,7 +11,7 @@ import {
   Tile,
 } from "carbon-components-react";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import * as api from "../../api";
 // import { Application } from "../../api/types";
@@ -21,6 +21,7 @@ import type { NextPage } from "next";
 import { Review, User } from "../../api/types";
 import { Add16, Chat16 } from "@carbon/icons-react";
 import Link from "next/link";
+import { NetworkManagerContext } from "../../components/NetworkManager";
 
 const ApplicationPage: NextPage = () => {
   const router = useRouter();
@@ -40,28 +41,31 @@ const ApplicationPage: NextPage = () => {
   const [reviewStatus, setReviewStatus] = useState("");
   const [statusErrMsg, setstatusErrMsg] = useState("");
 
+  const nm_ctx = useContext(NetworkManagerContext);
+
   useEffect(() => {
-    const slug = router.query.slug as string;
-    if (slug && slug.length > 0) {
-      api
-        .request({
+    async () => {
+      const slug = router.query.slug as string;
+      if (slug && slug.length > 0) {
+        const [res, err_code] = await nm_ctx.request({
           path: `/applications/${slug}`,
           method: "GET",
-        })
-        .then((response) => {
-          console.log(response.data);
-          setApplication(response.data);
-          setAuthor(response.data.submitter?.email);
-          setSupervisors(response.data.supervisors[0]?.email);
-          setDescription(response.data.description);
-          setName(response.data.name);
-
-          setReviews(response.data.reviews);
         });
-      api.fetchPDF(slug).then((response) => {
-        setPDF(response);
-      });
-    }
+        if (err_code === 0) {
+          console.log(res.data);
+          setApplication(res.data);
+          setAuthor(res.data.submitter?.email);
+          setSupervisors(res.data.supervisors[0]?.email);
+          setDescription(res.data.description);
+          setName(res.data.name);
+
+          setReviews(res.data.reviews);
+        }
+        api.fetchPDF(slug).then((response) => {
+          setPDF(response);
+        });
+      }
+    };
   }, [router.query.slug]);
 
   if (!application) {

@@ -9,7 +9,7 @@ import {
 } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
 import { configInterface, emailConfig } from "../api/types";
-import NetworkManager from "../components/NetworkManager";
+import { NetworkManagerContext } from "../components/NetworkManager";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -28,29 +28,30 @@ const Settings = () => {
   const [dbPort, setDBPort] = useState<number>(0);
   const [dbName, setDBName] = useState<string>("");
 
-  const nm_ctx = useContext(NetworkManager);
+  const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
     async () => {
       nm_ctx
         .request({ path: "/admin/settings", method: "GET" })
         .then(([res, err_code]) => {
-          setEmailProvider(res.data.emailProvider);
-          setEmailUser(res.data.emailUser);
-          setEmailToken(res.data.emailToken);
-          setEmailConfigs(res.data.emailConfigs);
-          setOAuthClientID(res.data.oauthConfig.oauthClientId);
-          setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
-          setAllowedDomains(res.data.oauthConfig.allowedDomains);
-          setLandingPageMD(res.data.landingPageMD);
-          setSigningKey(res.data.signingKey);
-          setDBUsername(res.data.databaseConfig.username);
-          setDBPassword(res.data.databaseConfig.password);
-          setDBHost(res.data.databaseConfig.host);
-          setDBPort(res.data.databaseConfig.port);
-          setDBName(res.data.databaseConfig.database);
-        })
-        .catch((_) => {});
+          if (err_code === 0) {
+            setEmailProvider(res.data.emailProvider);
+            setEmailUser(res.data.emailUser);
+            setEmailToken(res.data.emailToken);
+            setEmailConfigs(res.data.emailConfigs);
+            setOAuthClientID(res.data.oauthConfig.oauthClientId);
+            setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
+            setAllowedDomains(res.data.oauthConfig.allowedDomains);
+            setLandingPageMD(res.data.landingPageMD);
+            setSigningKey(res.data.signingKey);
+            setDBUsername(res.data.databaseConfig.username);
+            setDBPassword(res.data.databaseConfig.password);
+            setDBHost(res.data.databaseConfig.host);
+            setDBPort(res.data.databaseConfig.port);
+            setDBName(res.data.databaseConfig.database);
+          }
+        });
     };
   }, []);
 
