@@ -5,10 +5,10 @@ import Entity from "./entity";
 import User from "./user";
 
 export enum RoleType {
-  SUBMITTER = "Submitter",
-  SUPERVISOR = "Supervisor",
-  COAUTHOR = "CoAuthor",
-  REVIEWER = "Reviewer",
+  SUBMITTER = "SUBMITTER",
+  SUPERVISOR = "SUPERVISOR",
+  COAUTHOR = "COAUTHOR",
+  REVIEWER = "REVIEWER",
 }
 
 @OrmEntity({ name: "users_applications" })
