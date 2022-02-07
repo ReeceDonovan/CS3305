@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
 import { NotAuthorizedError } from "../errors/not-authorized-error";
-
 import { UserType } from "../models/user";
 
 const permissionLevel = {
@@ -11,7 +10,7 @@ const permissionLevel = {
 };
 
 const reviewer_routes = ["/reviews", "/reviews/:reviewId"];
-const coordinator_routes = ["/admin"];
+const coordinator_routes = ["/admin", "/settings"];
 
 export const protectedRoute = (
   req: Request,
