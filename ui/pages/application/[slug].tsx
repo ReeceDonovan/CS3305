@@ -45,14 +45,14 @@ const ApplicationPage: NextPage = () => {
   const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
-        (async () => {
+    (async () => {
       const user = await api.getToken();
       if (user) {
         setUser(user);
       }
     })();
   }, []);
-  
+
   useEffect(() => {
     const slug = router.query.slug as string;
     async () => {
@@ -167,7 +167,7 @@ const ApplicationPage: NextPage = () => {
           )}
         </Tab>
 
-        {user?.email == application.submitter?.email && 
+        {user?.email == application.submitter?.email && (
           <Tab href="#edit" id="edit" label="Edit">
             <Form
               className={styles.edit}
@@ -208,7 +208,7 @@ const ApplicationPage: NextPage = () => {
               </Button>
             </Form>
           </Tab>
-        }
+        )}
         <Tab href="#share" id="share" label="Share">
           <span>
             <p>Shareable URL (only to co-authors and supervisors):</p>
@@ -237,7 +237,9 @@ const ApplicationPage: NextPage = () => {
           </span>
         </Tab>
 
-        {(user?.role == "COORDINATOR") || (user?.email == application.submitter?.email) || (user?.role == "REVIEWER")  ? (
+        {user?.role == "COORDINATOR" ||
+        user?.email == application.submitter?.email ||
+        user?.role == "REVIEWER" ? (
           <Tab href="#review" id="review" label="Review">
             {application.reviews.map((review: Review, i: Number) =>
               review.comment ? (
@@ -289,7 +291,7 @@ const ApplicationPage: NextPage = () => {
                     });
                   return true;
                 }}
-                onSubmit={(_e) => {
+                onSubmit={async (_e) => {
                   const [res, err_code] = await nm_ctx.request({
                     path: `/review/${application.id}`,
                     method: "POST",
@@ -301,7 +303,6 @@ const ApplicationPage: NextPage = () => {
                     setComment("");
                     setReviews([...reviews, res.data]);
                   }
-                });
                 }}
                 buttonTriggerText="Add Comment"
                 renderTriggerButtonIcon={Chat16}
@@ -324,14 +325,13 @@ const ApplicationPage: NextPage = () => {
                     return false;
                   }
 
-                  nm_ctx
-                    .request({
-                      path: `/reviews/${application.id}`,
-                      method: "POST",
-                      data: {
-                        status: reviewStatus,
-                      },
-                    });
+                  nm_ctx.request({
+                    path: `/reviews/${application.id}`,
+                    method: "POST",
+                    data: {
+                      status: reviewStatus,
+                    },
+                  });
                   return true;
                 }}
                 buttonTriggerText="Update status"
@@ -355,8 +355,7 @@ const ApplicationPage: NextPage = () => {
               </ModalWrapper>
             </div>
           </Tab>
-        ):(null)
-        }
+        ) : null}
       </Tabs>
     </>
   );
