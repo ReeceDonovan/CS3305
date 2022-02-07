@@ -1,16 +1,15 @@
-import e from "express";
 import express from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
-import UsersApplications, { RoleType } from "../models/usersApplications";
 import { getRepository, In, Repository } from "typeorm";
-import Application from "../models/application";
-import Review from "../models/review";
-import User, { UserType } from "../models/user";
-import Response from "../utils/response";
+
+import { NotAuthorizedError, NotFoundError } from "../errors";
 import { protectedRoute } from "../middleware/protected-route";
-import { NotFoundError, NotAuthorizedError } from "../errors";
+import Application from "../models/application";
+import User, { UserType } from "../models/user";
+import UsersApplications, { RoleType } from "../models/usersApplications";
+import Response from "../utils/response";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
@@ -73,7 +72,6 @@ appRouter.get(
           };
           break;
         }
-
         default: {
           const userApplications = await getRepository(UsersApplications).find({
             where: {
@@ -189,7 +187,8 @@ appRouter.post(
         },
       });
 
-      const applicationRepository: Repository<Application> = getRepository(Application);
+      const applicationRepository: Repository<Application> =
+        getRepository(Application);
 
       const temp_application: Partial<Application> = {
         name: form.name,
@@ -201,7 +200,8 @@ appRouter.post(
         temp_application
       )) as Application;
 
-      const userApplicationRepository: Repository<UsersApplications> = getRepository(UsersApplications);
+      const userApplicationRepository: Repository<UsersApplications> =
+        getRepository(UsersApplications);
 
       for (const coauthor of coauthor_users) {
         const userApplication = new UsersApplications({
@@ -277,7 +277,8 @@ appRouter.patch(
 
       if (!check_access_app(application, user)) throw new NotAuthorizedError();
 
-      const applicationRepository: Repository<Application> = getRepository(Application);
+      const applicationRepository: Repository<Application> =
+        getRepository(Application);
 
       // TODO: Test updating an application (specifically adding/removing coauthors)
       const updatedApplication = await applicationRepository.save({
@@ -313,7 +314,8 @@ appRouter.delete(
 
       if (!check_access_app(application, user)) throw new NotAuthorizedError();
 
-      const applicationRepository: Repository<Application> = getRepository(Application);
+      const applicationRepository: Repository<Application> =
+        getRepository(Application);
 
       // TODO: Test that this cascades to the user_application join table
       await applicationRepository.delete(application.id);
