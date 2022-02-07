@@ -13,7 +13,6 @@ export class ConflictError extends CustomError {
     return [
       {
         message: "The resource already exists",
-        field: this.field,
       },
     ];
   }
