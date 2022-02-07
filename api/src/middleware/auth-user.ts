@@ -5,7 +5,7 @@ import config from "../config/config";
 import { NotAuthorizedError } from "../errors";
 import { UserType } from "../models/user";
 
-interface UserClaims {
+export interface UserClaims {
   id: number;
   role: UserType;
   email: string;
@@ -15,7 +15,7 @@ interface UserClaims {
   avatar?: string;
 }
 
-interface TokenClaims {
+export interface TokenClaims {
   user: UserClaims;
   exp: number;
   iat: number;
