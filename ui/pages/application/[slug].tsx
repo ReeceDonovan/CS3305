@@ -273,21 +273,18 @@ const ApplicationPage: NextPage = () => {
                   });
                 return true;
               }}
-              onSubmit={(_e) => {
-                api
-                  .request({
-                    path: `/review/${application.id}`,
-                    method: "POST",
-                    data: {
-                      comment: comment,
-                    },
-                  })
-                  .then((resp) => {
-                    if (resp.status == 201) {
-                      setComment("");
-                      setReviews([...reviews, resp.data]);
-                    }
-                  });
+              onSubmit={async (_e) => {
+                const [res, err_code] = await nm_ctx.request({
+                  path: `/review/${application.id}`,
+                  method: "POST",
+                  data: {
+                    comment: comment,
+                  },
+                });
+                if (err_code === 0) {
+                  setComment("");
+                  setReviews([...reviews, res.data]);
+                }
               }}
               buttonTriggerText="Add Comment"
               renderTriggerButtonIcon={Chat16}
@@ -310,7 +307,7 @@ const ApplicationPage: NextPage = () => {
                   return false;
                 }
 
-                api
+                nm_ctx
                   .request({
                     path: `/reviews/${application.id}`,
                     method: "POST",

@@ -83,14 +83,12 @@ const AccountPage: NextPage = () => {
             disabled={!name && !bio && !school}
             onClick={(e) => {
               e.preventDefault();
-              nm_ctx
-                .request({
-                  method: "PATCH",
-                  path: "/users",
-                  data: { name: name, bio: bio, school: school },
-                  show_progress: true,
-                })
-                .catch();
+              nm_ctx.request({
+                method: "PATCH",
+                path: "/users",
+                data: { name: name, bio: bio, school: school },
+                show_progress: true,
+              });
             }}
             renderIcon={Save32}
           >
