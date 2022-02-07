@@ -1,3 +1,4 @@
+import e from "express";
 import express from "express";
 import fs from "fs";
 import multer from "multer";
@@ -5,34 +6,87 @@ import path from "path";
 import { getRepository } from "typeorm";
 import Application from "../models/application";
 import Review, { ReviewStatus } from "../models/review";
-import User from "../models/user";
-import Response from "../utils/response";
+import User, { UserType} from "../models/user";
+import Response, { sample_401_res, sample_404_res } from "../utils/response";
 
 
 const upload = multer({ storage: multer.memoryStorage() });
 const appRouter = express.Router();
 
+
+const check_access_app = (application: Application, user: User) => {
+  return application.submitter === user || application.supervisors.includes(user) || application.coauthors.includes(user) || application.reviewers.includes(user) || user.role === "COORDINATOR"
+}
+
 appRouter.get("/", async (req: express.Request, res: express.Response) => {
-  const applications = await getRepository(Application).find({
-    order: { updatedAt: "DESC" },
-    take: 15,
-    relations: ["submitter", "reviews"],
-  });
-  let resp: Response;
-  if (applications.length > 0) {
-    resp = {
-      status: 200,
-      message: "Success",
-      data: applications,
-    };
-  } else {
-    resp = {
-      status: 200,
-      message: "No applications found",
-      data: null,
-    };
+  const target = req.query.t;
+  let applications: Array<Application>;
+  let response: Response;
+
+  // depending on target and user type, return different applications
+  switch (target) {
+    case "review":
+      if (req.user.role == UserType.REVIEWER) {
+        applications = await Application.find({
+          relations: ["submitter", "reviews", "reviewers"],
+          where: {
+            status: ReviewStatus.INREVIEW,
+          },
+        });
+
+        applications.forEach((application) => {
+          // filter out applications that the user is not assigned to review
+          if (!application.reviewers.includes(req.user)) {
+            applications.splice(applications.indexOf(application), 1);
+          }
+        });
+
+        response = {
+          status: 200,
+          message: "Successfully retrieved applications.",
+          data: applications,
+        };
+      } else {
+        response = {
+          status: 403,
+          message: "You are not authorized to view this page.",
+          data: null,
+        };
+      }
+      break;
+
+    case "all":
+      if (req.user.role == UserType.COORDINATOR) {
+        applications = await Application.find();
+        response = {
+          message: "Success",
+          status: 200,
+          data: applications,
+        };
+      } else {
+        response = {
+          status: 403,
+          message: "You are not authorized to view this page.",
+          data: null,
+        };
+      }
+      break;
+
+    default:
+      applications = await Application.find({
+        relations: ["submitter", "reviews", "reviewers"],
+        where: {
+          submitter: req.user,
+        },
+      });
+      response = {
+        message: "Success",
+        status: 200,
+        data: applications,
+      };
   }
-  res.json(resp);
+
+  res.json(response);
 });
 
 appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
@@ -42,28 +96,64 @@ appRouter.get("/:id", async (req: express.Request, res: express.Response) => {
     "reviews.reviewer",
     "supervisors",
   ]);
+  
   if (!application) {
-    const re: Response = {
-      status: 404,
-      message: "Application not found",
-      data: null,
-    };
-    console.log(application);
-    return res.send(JSON.stringify(re));
+    return res.status(404).json(sample_404_res);
+  }
+  if (!check_access_app(application, req.user)){
+    return res.status(401).json(sample_401_res);
   }
 
-  const re = {
+  const OkResponse: Response = {
     status: 200,
     message: "Success",
     data: application,
   };
-  return res.json(re);
+
+  const UnauthorizedResponse: Response = {
+    status: 403,
+    message: "Forbidden",
+    data: null,
+  };
+
+  if (req.user.role === UserType.COORDINATOR) {
+    if (!application) {
+      const re: Response = {
+        status: 404,
+        message: "Application not found",
+        data: null,
+      };
+      return res.send(UnauthorizedResponse);
+    }
+
+    return res.json(OkResponse);
+  } else if (req.user.role === UserType.REVIEWER) {
+    if (!application.reviewers.includes(req.user)) {
+      return res.json(UnauthorizedResponse);
+    }
+  } else {
+    if (
+      application.submitter.id === req.user.id ||
+      application.supervisors.includes(req.user) ||
+      application.coauthors.includes(req.user)
+    ) {
+      return res.json(OkResponse);
+    }
+  }
+
+  return res.json(UnauthorizedResponse);
 });
 
 appRouter.get(
   "/:id/form",
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id));
+    if (!application) {
+      return res.status(404).json(sample_404_res);
+    }
+    if (!check_access_app(application, req.user)){
+      return res.status(401).json(sample_401_res);
+    }
     const files = fs.readdirSync(
       path.join(
         path.join(__dirname, `../../../data/pdf_store/${application.id}`)
@@ -174,8 +264,12 @@ appRouter.patch("/:id", async (req: express.Request, res: express.Response) => {
   // console.log(req.body)
   const body = req.body as Application;
   const application = await Application.getById(parseInt(req.params.id));
-  console.log(application);
-
+  if (!application) {
+    return res.status(404).json(sample_404_res);
+  }
+  if (!check_access_app(application, req.user)){
+    return res.status(401).json(sample_401_res);
+  }
   if (application) {
     application.name = body.name ? body.name : application.name;
     application.description = body.description
@@ -210,6 +304,12 @@ appRouter.delete(
   "/:id",
   async (req: express.Request, res: express.Response) => {
     const application = await Application.getById(parseInt(req.params.id));
+    if (!application) {
+      return res.status(404).json(sample_404_res);
+    }
+    if (!check_access_app(application, req.user)){
+      return res.status(401).json(sample_401_res);
+    }
     if (application) {
       await application.remove();
       const response: Response = {

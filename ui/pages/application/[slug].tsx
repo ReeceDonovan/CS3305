@@ -24,6 +24,7 @@ import Link from "next/link";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 
 const ApplicationPage: NextPage = () => {
+  const [user, setUser] = useState<User>();
   const router = useRouter();
   const [application, setApplication] = useState<any>();
   const [pdf, setPDF] = useState<ArrayBuffer>();
@@ -44,6 +45,16 @@ const ApplicationPage: NextPage = () => {
   const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
+        (async () => {
+      const user = await api.getToken();
+      if (user) {
+        setUser(user);
+      }
+    })();
+  }, []);
+  
+  useEffect(() => {
+    const slug = router.query.slug as string;
     async () => {
       const slug = router.query.slug as string;
       if (slug && slug.length > 0) {
@@ -155,46 +166,49 @@ const ApplicationPage: NextPage = () => {
             </div>
           )}
         </Tab>
-        <Tab href="#edit" id="edit" label="Edit">
-          <Form
-            className={styles.edit}
-            style={{
-              height: "90vh",
-              width: "100%",
-            }}
-          >
-            <TextInput
-              id="title"
-              labelText="Application Title"
-              placeholder="Title"
-              value={name ? name : ""}
-              onChange={(e) => setName(e.target.value)}
-            />
 
-            <TextArea
-              id="description"
-              labelText="Description"
-              placeholder="Description"
-              value={description ? description : ""}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-
-            <TextInput
-              id="supervisor"
-              labelText="Supervisors"
-              placeholder="Supervisor"
-              value={supervisors ? supervisors : ""}
-              onChange={(e) => setSupervisors(e.target.value)}
-            />
-
-            <Button
-              type="submit"
-              disabled={(name === "" || author === "") && supervisors === ""}
+        {user?.email == application.submitter?.email && 
+          <Tab href="#edit" id="edit" label="Edit">
+            <Form
+              className={styles.edit}
+              style={{
+                height: "90vh",
+                width: "100%",
+              }}
             >
-              Update
-            </Button>
-          </Form>
-        </Tab>
+              <TextInput
+                id="title"
+                labelText="Application Title"
+                placeholder="Title"
+                value={name ? name : ""}
+                onChange={(e) => setName(e.target.value)}
+              />
+
+              <TextArea
+                id="description"
+                labelText="Description"
+                placeholder="Description"
+                value={description ? description : ""}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+
+              <TextInput
+                id="supervisor"
+                labelText="Supervisors"
+                placeholder="Supervisor"
+                value={supervisors ? supervisors : ""}
+                onChange={(e) => setSupervisors(e.target.value)}
+              />
+
+              <Button
+                type="submit"
+                disabled={(name === "" || author === "") && supervisors === ""}
+              >
+                Update
+              </Button>
+            </Form>
+          </Tab>
+        }
         <Tab href="#share" id="share" label="Share">
           <span>
             <p>Shareable URL (only to co-authors and supervisors):</p>
@@ -222,124 +236,127 @@ const ApplicationPage: NextPage = () => {
             <p>{copyStatus}</p>
           </span>
         </Tab>
-        <Tab href="#review" id="review" label="Review">
-          {application.reviews.map((review: Review, i: Number) =>
-            review.comment ? (
-              <Tile className={styles.reviewTile}>
-                {i == 0 ? (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      fontSize: "1.5rem",
-                    }}
-                  >
-                    <h2>Application submitted</h2>
-                  </div>
-                ) : (
-                  <>
-                    <div>{review.comment ? review.comment : ""}</div>
-                    <div>
-                      {review.reviewer
-                        ? review.reviewer?.name
-                          ? review.reviewer.name
-                          : review.reviewer.email
-                        : "No data"}
+
+        {(user?.role == "COORDINATOR") || (user?.email == application.submitter?.email) || (user?.role == "REVIEWER")  ? (
+          <Tab href="#review" id="review" label="Review">
+            {application.reviews.map((review: Review, i: Number) =>
+              review.comment ? (
+                <Tile className={styles.reviewTile}>
+                  {i == 0 ? (
+                    <div
+                      style={{
+                        textAlign: "center",
+                        fontSize: "1.5rem",
+                      }}
+                    >
+                      <h2>Application submitted</h2>
                     </div>
-                  </>
-                )}
-              </Tile>
-            ) : (
-              <h3 style={{ textAlign: "center" }}>
-                Added {review.status} status
-              </h3>
-            )
-          )}
-          <div className={styles.reviewControls}>
-            <ModalWrapper
-              shouldSubmitOnEnter={false}
-              handleSubmit={(): boolean => {
-                api
-                  .request({
-                    path: `/reviews/${application.id}`,
+                  ) : (
+                    <>
+                      <div>{review.comment ? review.comment : ""}</div>
+                      <div>
+                        {review.reviewer
+                          ? review.reviewer?.name
+                            ? review.reviewer.name
+                            : review.reviewer.email
+                          : "No data"}
+                      </div>
+                    </>
+                  )}
+                </Tile>
+              ) : (
+                <h3 style={{ textAlign: "center" }}>
+                  Added {review.status} status
+                </h3>
+              )
+            )}
+            <div className={styles.reviewControls}>
+              <ModalWrapper
+                shouldSubmitOnEnter={false}
+                handleSubmit={(): boolean => {
+                  nm_ctx
+                    .request({
+                      path: `/reviews/${application.id}`,
+                      method: "POST",
+                      data: {
+                        comment: comment,
+                      },
+                    })
+                    .then(([res, err_code]) => {
+                      if (err_code == 0) {
+                        setComment("");
+                      }
+                    });
+                  return true;
+                }}
+                onSubmit={(_e) => {
+                  const [res, err_code] = await nm_ctx.request({
+                    path: `/review/${application.id}`,
                     method: "POST",
                     data: {
                       comment: comment,
                     },
-                  })
-                  .then((resp) => {
-                    if (resp.status == 201) {
-                      setComment("");
-                    }
                   });
-                return true;
-              }}
-              onSubmit={async (_e) => {
-                const [res, err_code] = await nm_ctx.request({
-                  path: `/review/${application.id}`,
-                  method: "POST",
-                  data: {
-                    comment: comment,
-                  },
+                  if (err_code === 0) {
+                    setComment("");
+                    setReviews([...reviews, res.data]);
+                  }
                 });
-                if (err_code === 0) {
-                  setComment("");
-                  setReviews([...reviews, res.data]);
-                }
-              }}
-              buttonTriggerText="Add Comment"
-              renderTriggerButtonIcon={Chat16}
-              triggerButtonIconDescription="Add Comment"
-              modalHeading="Add Comment"
-              modalLabel="Add Comment"
-            >
-              <div style={{ maxHeight: "60vh" }}>
-                <TextArea
-                  labelText="Add Comment"
-                  onChange={(e) => setComment(e.target.value)}
-                />
-              </div>
-            </ModalWrapper>
-            <ModalWrapper
-              shouldSubmitOnEnter={false}
-              handleSubmit={(): boolean => {
-                if (reviewStatus === "") {
-                  setstatusErrMsg("Please select a status");
-                  return false;
-                }
-
-                nm_ctx
-                  .request({
-                    path: `/reviews/${application.id}`,
-                    method: "POST",
-                    data: {
-                      status: reviewStatus,
-                    },
-                  })
-                  .then();
-
-                return true;
-              }}
-              buttonTriggerText="Update status"
-              renderTriggerButtonIcon={Add16}
-              triggerButtonIconDescription="Update status"
-              modalHeading="Update status"
-              modalLabel="Update status"
-            >
-              <Dropdown
-                label="Status"
-                items={["Pending", "In Review", "Accepted", "Rejected"]}
-                id={""}
-                onChange={(e) =>
-                  setReviewStatus(e.selectedItem ? e.selectedItem : "")
-                }
-                style={{
-                  paddingBottom: "160px",
                 }}
-              />
-              {statusErrMsg && <div>{statusErrMsg}</div>}
-            </ModalWrapper>
-          </div>
-        </Tab>
+                buttonTriggerText="Add Comment"
+                renderTriggerButtonIcon={Chat16}
+                triggerButtonIconDescription="Add Comment"
+                modalHeading="Add Comment"
+                modalLabel="Add Comment"
+              >
+                <div style={{ maxHeight: "60vh" }}>
+                  <TextArea
+                    labelText="Add Comment"
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                </div>
+              </ModalWrapper>
+              <ModalWrapper
+                shouldSubmitOnEnter={false}
+                handleSubmit={(): boolean => {
+                  if (reviewStatus === "") {
+                    setstatusErrMsg("Please select a status");
+                    return false;
+                  }
+
+                  nm_ctx
+                    .request({
+                      path: `/reviews/${application.id}`,
+                      method: "POST",
+                      data: {
+                        status: reviewStatus,
+                      },
+                    });
+                  return true;
+                }}
+                buttonTriggerText="Update status"
+                renderTriggerButtonIcon={Add16}
+                triggerButtonIconDescription="Update status"
+                modalHeading="Update status"
+                modalLabel="Update status"
+              >
+                <Dropdown
+                  label="Status"
+                  items={["Pending", "In Review", "Accepted", "Rejected"]}
+                  id={""}
+                  onChange={(e) =>
+                    setReviewStatus(e.selectedItem ? e.selectedItem : "")
+                  }
+                  style={{
+                    paddingBottom: "160px",
+                  }}
+                />
+                {statusErrMsg && <div>{statusErrMsg}</div>}
+              </ModalWrapper>
+            </div>
+          </Tab>
+        ):(null)
+        }
       </Tabs>
     </>
   );

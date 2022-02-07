@@ -1,6 +1,7 @@
 import type { NextPage } from "next";
-import { Button, Form, TextInput } from "carbon-components-react";
-import React, { useContext, useEffect, useState } from "react";
+import { Button, Dropdown, Form, TextInput } from "carbon-components-react";
+import React, { useEffect, useState, useContext } from "react";
+
 import * as api from "../api";
 import { Login32, Save32 } from "@carbon/icons-react";
 import styles from "../styles/account.module.css";
@@ -11,6 +12,7 @@ const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
+  const [role, setRole] = useState("");
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -25,9 +27,12 @@ const AccountPage: NextPage = () => {
         setName(user.name);
         setBio(user.bio);
         setSchool(user.field);
+        setRole(user.data.role);
       }
     };
   }, []);
+
+  let dropdown_items = [{id: "RESEARCHER", text: "RESEARCHER"}, {id: "REVIEWER", text: "REVIEWER"}, {id: "COORDINATOR", text: "COORDINATOR"}]
 
   return (
     <>
@@ -56,6 +61,20 @@ const AccountPage: NextPage = () => {
           className={styles.formElements}
         />
 
+        <Dropdown 
+           id="role"
+           titleText="Role Select"
+           helperText="Select your Role"
+           label={role}
+           items={dropdown_items}
+           itemToString={(item) => (item ? item.text : '')}
+           onChange={(e)=>{
+             if (e.selectedItem){
+              setRole(e.selectedItem.id)
+             }
+           }}
+        />
+
         <div
           style={{
             display: "flex",
@@ -80,13 +99,13 @@ const AccountPage: NextPage = () => {
 
           <Button
             type="submit"
-            disabled={!name && !bio && !school}
+            disabled={!name && !bio && !school && !role}
             onClick={(e) => {
               e.preventDefault();
               nm_ctx.request({
                 method: "PATCH",
                 path: "/users",
-                data: { name: name, bio: bio, school: school },
+                data: { name: name, bio: bio, school: school, role: role },
                 show_progress: true,
               });
             }}

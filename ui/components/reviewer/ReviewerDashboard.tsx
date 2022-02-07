@@ -23,7 +23,7 @@ export default function ReviewerDashboard() {
     (async () => {
       const resp = await api.request({
         method: "GET",
-        path: "/applications",
+        path: "/applications?t=review",
       });
 
       if (resp?.data) {
@@ -48,6 +48,6 @@ export default function ReviewerDashboard() {
   }, []);
 
   return (
-    <>{loading == true ? <Loading /> : <ApplicationTable rows={rowData} />}</>
+    <>{loading == true ? <Loading /> : <ApplicationTable title={"Reviewer Panel"} description={"Applications you are reviewing"} rows={rowData} />}</>
   );
 }

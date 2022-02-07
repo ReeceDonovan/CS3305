@@ -19,7 +19,6 @@ loginRouter.get(
   "/callback",
   async (req: express.Request, res: express.Response) => {
     const code = req.query["code"];
-
     const r = await axios.post("https://oauth2.googleapis.com/token", {
       code,
       client_id: config.get().oauthConfig.oauthClientId,
