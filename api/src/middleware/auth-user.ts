@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import config from "../config/config";
 
+import config from "../config/config";
 import { NotAuthorizedError } from "../errors";
 import { UserType } from "../models/user";
 
@@ -21,20 +21,14 @@ export interface TokenClaims {
   iat: number;
 }
 
-// For appending a current user to Express Request
-declare global {
-  namespace Express {
-    interface Request {
-      user?: UserClaims;
-    }
+// For appending a user to Express Request
+declare module "express" {
+  export interface Request {
+    user?: UserClaims;
   }
 }
 
-export const authUser = async (
-  req: Request,
-  _: Response,
-  next: NextFunction
-) => {
+export const authUser = (req: Request, _: Response, next: NextFunction) => {
   const authHeader = req.header("Authorization");
 
   const token = authHeader && authHeader.split(" ")[1];

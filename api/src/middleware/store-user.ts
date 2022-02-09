@@ -1,19 +1,37 @@
-import { NextFunction, Request, Response } from 'express';
-import { NotAuthorizedError } from '../errors';
+import { NextFunction, Request, Response } from "express";
 
-import User from '../models/user';
+import User from "../models/user";
 
-export default async (req: Request, res: Response, next: NextFunction) => {
+interface Locals {
+  user: User;
+}
+
+// For appending a user to Express Response Locals
+declare module "express" {
+  export interface Response {
+    locals: Locals;
+  }
+}
+
+export default (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userID = req.user?.id;
+    if (!req.user) {
+      throw new Error("No user found");
+    }
+    const userID = req.user.id;
 
-    const user = await User.findOne({ id: userID });
-
-    res.locals.user = user;
-
-    return next();
-  } catch (err) {
-    console.log(err);
-    return next(new NotAuthorizedError());
+    User.findOne(userID)
+      .then((user) => {
+        if (!user) {
+          throw new Error("No user found");
+        }
+        res.locals.user = user;
+        return next();
+      })
+      .catch((err) => {
+        throw err;
+      });
+  } catch (error) {
+    return next(error);
   }
 };
