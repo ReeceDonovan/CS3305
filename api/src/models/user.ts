@@ -1,9 +1,8 @@
 import { IsEmail, IsEnum } from "class-validator";
 import { Column, Entity as OrmEntity, Index, OneToMany } from "typeorm";
 
-import { dbConn } from "./database";
 import Entity from "./entity";
-// import Review from "./review";
+import Review from "./review";
 import UsersApplications from "./usersApplications";
 
 export enum UserType {
@@ -46,21 +45,6 @@ export default class User extends Entity {
   )
   usersApplications: UsersApplications[];
 
-  // @OneToMany(() => Review, (review) => review.reviewer)
-  // reviews: Review[];
-  //
-  static async getByEmail(email: string) {
-    return await dbConn.getRepository(User).findOne({ email });
-  }
-
-  static async getById(id: number, relations: string[] = []) {
-    return await dbConn.getRepository(User).findOne({
-      where: { id },
-      relations,
-    });
-  }
-
-  static async getByType(role: UserType) {
-    return await dbConn.getRepository(User).find({ role });
-  }
+  @OneToMany(() => Review, (review) => review.user)
+  reviews: Review[];
 }
