@@ -1,12 +1,10 @@
-import { Connection, createConnection } from "typeorm";
+import { createConnection } from "typeorm";
 
 import config from "../config/config";
 
-export let dbConn: Connection;
-
-export const createConn = async (): Promise<void> => {
+export const createConn = async () => {
   try {
-    dbConn = await createConnection({
+    await createConnection({
       type: "postgres",
       host: config.get().databaseConfig.host,
       port: config.get().databaseConfig.port,
