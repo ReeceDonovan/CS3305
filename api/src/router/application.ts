@@ -6,6 +6,7 @@ import { NextFunction, Request, Response, Router } from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
+import Review from "../models/review";
 import { getRepository, In, Repository } from "typeorm";
 
 import { BadRequestError, NotAuthorizedError, NotFoundError } from "../errors";
@@ -326,6 +327,42 @@ const deleteApplication = async (
   }
 };
 
+// Application -> Review routes
+const getReviewsByApplication = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = res.locals.user;
+  const applicationId = req.params.id;
+
+  try {
+    const application = await Application.findOne(applicationId);
+
+    if (!application) throw new NotFoundError();
+
+    if (!(await check_access(application, user)))
+      throw new NotAuthorizedError();
+
+    const reviews = await Review.find({
+      where: {
+        application,
+      },
+      relations: ["application", "user"],
+    });
+
+    if (!reviews) throw new NotFoundError();
+
+    res.json({
+      status: 200,
+      message: "Successfully retrieved reviews",
+      data: reviews,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const appRouter = Router();
 appRouter.use(protectedRoute);
 
@@ -335,5 +372,6 @@ appRouter.get("/:id/form", reqUser, getApplicationForm);
 appRouter.post("/", reqUser, upload.single("pdf_form"), createApplication);
 appRouter.patch("/:id", reqUser, updateApplication);
 appRouter.delete("/:id", reqUser, deleteApplication);
+appRouter.get("/:id/reviews", reqUser, getReviewsByApplication);
 
 export default appRouter;

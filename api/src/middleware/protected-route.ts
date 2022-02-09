@@ -9,7 +9,13 @@ const permissionLevel = {
   [UserType.RESEARCHER]: 3,
 };
 
-const reviewer_routes = ["/reviews", "/reviews/:reviewId"];
+// TODO: These route declarations can definitely be done better and cleaner
+const reviewer_routes = [
+  "/applications/:id/reviews",
+  "/reviews",
+  "/reviews/:id",
+];
+
 const coordinator_routes = ["/admin", "/settings"];
 
 export const protectedRoute = (
