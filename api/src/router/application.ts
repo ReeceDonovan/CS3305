@@ -6,13 +6,13 @@ import { NextFunction, Request, Response, Router } from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
-import Review from "../models/review";
 import { getRepository, In, Repository } from "typeorm";
 
 import { BadRequestError, NotAuthorizedError, NotFoundError } from "../errors";
 import { protectedRoute } from "../middleware/protected-route";
 import reqUser from "../middleware/store-user";
 import Application from "../models/application";
+import Review from "../models/review";
 import User, { UserType } from "../models/user";
 import UsersApplications, { RoleType } from "../models/usersApplications";
 import response from "../utils/response";
@@ -327,6 +327,7 @@ const deleteApplication = async (
   }
 };
 
+// TODO: Needs testing from this endpoint and down
 // Application -> Review routes
 const getReviewsByApplication = async (
   req: Request,
@@ -363,6 +364,43 @@ const getReviewsByApplication = async (
   }
 };
 
+const createReviewByApplication = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = res.locals.user;
+  const applicationId = req.params.id;
+  const body: Partial<Review> = req.body;
+
+  try {
+    const application = await Application.findOne(applicationId);
+
+    if (!application) throw new NotFoundError();
+
+    if (!(await check_access(application, user)))
+      throw new NotAuthorizedError();
+
+    const reviewRepository: Repository<Review> = getRepository(Review);
+
+    const review = new Review({
+      ...body,
+      application,
+      user,
+    });
+
+    const savedReview = await reviewRepository.save(review);
+
+    res.json({
+      status: 201,
+      message: "Successfully created review",
+      data: savedReview,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const appRouter = Router();
 appRouter.use(protectedRoute);
 
@@ -373,5 +411,6 @@ appRouter.post("/", reqUser, upload.single("pdf_form"), createApplication);
 appRouter.patch("/:id", reqUser, updateApplication);
 appRouter.delete("/:id", reqUser, deleteApplication);
 appRouter.get("/:id/reviews", reqUser, getReviewsByApplication);
+appRouter.post("/:id/reviews", reqUser, createReviewByApplication);
 
 export default appRouter;
