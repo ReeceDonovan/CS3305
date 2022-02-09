@@ -37,13 +37,10 @@ const getReview = async (req: Request, res: Response, next: NextFunction) => {
       relations: ["application", "user"],
     });
 
-    if (!review) {
-      throw new NotFoundError();
-    }
+    if (!review) throw new NotFoundError();
 
-    if (!(await checkAccess(review.application, user))) {
+    if (!(await checkAccess(review.application, user)))
       throw new NotAuthorizedError();
-    }
 
     res.json({
       status: 200,
