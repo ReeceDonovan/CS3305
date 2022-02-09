@@ -1,5 +1,7 @@
 export default interface Response {
   status: number;
   message: string;
-  data: any;
+  data: unknown;
+  // FIXME: Some weird syntax checking conflict
+  // eslint-disable-next-line semi
 }

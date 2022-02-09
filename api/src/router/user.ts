@@ -1,8 +1,11 @@
+// FIXME
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import express from "express";
-import { NotAuthorizedError, NotFoundError } from "../errors";
-import { protectedRoute } from "../middleware/protected-route";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 
+import { NotAuthorizedError, NotFoundError } from "../errors";
+import { protectedRoute } from "../middleware/protected-route";
 import User, { UserType } from "../models/user";
 
 const userRouter = express.Router();
@@ -15,7 +18,7 @@ userRouter.get(
     res: express.Response,
     next: express.NextFunction
   ) => {
-    const uid = req.params.id;
+    const uid = parseInt(req.params.id, 10);
     const reqUser = res.locals.user;
 
     try {
@@ -42,11 +45,7 @@ userRouter.get(
 
 userRouter.get(
   "/",
-  async (
-    _: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+  (_: express.Request, res: express.Response, next: express.NextFunction) => {
     res.json({
       status: 200,
       message: "Successfully fetched users",
@@ -63,16 +62,16 @@ userRouter.patch(
     res: express.Response,
     next: express.NextFunction
   ) => {
-    let user = res.locals.user;
+    const user = res.locals.user;
     const body: QueryDeepPartialEntity<User> = req.body;
 
     // TODO: Make a type for the body
     try {
-      user = await User.update(user.id, body);
+      const updatedUser = await User.update(user.id, body);
       res.json({
         status: 200,
         message: "Successfully updated user",
-        data: user,
+        data: updatedUser,
       });
     } catch (err) {
       next(err);

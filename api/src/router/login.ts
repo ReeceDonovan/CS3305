@@ -1,14 +1,21 @@
+// FIXME: Fix the errors raised when these rules aren't disabled.
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import axios from "axios";
 import express from "express";
 import jwt from "jsonwebtoken";
-import { BadRequestError, InternalError} from "../errors";
 
 import config from "../config/config";
+import { BadRequestError, InternalError } from "../errors";
 import User from "../models/user";
 
 const loginRouter = express.Router();
 
-loginRouter.get("/", async (_req: express.Request, res: express.Response) => {
+loginRouter.get("/", (_req: express.Request, res: express.Response) => {
   res.redirect(
     `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&client_id=${
       config.get().oauthConfig.oauthClientId
@@ -66,8 +73,8 @@ loginRouter.get(
           exp: Math.floor(Date.now() / 1000) + 6 * 60 * 60,
         },
         config.get().signingKey,
-        (err: Error|null, token: string|undefined) => {
-          if (err) {
+        (err: Error | null, token: string | undefined) => {
+          if (err || !token) {
             throw new InternalError("Error signing token");
           } else {
             res.redirect(`${config.get().uiURL}/login?token=${token}`);

@@ -2,20 +2,16 @@
  * Temporary file, until there is a better place to put this
  */
 import express from "express";
-import { protectedRoute } from "../middleware/protected-route";
 
 import config, { configInterface } from "../config/config";
+import { protectedRoute } from "../middleware/protected-route";
 
 const settingsRouter = express.Router();
 settingsRouter.use(protectedRoute);
 
 settingsRouter.get(
   "/settings",
-  async (
-    _: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+  (_: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
       res.json({
         status: 200,
@@ -30,11 +26,9 @@ settingsRouter.get(
 
 settingsRouter.post(
   "/settings",
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+  (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    // FIXME
+    /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
     const config_data: configInterface = req.body;
     try {
       config.set(config_data);
