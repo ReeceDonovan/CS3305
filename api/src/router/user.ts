@@ -2,13 +2,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import express from "express";
-import { getRepository, Repository } from "typeorm";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 
 import { NotAuthorizedError, NotFoundError } from "../errors";
 import { protectedRoute } from "../middleware/protected-route";
 import User, { UserType } from "../models/user";
-import UsersApplications from "../models/usersApplications";
+import { RoleType } from "../models/usersApplications";
 
 const userRouter = express.Router();
 userRouter.use(protectedRoute);
@@ -103,10 +102,57 @@ userRouter.get(
       if (!reviewers) throw new NotFoundError();
 
       switch (target) {
-        case "suggest":
-          // FIXME add suggestion algo
-          break;
+        case "suggest": {
+          // FIXME: Do it better
+          const dumpReviewers = await User.find({
+            relations: ["usersApplications"],
+            order: {
+              createdAt: "ASC",
+            },
+            where: {
+              role: UserType.REVIEWER,
+              usersApplications: {
+                role: RoleType.REVIEWER,
+                orderBy: {
+                  createdAt: "DESC",
+                },
+                take: 1,
+              },
+            },
+          });
 
+          if (!dumpReviewers) throw new NotFoundError();
+
+          const unassignedReviewers = dumpReviewers.filter(
+            (reviewer) => reviewer.usersApplications.length === 0
+          );
+
+          if (unassignedReviewers.length > 0) {
+            res.json({
+              status: 200,
+              message: "Successfully fetched reviewers",
+              data: unassignedReviewers[0],
+            });
+          } else {
+            const oldestReviewers = dumpReviewers.filter(
+              (reviewer) => reviewer.usersApplications.length > 0
+            );
+
+            const oldestReviewer = oldestReviewers.sort(
+              (a, b) =>
+                a.usersApplications[0].createdAt.getTime() -
+                b.usersApplications[0].createdAt.getTime()
+            )[0];
+
+            res.json({
+              status: 200,
+              message: "Successfully fetched reviewers",
+              data: oldestReviewer,
+            });
+          }
+
+          break;
+        }
         default:
           res.json({
             status: 200,
