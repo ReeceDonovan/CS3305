@@ -1,11 +1,12 @@
 import * as nodemailer from "nodemailer";
+import { stringify } from "querystring";
 
 import config from "../config/config";
 
-enum providers {
-  "gmail" = 0,
-  "outlook" = 1,
-}
+const providerKey: { [key: string]: number } = {
+  gmail: 0,
+  outlook: 1,
+};
 
 export default function handler(
   recepient: string,
@@ -13,7 +14,8 @@ export default function handler(
   body: string
 ) {
   const emailProvider =
-    config.get().emailConfigs[providers[config.get().emailProvider]];
+    config.get().emailConfigs[providerKey[config.get().emailProvider]];
+
   const transportPayload = Object.assign(emailProvider, {
     user: config.get().emailUser,
     pass: config.get().emailToken,
@@ -27,8 +29,10 @@ export default function handler(
   };
   transporter.sendMail(mailOptions, (err, info) => {
     if (err)
-      console.error(
-        `Failed to send email: ${err}\nDetails: ${mailOptions}\nInfo: ${info}`
+      console.log(
+        `Failed to send email: ${err.message} ${JSON.stringify(
+          err
+        )}\nDetails: ${stringify(mailOptions)}\nInfo: ${JSON.stringify(info)}`
       );
   });
 }
