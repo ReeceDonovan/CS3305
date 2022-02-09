@@ -1,79 +1,63 @@
-// // @format
-// import express from "express";
+import { NextFunction, Request, Response, Router } from "express";
+import { getRepository, Repository } from "typeorm";
 
-// import Application from "../models/application";
-// import Review, { ReviewStatus } from "../models/review";
-// import User from "../models/user";
-// import Response, { sample_401_res, sample_404_res } from "../utils/response";
+import { NotAuthorizedError, NotFoundError } from "../errors";
+import { protectedRoute } from "../middleware/protected-route";
+import reqUser from "../middleware/store-user";
+import Application from "../models/application";
+import Review from "../models/review";
+import User, { UserType } from "../models/user";
+import UsersApplications from "../models/usersApplications";
 
-// const reviewRouter = express.Router();
+const checkAccess = async (application: Application, user: User) => {
+  if (user.role === UserType.COORDINATOR) {
+    return true;
+  }
 
-// const check_access_rev = (application: Application, user: User) => {
-//   return application.reviewers.includes(user) || user.role === "COORDINATOR";
-// };
+  const userApplicationRepo: Repository<UsersApplications> =
+    getRepository(UsersApplications);
 
-// reviewRouter.get(
-//   "/:id",
-//   async (req: express.Request, res: express.Response) => {
-//     const application = await Application.getById(parseInt(req.params.id), []);
+  const userApplication = await userApplicationRepo.findOne({
+    where: {
+      application,
+      user,
+      role: UserType.REVIEWER,
+    },
+  });
 
-//     if (!application) {
-//       return res.status(404).json(sample_404_res);
-//     }
+  return userApplication !== undefined;
+};
 
-//     if (check_access_rev(application, req.user)) {
-//       return res.status(401).json(sample_401_res);
-//     }
+const getReview = async (req: Request, res: Response, next: NextFunction) => {
+  const user = res.locals.user;
+  const review_id = req.params.id;
 
-//     if (application.reviews) {
-//       const response: Response = {
-//         status: 200,
-//         data: application.reviews,
-//         message: "Success",
-//       };
-//       res.json(response);
-//     } else {
-//       res.status(404).send("No reviews found");
-//     }
-//   }
-// );
+  try {
+    const review = await Review.findOne(review_id, {
+      relations: ["application", "user"],
+    });
 
-// reviewRouter.post(
-//   "/:id",
-//   async (req: express.Request, res: express.Response) => {
-//     const application = await Application.getById(parseInt(req.params.id), [
-//       "reviews",
-//     ]);
+    if (!review) {
+      throw new NotFoundError();
+    }
 
-//     if (!application) {
-//       return res.status(404).json(sample_404_res);
-//     }
+    if (!(await checkAccess(review.application, user))) {
+      throw new NotAuthorizedError();
+    }
 
-//     if (check_access_rev(application, req.user)) {
-//       return res.status(401).json(sample_401_res);
-//     }
+    res.json({
+      status: 200,
+      message: "Successfully retrieved review",
+      data: review,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
-//     const review = new Review({
-//       reviewer: req.user,
-//       status: req.body.status ? req.body.status : ReviewStatus.PENDING,
-//       comment: req.body.comment ? req.body.comment : null,
-//       application: application,
-//     });
+const reviewRouter = Router();
+reviewRouter.use(protectedRoute);
 
-//     // application.reviews
-//     //   ? application.reviews.push(review)
-//     //   : (application.reviews = [review]);
-//     // application.save();
+reviewRouter.get("/:id", reqUser, getReview);
 
-//     application.addReview(review);
-
-//     const response: Response = {
-//       status: 201,
-//       message: "Success",
-//       data: review,
-//     };
-//     res.json(response);
-//   }
-// );
-
-// export default reviewRouter;
+export default reviewRouter;
