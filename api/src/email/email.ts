@@ -3,8 +3,9 @@ import * as nodemailer from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 import config from "../config/config";
+import { MailTransportWithRespones } from "./customTransport";
 
-const transportProvider = async (): Promise<nodemailer.Transporter<SMTPTransport.SentMessageInfo>>=> {
+const transportProvider = async () => {
   let transport: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
   switch (config.get().emailConfig.provider) {
     case "gmail":
@@ -32,6 +33,7 @@ const transportProvider = async (): Promise<nodemailer.Transporter<SMTPTransport
               clientId: config.get().emailConfig.clientId,
               clientSecret: config.get().emailConfig.token,
               refreshToken: config.get().emailConfig.refreshToken,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               accessToken: (await client.getAccessToken()).token!
           }
         });
@@ -64,6 +66,7 @@ const transportProvider = async (): Promise<nodemailer.Transporter<SMTPTransport
       });
       break;
     case "ethereal": // Testing Mail
+      // eslint-disable-next-line no-case-declarations
       const testAccount = await nodemailer.createTestAccount();
       transport = nodemailer.createTransport({
         host: "smtp.ethereal.email",
@@ -91,5 +94,6 @@ const transportProvider = async (): Promise<nodemailer.Transporter<SMTPTransport
       break;
   }
 
-  return transport;
+  return transport as MailTransportWithRespones;
 };
+
