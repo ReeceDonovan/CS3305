@@ -1,34 +1,95 @@
+import { google } from "googleapis";
 import * as nodemailer from "nodemailer";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 import config from "../config/config";
 
-enum providers {
-  "gmail" = 0,
-  "outlook" = 1,
-}
-
-export default function handler(
-  recepient: string,
-  subject: string,
-  body: string
-) {
-  const emailProvider =
-    config.get().emailConfigs[providers[config.get().emailProvider]];
-  const transportPayload = Object.assign(emailProvider, {
-    user: config.get().emailUser,
-    pass: config.get().emailToken,
-  });
-  const transporter = nodemailer.createTransport(transportPayload);
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: recepient,
-    subject: subject,
-    text: body,
-  };
-  transporter.sendMail(mailOptions, (err, info) => {
-    if (err)
-      console.error(
-        `Failed to send email: ${err}\nDetails: ${mailOptions}\nInfo: ${info}`
+const transportProvider = async (): Promise<nodemailer.Transporter<SMTPTransport.SentMessageInfo>>=> {
+  let transport: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
+  switch (config.get().emailConfig.provider) {
+    case "gmail":
+      if (config.get().emailConfig.lessSecure) {
+        transport = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            type: "LOGIN",
+            user: config.get().emailConfig.user,
+            pass: config.get().emailConfig.token,
+          }
+        });
+      } else {
+        const client = new google.auth.OAuth2(config.get().emailConfig.user, config.get().emailConfig.token);
+        client.setCredentials({refresh_token: config.get().emailConfig.refreshToken});
+        transport = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+              type: "OAUTH2",
+              user: config.get().emailConfig.user,
+              clientId: config.get().emailConfig.clientId,
+              clientSecret: config.get().emailConfig.token,
+              refreshToken: config.get().emailConfig.refreshToken,
+              accessToken: (await client.getAccessToken()).token!
+          }
+        });
+      }
+      break;
+  
+    case "outlook":
+      transport = nodemailer.createTransport({
+        host: "smtp-mail.outlook.com",
+        secure: false,
+        port: 587,
+        tls: {
+          ciphers: "SSLv3",
+        },
+        auth: {
+          user: config.get().emailConfig.user,
+          pass: config.get().emailConfig.token
+        }
+      });
+      break;
+    case "zoho":
+      transport = nodemailer.createTransport({
+        host: "smtp.zoho.com",
+        port: 465,
+        secure: true, 
+        auth: {
+          user: config.get().emailConfig.user,
+          pass: config.get().emailConfig.token
+        }
+      });
+      break;
+    case "ethereal": // Testing Mail
+      const testAccount = await nodemailer.createTestAccount();
+      transport = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass
+        },
+      });
+      break;
+    default:
+      // Need to come up with a type for this
+      transport = nodemailer.createTransport(
+        {
+          host: config.get().emailConfig.host,
+          port: config.get().emailConfig.port,
+          secure: config.get().emailConfig.secure,
+          auth: {
+            user: config.get().emailConfig.user,
+            pass: config.get().emailConfig.token
+          }
+        }
       );
-  });
-}
+      break;
+  }
+
+  return transport;
+};

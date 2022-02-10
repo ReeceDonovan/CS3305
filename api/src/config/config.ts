@@ -5,24 +5,11 @@ import path from "path";
 const defaultConfig: configInterface = {
   apiURL: "http://localhost:8000",
   uiURL: "http://localhost:3000",
-  emailProvider: "gmail",
-  emailUser: "",
-  emailToken: "",
-  emailConfigs: [
-    {
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-    },
-    {
-      host: "smtp-mail.outlook.com",
-      secure: false,
-      port: 587,
-      tls: {
-        ciphers: "SSLv3",
-      },
-    },
-  ],
+  emailConfig: {
+    provider: "gmail",
+    user: "",
+    token: "",
+  },
   oauthConfig: {
     oauthClientId: "",
     oauthClientSecret: "",
@@ -49,32 +36,33 @@ const defaultConfig: configInterface = {
 export interface configInterface {
   uiURL: string;
   apiURL: string;
-  emailProvider: string;
-  emailUser: string;
-  emailToken: string;
-  emailConfigs: emailConfigInterface[];
+  signingKey: string;
+  landingPageMD: string;
+  emailConfig: {
+    provider: string;
+    lessSecure?: boolean;
+    user: string;
+    clientId?: string;
+    token: string;
+    refreshToken?: string;
+    host?: string;
+    port?: number;
+    secure?: boolean;
+    tls?: {
+      ciphers: string;
+    };
+  };
   oauthConfig: {
     oauthClientId: string;
     oauthClientSecret: string;
     allowedDomains: string[];
   };
-  signingKey: string;
-  landingPageMD: string;
   databaseConfig: {
     host: string;
     port: number;
     username: string;
     password: string;
     database: string;
-  };
-}
-
-interface emailConfigInterface {
-  host: string;
-  port: number;
-  secure?: boolean;
-  tls?: {
-    ciphers: string;
   };
 }
 
