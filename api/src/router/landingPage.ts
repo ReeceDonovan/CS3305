@@ -6,7 +6,6 @@ import DOMPurify from "isomorphic-dompurify";
 import showdown from "showdown";
 
 import config from "../config/config";
-import transportProvider from "../email/email";
 
 const aboutRouter = express.Router();
 
