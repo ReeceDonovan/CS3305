@@ -5,6 +5,10 @@ import path from "path";
 const defaultConfig: configInterface = {
   apiURL: "http://localhost:8000",
   uiURL: "http://localhost:3000",
+    signingKey: "",
+  landingPageMD:
+    "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))",
+  companyLogo: "",
   emailConfig: {
     provider: "gmail",
     user: "",
@@ -21,9 +25,6 @@ const defaultConfig: configInterface = {
       "hse.ie",
     ],
   },
-  signingKey: "",
-  landingPageMD:
-    "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))",
   databaseConfig: {
     host: "pgres",
     port: 5432,
@@ -38,6 +39,7 @@ export interface configInterface {
   apiURL: string;
   signingKey: string;
   landingPageMD: string;
+  companyLogo: string;
   emailConfig: {
     provider: string;
     lessSecure?: boolean;

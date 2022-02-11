@@ -6,10 +6,11 @@ import DOMPurify from "isomorphic-dompurify";
 import showdown from "showdown";
 
 import config from "../config/config";
+import transportProvider from "../email/email";
 
 const aboutRouter = express.Router();
 
-aboutRouter.get("/", (_req, res) => {
+aboutRouter.get("/", async (_req, res) => {
   const converter = new showdown.Converter();
   res.set("Content-Type", "text/html");
   res.send(DOMPurify.sanitize(converter.makeHtml(config.get().landingPageMD)));
