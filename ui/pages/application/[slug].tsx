@@ -54,19 +54,18 @@ const ApplicationPage: NextPage = () => {
   }, []);
 
   useEffect(() => {
-    const slug = router.query.slug as string;
-    async () => {
+    (async () => {
       const slug = router.query.slug as string;
       if (slug && slug.length > 0) {
         const [res, err_code] = await nm_ctx.request({
           path: `/applications/${slug}`,
           method: "GET",
         });
+        console.log(res.data);
         if (err_code === 0) {
-          console.log(res.data);
           setApplication(res.data);
           setAuthor(res.data.submitter?.email);
-          setSupervisors(res.data.supervisors[0]?.email);
+          setSupervisors(res.data.supervisors);
           setDescription(res.data.description);
           setName(res.data.name);
 
@@ -76,7 +75,7 @@ const ApplicationPage: NextPage = () => {
           setPDF(response);
         });
       }
-    };
+    })();
   }, [router.query.slug]);
 
   if (!application) {

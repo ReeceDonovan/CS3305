@@ -29,9 +29,9 @@ const app = express();
 const unAuthenticatedRoutes: string[] = ["/login", "/login/callback", "/about"];
 
 //allow lists for the first level rba mechanism, they must have the route in the list to be allowed to visit
-const researcher_routes = ["/", "/applications", "/users"];
-const reviewer_routes = ["/", "/applications", "/users", "/reviews"];
-const admin_routes = ["/", "/applications", "/users", "/admin", "/reviews"];
+const researcher_routes = ["", "applications", "users"];
+const reviewer_routes = ["", "applications", "users", "reviews"];
+const admin_routes = ["", "applications", "users", "admin", "reviews"];
 
 const corsOptions = {
   origin: "http://localhost:3000",
@@ -68,15 +68,15 @@ app.use(async (req: express.Request, res: express.Response, next) => {
       req.user = user;
       
       // general sec
-      let path = req.url.split("?")[0];
-      console.log(path)
-
+      const path = req.url.split("?")[0];
+      const top_path = path.split("/")[1];
+      
       // filters users and gives rejecctions if they try to acess top level path which no  permissions based on above allow lists
-      if (user.role === "RESEARCHER" && researcher_routes.includes(path)) {
+      if (user.role === "RESEARCHER" && researcher_routes.includes(top_path)) {
         return next();
-      } else if (user.role === "REVIEWER" && reviewer_routes.includes(path)) {
+      } else if (user.role === "REVIEWER" && reviewer_routes.includes(top_path)) {
         return next();
-      } else if (user.role === "COORDINATOR" && admin_routes.includes(path)) {
+      } else if (user.role === "COORDINATOR" && admin_routes.includes(top_path)) {
         return next();
       } else {
         return res.status(401).json(sample_401_res);
