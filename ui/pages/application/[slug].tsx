@@ -11,7 +11,7 @@ import {
   Tile,
 } from "carbon-components-react";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import * as api from "../../api";
 // import { Application } from "../../api/types";
@@ -21,6 +21,7 @@ import type { NextPage } from "next";
 import { Review, User } from "../../api/types";
 import { Add16, Chat16 } from "@carbon/icons-react";
 import Link from "next/link";
+import { NetworkManagerContext } from "../../components/NetworkManager";
 
 const ApplicationPage: NextPage = () => {
   const [user, setUser] = useState<User>();
@@ -41,6 +42,8 @@ const ApplicationPage: NextPage = () => {
   const [reviewStatus, setReviewStatus] = useState("");
   const [statusErrMsg, setstatusErrMsg] = useState("");
 
+  const nm_ctx = useContext(NetworkManagerContext);
+
   useEffect(() => {
     (async () => {
       const user = await api.getToken();
@@ -52,26 +55,28 @@ const ApplicationPage: NextPage = () => {
 
   useEffect(() => {
     const slug = router.query.slug as string;
-    if (slug && slug.length > 0) {
-      api
-        .request({
+    async () => {
+      const slug = router.query.slug as string;
+      if (slug && slug.length > 0) {
+        const [res, err_code] = await nm_ctx.request({
           path: `/applications/${slug}`,
           method: "GET",
-        })
-        .then((response) => {
-          console.log(response.data);
-          setApplication(response.data);
-          setAuthor(response.data.submitter?.email);
-          setSupervisors(response.data.supervisors[0]?.email);
-          setDescription(response.data.description);
-          setName(response.data.name);
-
-          setReviews(response.data.reviews);
         });
-      api.fetchPDF(slug).then((response) => {
-        setPDF(response);
-      });
-    }
+        if (err_code === 0) {
+          console.log(res.data);
+          setApplication(res.data);
+          setAuthor(res.data.submitter?.email);
+          setSupervisors(res.data.supervisors[0]?.email);
+          setDescription(res.data.description);
+          setName(res.data.name);
+
+          setReviews(res.data.reviews);
+        }
+        api.fetchPDF(slug).then((response) => {
+          setPDF(response);
+        });
+      }
+    };
   }, [router.query.slug]);
 
   if (!application) {
@@ -162,7 +167,7 @@ const ApplicationPage: NextPage = () => {
           )}
         </Tab>
 
-        {user?.email == application.submitter?.email && 
+        {user?.email == application.submitter?.email && (
           <Tab href="#edit" id="edit" label="Edit">
             <Form
               className={styles.edit}
@@ -203,7 +208,7 @@ const ApplicationPage: NextPage = () => {
               </Button>
             </Form>
           </Tab>
-        }
+        )}
         <Tab href="#share" id="share" label="Share">
           <span>
             <p>Shareable URL (only to co-authors and supervisors):</p>
@@ -232,7 +237,9 @@ const ApplicationPage: NextPage = () => {
           </span>
         </Tab>
 
-        {(user?.role == "COORDINATOR") || (user?.email == application.submitter?.email) || (user?.role == "REVIEWER")  ? (
+        {user?.role == "COORDINATOR" ||
+        user?.email == application.submitter?.email ||
+        user?.role == "REVIEWER" ? (
           <Tab href="#review" id="review" label="Review">
             {application.reviews.map((review: Review, i: Number) =>
               review.comment ? (
@@ -269,7 +276,7 @@ const ApplicationPage: NextPage = () => {
               <ModalWrapper
                 shouldSubmitOnEnter={false}
                 handleSubmit={(): boolean => {
-                  api
+                  nm_ctx
                     .request({
                       path: `/reviews/${application.id}`,
                       method: "POST",
@@ -277,28 +284,25 @@ const ApplicationPage: NextPage = () => {
                         comment: comment,
                       },
                     })
-                    .then((resp) => {
-                      if (resp.status == 201) {
+                    .then(([res, err_code]) => {
+                      if (err_code == 0) {
                         setComment("");
                       }
                     });
                   return true;
                 }}
-                onSubmit={(_e) => {
-                  api
-                    .request({
-                      path: `/review/${application.id}`,
-                      method: "POST",
-                      data: {
-                        comment: comment,
-                      },
-                    })
-                    .then((resp) => {
-                      if (resp.status == 201) {
-                        setComment("");
-                        setReviews([...reviews, resp.data]);
-                      }
-                    });
+                onSubmit={async (_e) => {
+                  const [res, err_code] = await nm_ctx.request({
+                    path: `/review/${application.id}`,
+                    method: "POST",
+                    data: {
+                      comment: comment,
+                    },
+                  });
+                  if (err_code === 0) {
+                    setComment("");
+                    setReviews([...reviews, res.data]);
+                  }
                 }}
                 buttonTriggerText="Add Comment"
                 renderTriggerButtonIcon={Chat16}
@@ -321,16 +325,13 @@ const ApplicationPage: NextPage = () => {
                     return false;
                   }
 
-                  api
-                    .request({
-                      path: `/reviews/${application.id}`,
-                      method: "POST",
-                      data: {
-                        status: reviewStatus,
-                      },
-                    })
-                    .then();
-
+                  nm_ctx.request({
+                    path: `/reviews/${application.id}`,
+                    method: "POST",
+                    data: {
+                      status: reviewStatus,
+                    },
+                  });
                   return true;
                 }}
                 buttonTriggerText="Update status"
@@ -354,8 +355,7 @@ const ApplicationPage: NextPage = () => {
               </ModalWrapper>
             </div>
           </Tab>
-        ):(null)
-        }
+        ) : null}
       </Tabs>
     </>
   );

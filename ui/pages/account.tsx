@@ -1,16 +1,12 @@
 import type { NextPage } from "next";
 import { Button, Dropdown, Form, TextInput } from "carbon-components-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+
 import * as api from "../api";
-import { request } from "../api/index";
-import {
-  Checkmark32,
-  Error32,
-  InProgress32,
-  Login32,
-  Save32,
-} from "@carbon/icons-react";
+import { Login32, Save32 } from "@carbon/icons-react";
 import styles from "../styles/account.module.css";
+import { NetworkManagerContext } from "../components/NetworkManager";
+import { User } from "../api/types";
 
 const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
@@ -18,33 +14,22 @@ const AccountPage: NextPage = () => {
   const [school, setSchool] = useState("");
   const [role, setRole] = useState("");
 
-  // 0 is nothing, 1 is in progress, 2 is failure, 3 is success
-  const [submit_success, setSubmit_success] = useState<number>(0);
-
-  let save_state = <> </>;
-  if (submit_success === 1) {
-    save_state = <InProgress32 className={styles.resultIcon} />;
-  } else if (submit_success == 2) {
-    save_state = <Error32 className={styles.resultIcon} />;
-  } else if (submit_success == 3) {
-    save_state = <Checkmark32 className={styles.resultIcon} />;
-  } else {
-    save_state = <> </>;
-  }
+  const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
-    (async () => {
-      const user = await api.request({
+    async () => {
+      const [res, err_code] = await nm_ctx.request({
         path: "/users",
         method: "GET",
       });
-      if (user.status == 200) {
-        setName(user.data.name);
-        setBio(user.data.bio);
-        setSchool(user.data.school);
-        setRole(user.data.role)
+      const user: User = res.data;
+      if (err_code === 0) {
+        setName(user.name);
+        setBio(user.bio);
+        setSchool(user.field);
+        setRole(user.data.role);
       }
-    })();
+    };
   }, []);
 
   let dropdown_items = [{id: "RESEARCHER", text: "RESEARCHER"}, {id: "REVIEWER", text: "REVIEWER"}, {id: "COORDINATOR", text: "COORDINATOR"}]
@@ -117,17 +102,11 @@ const AccountPage: NextPage = () => {
             disabled={!name && !bio && !school && !role}
             onClick={(e) => {
               e.preventDefault();
-              setSubmit_success(1);
-              request({
+              nm_ctx.request({
                 method: "PATCH",
                 path: "/users",
-                data: { name: name, bio: bio, school: school, role: role},
-              }).then((res) => {
-                if (res.status == 200) {
-                  setSubmit_success(3);
-                } else {
-                  setSubmit_success(2);
-                }
+                data: { name: name, bio: bio, school: school, role: role },
+                show_progress: true,
               });
             }}
             renderIcon={Save32}
@@ -135,7 +114,6 @@ const AccountPage: NextPage = () => {
             Save
           </Button>
         </div>
-        <span>{save_state}</span>
       </Form>
     </>
   );

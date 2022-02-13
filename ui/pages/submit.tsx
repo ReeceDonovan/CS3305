@@ -7,12 +7,11 @@ import {
   TextInput,
 } from "carbon-components-react";
 import Link from "next/link";
-import React, { KeyboardEvent, useState } from "react";
-import * as api from "../api";
+import React, { KeyboardEvent, useContext, useState } from "react";
+import { NetworkManagerContext } from "../components/NetworkManager";
 
 const Submit = () => {
   const [modiflag, setModiflag] = useState(false);
-  const [err_msg, setError_msg] = useState<string | null>(null);
 
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -21,6 +20,8 @@ const Submit = () => {
   const [supervisors, setSupervisors] = useState<string[]>([]);
 
   const [pdfFile, setPdfFile] = useState<File>();
+
+  const nm_ctx = useContext(NetworkManagerContext);
 
   // let pdf_files: File[] = [];
 
@@ -48,17 +49,12 @@ const Submit = () => {
     );
     console.log(form_data);
 
-    api
-      .request({
-        method: "POST",
-        path: "/applications",
-        data: form_data,
-      })
-      .then((resp) => {
-        if (resp.status != 201) {
-          setError_msg(resp.message);
-        }
-      });
+    const [_res, _err_code] = await nm_ctx.request({
+      method: "POST",
+      path: "/applications",
+      data: form_data,
+      show_progress: true,
+    });
   };
 
   return (
@@ -248,7 +244,6 @@ const Submit = () => {
         <Button disabled={modiflag} onClick={sendApplication}>
           Submit Your Application
         </Button>
-        {err_msg ? <p style={{ color: "red" }}>{err_msg}</p> : <></>}
       </Form>
     </>
   );
