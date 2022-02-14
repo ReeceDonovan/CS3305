@@ -10,13 +10,14 @@ const permissionLevel = {
 };
 
 // TODO: These route declarations can definitely be done better and cleaner
+// FIXME: Needs testing (does the req.path actually match this format)
 const reviewer_routes = [
   "/applications/:id/reviews",
   "/reviews",
   "/reviews/:id",
 ];
 
-const coordinator_routes = ["/admin", "/settings"];
+const coordinator_routes = ["/admin", "/settings", "/admin/settings", "/users/reviewers"];
 
 export const protectedRoute = (
   req: Request,
