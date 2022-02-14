@@ -15,7 +15,7 @@ const appRouter = express.Router();
 
 
 const check_access_app = (application: Application, user: User) => {
-  return application.submitter === user || application.supervisors.includes(user) || application.coauthors.includes(user) || application.reviewers.includes(user) || user.role === "COORDINATOR"
+  return application.submitter.email === user.email || application.supervisors.includes(user) || application.coauthors.includes(user) || application.reviewers.includes(user) || user.role === "COORDINATOR"
 }
 
 appRouter.get("/", async (req: express.Request, res: express.Response) => {
