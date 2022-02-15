@@ -20,7 +20,7 @@ export default class Review extends Entity {
   @Column({ type: "text", nullable: true })
   comment: string;
 
-  @Column({ type: "enum", enum: ReviewStatus, default: ReviewStatus.PENDING })
+  @Column({ type: "text", enum: ReviewStatus, default: ReviewStatus.PENDING })
   status: ReviewStatus;
 
   @ManyToOne(() => Application, (application) => application.reviews)

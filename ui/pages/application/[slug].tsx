@@ -62,7 +62,9 @@ const ApplicationPage: NextPage = () => {
           console.log(response.data);
           setApplication(response.data);
           setAuthor(response.data.submitter?.email);
-          setSupervisors(response.data.supervisors[0]?.email);
+          setSupervisors(
+            response.data.supervisors ? response.data.supervisors[0]?.email : ""
+          );
           setDescription(response.data.description);
           setName(response.data.name);
 
@@ -73,6 +75,29 @@ const ApplicationPage: NextPage = () => {
       });
     }
   }, [router.query.slug]);
+
+  const sendReview = async () => {
+    if (reviewStatus && reviewStatus !== "" && comment && comment !== "") {
+      try {
+        console.log(application.id);
+        const resp = await api.request({
+          path: `/applications/${application?.id}/reviews`,
+          method: "POST",
+          data: {
+            comment,
+            status: reviewStatus,
+          },
+        });
+
+        if (resp.status == 201) {
+          console.log("Success");
+          window.location.reload();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
 
   if (!application) {
     return <div>Loading...</div>;
@@ -162,7 +187,7 @@ const ApplicationPage: NextPage = () => {
           )}
         </Tab>
 
-        {user?.email == application.submitter?.email && 
+        {user?.email == application.submitter?.email && (
           <Tab href="#edit" id="edit" label="Edit">
             <Form
               className={styles.edit}
@@ -203,159 +228,46 @@ const ApplicationPage: NextPage = () => {
               </Button>
             </Form>
           </Tab>
-        }
-        <Tab href="#share" id="share" label="Share">
-          <span>
-            <p>Shareable URL (only to co-authors and supervisors):</p>
-            <br />
-            <p>
-              <Link
-                href={`/application/${application.id}`}
-              >{`/application/${application.id}`}</Link>
-            </p>
-            <br />
-            <Button
-              small
-              onClick={() => {
-                navigator.clipboard
-                  .writeText(
-                    `http://localhost:3000/application/${application.id}`
-                  )
-                  .then(() => {
-                    setCopyStatus("Copied to clipboard!");
-                  });
-              }}
-            >
-              Click to Copy
-            </Button>
-            <p>{copyStatus}</p>
-          </span>
-        </Tab>
+        )}
 
-        {(user?.role == "COORDINATOR") || (user?.email == application.submitter?.email) || (user?.role == "REVIEWER")  ? (
+        {user?.role == "COORDINATOR" ||
+        user?.email == application.submitter?.email ||
+        user?.role == "REVIEWER" ? (
           <Tab href="#review" id="review" label="Review">
-            {application.reviews.map((review: Review, i: Number) =>
-              review.comment ? (
-                <Tile className={styles.reviewTile}>
-                  {i == 0 ? (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        fontSize: "1.5rem",
-                      }}
-                    >
-                      <h2>Application submitted</h2>
-                    </div>
-                  ) : (
-                    <>
-                      <div>{review.comment ? review.comment : ""}</div>
-                      <div>
-                        {review.reviewer
-                          ? review.reviewer?.name
-                            ? review.reviewer.name
-                            : review.reviewer.email
-                          : "No data"}
-                      </div>
-                    </>
-                  )}
-                </Tile>
-              ) : (
-                <h3 style={{ textAlign: "center" }}>
-                  Added {review.status} status
-                </h3>
-              )
-            )}
-            <div className={styles.reviewControls}>
-              <ModalWrapper
-                shouldSubmitOnEnter={false}
-                handleSubmit={(): boolean => {
-                  api
-                    .request({
-                      path: `/reviews/${application.id}`,
-                      method: "POST",
-                      data: {
-                        comment: comment,
-                      },
-                    })
-                    .then((resp) => {
-                      if (resp.status == 201) {
-                        setComment("");
-                      }
-                    });
-                  return true;
+            <div className="form">
+              <Dropdown
+                style={{
+                  right: 0,
                 }}
-                onSubmit={(_e) => {
-                  api
-                    .request({
-                      path: `/review/${application.id}`,
-                      method: "POST",
-                      data: {
-                        comment: comment,
-                      },
-                    })
-                    .then((resp) => {
-                      if (resp.status == 201) {
-                        setComment("");
-                        setReviews([...reviews, resp.data]);
-                      }
-                    });
+                size="md"
+                label="Status"
+                items={["APPROVED", "DECLINED"]}
+                id={""}
+                onChange={(e) =>
+                  setReviewStatus(e.selectedItem ? e.selectedItem : "")
+                }
+              />
+              <TextArea
+                placeholder="Comment"
+                rows={20}
+                labelText="Comment"
+                onChange={(e) => setComment(e.target.value)}
+              ></TextArea>
+              <Button
+                style={{
+                  marginTop: "2em",
                 }}
-                buttonTriggerText="Add Comment"
-                renderTriggerButtonIcon={Chat16}
-                triggerButtonIconDescription="Add Comment"
-                modalHeading="Add Comment"
-                modalLabel="Add Comment"
+                onClick={(_e) => {
+                  (async () => {
+                    await sendReview();
+                  })();
+                }}
               >
-                <div style={{ maxHeight: "60vh" }}>
-                  <TextArea
-                    labelText="Add Comment"
-                    onChange={(e) => setComment(e.target.value)}
-                  />
-                </div>
-              </ModalWrapper>
-              <ModalWrapper
-                shouldSubmitOnEnter={false}
-                handleSubmit={(): boolean => {
-                  if (reviewStatus === "") {
-                    setstatusErrMsg("Please select a status");
-                    return false;
-                  }
-
-                  api
-                    .request({
-                      path: `/reviews/${application.id}`,
-                      method: "POST",
-                      data: {
-                        status: reviewStatus,
-                      },
-                    })
-                    .then();
-
-                  return true;
-                }}
-                buttonTriggerText="Update status"
-                renderTriggerButtonIcon={Add16}
-                triggerButtonIconDescription="Update status"
-                modalHeading="Update status"
-                modalLabel="Update status"
-              >
-                <Dropdown
-                  label="Status"
-                  items={["Pending", "In Review", "Accepted", "Rejected"]}
-                  id={""}
-                  onChange={(e) =>
-                    setReviewStatus(e.selectedItem ? e.selectedItem : "")
-                  }
-                  style={{
-                    paddingBottom: "160px",
-                  }}
-                />
-                {statusErrMsg && <div>{statusErrMsg}</div>}
-              </ModalWrapper>
+                Submit
+              </Button>
             </div>
           </Tab>
-        ):(null)
-        }
+        ) : null}
       </Tabs>
     </>
   );
