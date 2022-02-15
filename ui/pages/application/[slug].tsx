@@ -2,25 +2,18 @@ import {
   Button,
   Dropdown,
   Form,
-  ModalWrapper,
   SkeletonPlaceholder,
   Tab,
   Tabs,
   TextArea,
   TextInput,
-  Tile,
 } from "carbon-components-react";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-
 import * as api from "../../api";
-// import { Application } from "../../api/types";
+import { User } from "../../api/types";
 import styles from "../../styles/application.module.css";
-
-import type { NextPage } from "next";
-import { Review, User } from "../../api/types";
-import { Add16, Chat16 } from "@carbon/icons-react";
-import Link from "next/link";
 
 const ApplicationPage: NextPage = () => {
   const [user, setUser] = useState<User>();
@@ -33,13 +26,9 @@ const ApplicationPage: NextPage = () => {
   const [supervisors, setSupervisors] = useState("");
   const [description, setDescription] = useState("");
 
-  const [copyStatus, setCopyStatus] = useState("");
-
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [comment, setComment] = useState("");
 
   const [reviewStatus, setReviewStatus] = useState("");
-  const [statusErrMsg, setstatusErrMsg] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -67,8 +56,6 @@ const ApplicationPage: NextPage = () => {
           );
           setDescription(response.data.description);
           setName(response.data.name);
-
-          setReviews(response.data.reviews);
         });
       api.fetchPDF(slug).then((response) => {
         setPDF(response);
