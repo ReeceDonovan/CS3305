@@ -1,30 +1,50 @@
 export interface User {
-  name: string;
-  email: string;
-  bio: string;
-  field: string;
+  id: number;
+  createdAt: string;
+  updatedAt: string;
   role: string;
-  reviews: Review[];
+  email: string;
+  name?: string;
+  bio?: string;
+  school?: string;
+  avatar?: string;
+  appConnection?: UsersApplications[];
+  reviews?: Review[];
 }
 
 export interface Application {
   id: number;
+  createdAt: string;
+  updatedAt: string;
   name: string;
-  description: string;
-  field: string;
-  submitter: User;
-  authors?: User[];
-  supervisors?: User[];
-  reviewers?: User[];
+  description?: string;
+  status?: string;
+  field?: string;
+  userConnection?: UsersApplications[];
   reviews?: Review[];
+}
+
+export interface UsersApplications {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  role: string;
+  userId?: number;
+  applicationId?: number;
+  user?: User;
+  application?: Application;
 }
 
 export interface Review {
   id: number;
-  application: Application;
-  reviewer: User;
+  createdAt: string;
+  updatedAt: string;
+  comment?: string;
   status: string;
-  comment: string;
+  applicationId?: number;
+  userId?: number;
+  application?: Application;
+  user?: User;
 }
 
 export interface configInterface {

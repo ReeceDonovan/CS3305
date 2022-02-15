@@ -1,3 +1,4 @@
+import { Expose } from "class-transformer";
 import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
 
 import Entity from "./entity";
@@ -23,6 +24,7 @@ export default class Application extends Entity {
   @Column({ type: "text", nullable: true })
   field: string;
 
+  @Expose({ name: "user_connection" })
   @OneToMany(
     () => UsersApplications,
     (usersApplications) => usersApplications.user,
