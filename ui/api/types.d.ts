@@ -39,12 +39,12 @@ export interface Review {
   id: number;
   createdAt: string;
   updatedAt: string;
-  comment: string;
+  comment?: string;
   status: string;
   applicationId?: number;
   userId?: number;
-  application: Application;
-  user: User;
+  application?: Application;
+  user?: User;
 }
 
 export interface configInterface {
