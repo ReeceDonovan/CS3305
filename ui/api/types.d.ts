@@ -1,3 +1,5 @@
+import { FileStatus } from "carbon-components-react/lib/components/FileUploader/shared";
+
 export interface User {
   name: string;
   email: string;
@@ -5,6 +7,18 @@ export interface User {
   field: string;
   role: string;
   reviews: Review[];
+}
+
+export interface FileRef{
+  name: string;
+  status: FileStatus;
+}
+
+export enum AppStatus{
+  Draft,
+  Review,
+  Approval,
+  Rejection
 }
 
 export interface Application {
@@ -17,6 +31,8 @@ export interface Application {
   supervisors?: User[];
   reviewers?: User[];
   reviews?: Review[];
+  hasFile?: boolean;
+  appStatus: AppStatus;
 }
 
 export interface Review {

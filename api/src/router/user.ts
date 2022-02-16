@@ -9,8 +9,11 @@ import { protectedRoute } from "../middleware/protected-route";
 import User, { UserType } from "../models/user";
 import { RoleType } from "../models/usersApplications";
 
+import reqUser from "../middleware/store-user";
+
 const userRouter = express.Router();
 userRouter.use(protectedRoute);
+userRouter.use(reqUser);
 
 userRouter.get(
   "/:id",

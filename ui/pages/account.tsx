@@ -27,12 +27,16 @@ const AccountPage: NextPage = () => {
         setName(user.name);
         setBio(user.bio);
         setSchool(user.field);
-        setRole(user.data.role);
+        setRole(user.role);
       }
     };
   }, []);
 
-  let dropdown_items = [{id: "RESEARCHER", text: "RESEARCHER"}, {id: "REVIEWER", text: "REVIEWER"}, {id: "COORDINATOR", text: "COORDINATOR"}]
+  let dropdown_items = [
+    { id: "RESEARCHER", text: "RESEARCHER" },
+    { id: "REVIEWER", text: "REVIEWER" },
+    { id: "COORDINATOR", text: "COORDINATOR" },
+  ];
 
   return (
     <>
@@ -61,18 +65,18 @@ const AccountPage: NextPage = () => {
           className={styles.formElements}
         />
 
-        <Dropdown 
-           id="role"
-           titleText="Role Select"
-           helperText="Select your Role"
-           label={role}
-           items={dropdown_items}
-           itemToString={(item) => (item ? item.text : '')}
-           onChange={(e)=>{
-             if (e.selectedItem){
-              setRole(e.selectedItem.id)
-             }
-           }}
+        <Dropdown
+          id="role"
+          titleText="Role Select"
+          helperText="Select your Role"
+          label={role}
+          items={dropdown_items}
+          itemToString={(item) => (item ? item.text : "")}
+          onChange={(e) => {
+            if (e.selectedItem) {
+              setRole(e.selectedItem.id);
+            }
+          }}
         />
 
         <div
