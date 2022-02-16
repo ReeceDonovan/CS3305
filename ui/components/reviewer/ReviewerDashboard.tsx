@@ -36,8 +36,8 @@ export default function ReviewerDashboard() {
           resp.data[i].createdAt = new Date(
             resp.data[i].createdAt
           ).toLocaleDateString();
-          resp.data[i].status =
-            resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
+          // resp.data[i].status =
+          //   resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
           console.log(resp.data[i]);
         }
 
@@ -48,6 +48,16 @@ export default function ReviewerDashboard() {
   }, []);
 
   return (
-    <>{loading == true ? <Loading /> : <ApplicationTable title={"Reviewer Panel"} description={"Applications you are reviewing"} rows={rowData} />}</>
+    <>
+      {loading == true ? (
+        <Loading />
+      ) : (
+        <ApplicationTable
+          title={"Reviewer Panel"}
+          description={"Applications you are reviewing"}
+          rows={rowData}
+        />
+      )}
+    </>
   );
 }
