@@ -2,19 +2,18 @@ import {
   Button,
   Dropdown,
   Form,
-  ModalWrapper,
   SkeletonPlaceholder,
   Tab,
   Tabs,
   TextArea,
   TextInput,
-  Tile,
 } from "carbon-components-react";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
 import * as api from "../../api";
-// import { Application } from "../../api/types";
+import { User } from "../../api/types";
 import styles from "../../styles/application.module.css";
 
 import type { NextPage } from "next";
@@ -34,13 +33,9 @@ const ApplicationPage: NextPage = () => {
   const [supervisors, setSupervisors] = useState("");
   const [description, setDescription] = useState("");
 
-  const [copyStatus, setCopyStatus] = useState("");
-
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [comment, setComment] = useState("");
 
   const [reviewStatus, setReviewStatus] = useState("");
-  const [statusErrMsg, setstatusErrMsg] = useState("");
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -66,7 +61,7 @@ const ApplicationPage: NextPage = () => {
           setApplication(res.data);
           setAuthor(res.data.submitter?.email);
           setSupervisors(
-            res.data.supervisors ? res.data.supervisors[0]?.email : "uh-oh"
+            res.data.supervisors ? res.data.supervisors[0]?.email : ""
           );
           setDescription(res.data.description);
           setName(res.data.name);
@@ -79,6 +74,29 @@ const ApplicationPage: NextPage = () => {
       }
     })();
   }, [router.query.slug]);
+
+  const sendReview = async () => {
+    if (reviewStatus && reviewStatus !== "" && comment && comment !== "") {
+      try {
+        console.log(application.id);
+        const resp = await api.request({
+          path: `/applications/${application?.id}/reviews`,
+          method: "POST",
+          data: {
+            comment,
+            status: reviewStatus,
+          },
+        });
+
+        if (resp.status == 201) {
+          console.log("Success");
+          window.location.reload();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
 
   if (!application) {
     return <div>Loading...</div>;
@@ -335,25 +353,9 @@ const ApplicationPage: NextPage = () => {
                   });
                   return true;
                 }}
-                buttonTriggerText="Update status"
-                renderTriggerButtonIcon={Add16}
-                triggerButtonIconDescription="Update status"
-                modalHeading="Update status"
-                modalLabel="Update status"
               >
-                <Dropdown
-                  label="Status"
-                  items={["Pending", "In Review", "Accepted", "Rejected"]}
-                  id={""}
-                  onChange={(e) =>
-                    setReviewStatus(e.selectedItem ? e.selectedItem : "")
-                  }
-                  style={{
-                    paddingBottom: "160px",
-                  }}
-                />
-                {statusErrMsg && <div>{statusErrMsg}</div>}
-              </ModalWrapper>
+                Submit
+              </Button>
             </div>
           </Tab>
         ) : null}

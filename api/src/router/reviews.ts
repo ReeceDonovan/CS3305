@@ -9,7 +9,14 @@ import Review from "../models/review";
 import User, { UserType } from "../models/user";
 import UsersApplications from "../models/usersApplications";
 
-const checkAccess = async (application: Application, user: User) => {
+const checkAccess = async (
+  application: Application,
+  user: User
+): Promise<boolean> => {
+  if (user.role === UserType.RESEARCHER) {
+    return false;
+  }
+
   if (user.role === UserType.COORDINATOR) {
     return true;
   }

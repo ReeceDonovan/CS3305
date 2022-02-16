@@ -1,9 +1,15 @@
-import type { NextPage } from "next";
+import {
+  Checkmark32,
+  Error32,
+  InProgress32,
+  Login32,
+  Save32,
+} from "@carbon/icons-react";
 import { Button, Dropdown, Form, TextInput } from "carbon-components-react";
+import type { NextPage } from "next";
 import React, { useEffect, useState, useContext } from "react";
-
 import * as api from "../api";
-import { Login32, Save32 } from "@carbon/icons-react";
+import { request } from "../api/index";
 import styles from "../styles/account.module.css";
 import { NetworkManagerContext } from "../components/NetworkManager";
 import { User } from "../api/types";
@@ -13,7 +19,6 @@ const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
-  const [role, setRole] = useState("");
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -27,7 +32,7 @@ const AccountPage: NextPage = () => {
       if (err_code === 0) {
         setName(user.name);
         setBio(user.bio);
-        setSchool(user.field);
+        setSchool(user.school);
         setRole(user.role);
 
         const stored_user = await api.getToken();
@@ -115,7 +120,7 @@ const AccountPage: NextPage = () => {
 
           <Button
             type="submit"
-            disabled={!name && !bio && !school && !role}
+            disabled={!name && !bio && !school}
             onClick={(e) => {
               e.preventDefault();
               nm_ctx.request({
@@ -123,6 +128,12 @@ const AccountPage: NextPage = () => {
                 path: "/users",
                 data: { name: name, bio: bio, school: school, role: role },
                 show_progress: true,
+              }).then((res) => {
+                if (res.status == 200) {
+                  setSubmit_success(3);
+                } else {
+                  setSubmit_success(2);
+                }
               });
             }}
             renderIcon={Save32}
