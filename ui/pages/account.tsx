@@ -9,6 +9,7 @@ import { NetworkManagerContext } from "../components/NetworkManager";
 import { User } from "../api/types";
 
 const AccountPage: NextPage = () => {
+  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
@@ -17,7 +18,7 @@ const AccountPage: NextPage = () => {
   const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
-    async () => {
+    (async () => {
       const [res, err_code] = await nm_ctx.request({
         path: "/users",
         method: "GET",
@@ -28,8 +29,13 @@ const AccountPage: NextPage = () => {
         setBio(user.bio);
         setSchool(user.field);
         setRole(user.role);
+
+        const stored_user = await api.getToken();
+        if (stored_user) {
+          setEmail(user.email);
+        }
       }
-    };
+    })();
   }, []);
 
   let dropdown_items = [
@@ -41,6 +47,12 @@ const AccountPage: NextPage = () => {
   return (
     <>
       <Form className={styles.form}>
+        <TextInput
+          value={email}
+          id="email"
+          labelText="Email"
+          className={styles.formElements}
+        />
         <TextInput
           className={styles.formElements}
           id="name"
