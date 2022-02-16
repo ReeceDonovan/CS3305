@@ -5,6 +5,13 @@ import Entity from "./entity";
 import Review, { ReviewStatus } from "./review";
 import UsersApplications from "./usersApplications";
 
+export enum AppStatus{
+  Draft,
+  Review,
+  Approval,
+  Rejection
+}
+
 @OrmEntity("applications")
 export default class Application extends Entity {
   constructor(application: Partial<Application>) {
@@ -38,4 +45,14 @@ export default class Application extends Entity {
     onDelete: "CASCADE",
   })
   reviews: Review[];
+
+  @Column({type: "bool"})
+  hasFile: boolean;
+
+  @Column({
+        type: "enum",
+        enum: AppStatus,
+        default: AppStatus.Draft
+  })
+  app_status: AppStatus;
 }

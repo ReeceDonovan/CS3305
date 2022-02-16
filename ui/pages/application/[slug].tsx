@@ -10,10 +10,17 @@ import {
 } from "carbon-components-react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+
 import * as api from "../../api";
 import { User } from "../../api/types";
 import styles from "../../styles/application.module.css";
+
+import type { NextPage } from "next";
+import { Review, User } from "../../api/types";
+import { Add16, Chat16 } from "@carbon/icons-react";
+import Link from "next/link";
+import { NetworkManagerContext } from "../../components/NetworkManager";
 
 const ApplicationPage: NextPage = () => {
   const [user, setUser] = useState<User>();
@@ -30,6 +37,8 @@ const ApplicationPage: NextPage = () => {
 
   const [reviewStatus, setReviewStatus] = useState("");
 
+  const nm_ctx = useContext(NetworkManagerContext);
+
   useEffect(() => {
     (async () => {
       const user = await api.getToken();
@@ -40,27 +49,30 @@ const ApplicationPage: NextPage = () => {
   }, []);
 
   useEffect(() => {
-    const slug = router.query.slug as string;
-    if (slug && slug.length > 0) {
-      api
-        .request({
+    (async () => {
+      const slug = router.query.slug as string;
+      if (slug && slug.length > 0) {
+        const [res, err_code] = await nm_ctx.request({
           path: `/applications/${slug}`,
           method: "GET",
-        })
-        .then((response) => {
-          console.log(response.data);
-          setApplication(response.data);
-          setAuthor(response.data.submitter?.email);
-          setSupervisors(
-            response.data.supervisors ? response.data.supervisors[0]?.email : ""
-          );
-          setDescription(response.data.description);
-          setName(response.data.name);
         });
-      api.fetchPDF(slug).then((response) => {
-        setPDF(response);
-      });
-    }
+        if (err_code === 0) {
+          console.log(res.data);
+          setApplication(res.data);
+          setAuthor(res.data.submitter?.email);
+          setSupervisors(
+            res.data.supervisors ? res.data.supervisors[0]?.email : ""
+          );
+          setDescription(res.data.description);
+          setName(res.data.name);
+
+          setReviews(res.data.reviews);
+        }
+        api.fetchPDF(slug).then((response) => {
+          setPDF(response);
+        });
+      }
+    })();
   }, [router.query.slug]);
 
   const sendReview = async () => {
@@ -216,38 +228,130 @@ const ApplicationPage: NextPage = () => {
             </Form>
           </Tab>
         )}
+        <Tab href="#share" id="share" label="Share">
+          <span>
+            <p>Shareable URL (only to co-authors and supervisors):</p>
+            <br />
+            <p>
+              <Link
+                href={`/application/${application.id}`}
+              >{`/application/${application.id}`}</Link>
+            </p>
+            <br />
+            <Button
+              small
+              onClick={() => {
+                navigator.clipboard
+                  .writeText(
+                    `http://localhost:3000/application/${application.id}`
+                  )
+                  .then(() => {
+                    setCopyStatus("Copied to clipboard!");
+                  });
+              }}
+            >
+              Click to Copy
+            </Button>
+            <p>{copyStatus}</p>
+          </span>
+        </Tab>
 
         {user?.role == "COORDINATOR" ||
         user?.email == application.submitter?.email ||
         user?.role == "REVIEWER" ? (
           <Tab href="#review" id="review" label="Review">
-            <div className="form">
-              <Dropdown
-                style={{
-                  right: 0,
+            {application.reviews.map((review: Review, i: Number) =>
+              review.comment ? (
+                <Tile className={styles.reviewTile}>
+                  {i == 0 ? (
+                    <div
+                      style={{
+                        textAlign: "center",
+                        fontSize: "1.5rem",
+                      }}
+                    >
+                      <h2>Application submitted</h2>
+                    </div>
+                  ) : (
+                    <>
+                      <div>{review.comment ? review.comment : ""}</div>
+                      <div>
+                        {review.reviewer
+                          ? review.reviewer?.name
+                            ? review.reviewer.name
+                            : review.reviewer.email
+                          : "No data"}
+                      </div>
+                    </>
+                  )}
+                </Tile>
+              ) : (
+                <h3 style={{ textAlign: "center" }}>
+                  Added {review.status} status
+                </h3>
+              )
+            )}
+            <div className={styles.reviewControls}>
+              <ModalWrapper
+                shouldSubmitOnEnter={false}
+                handleSubmit={(): boolean => {
+                  nm_ctx
+                    .request({
+                      path: `/reviews/${application.id}`,
+                      method: "POST",
+                      data: {
+                        comment: comment,
+                      },
+                    })
+                    .then(([res, err_code]) => {
+                      if (err_code == 0) {
+                        setComment("");
+                      }
+                    });
+                  return true;
                 }}
-                size="md"
-                label="Status"
-                items={["APPROVED", "DECLINED"]}
-                id={""}
-                onChange={(e) =>
-                  setReviewStatus(e.selectedItem ? e.selectedItem : "")
-                }
-              />
-              <TextArea
-                placeholder="Comment"
-                rows={20}
-                labelText="Comment"
-                onChange={(e) => setComment(e.target.value)}
-              ></TextArea>
-              <Button
-                style={{
-                  marginTop: "2em",
+                onSubmit={async (_e) => {
+                  const [res, err_code] = await nm_ctx.request({
+                    path: `/review/${application.id}`,
+                    method: "POST",
+                    data: {
+                      comment: comment,
+                    },
+                  });
+                  if (err_code === 0) {
+                    setComment("");
+                    setReviews([...reviews, res.data]);
+                  }
                 }}
-                onClick={(_e) => {
-                  (async () => {
-                    await sendReview();
-                  })();
+                buttonTriggerText="Add Comment"
+                renderTriggerButtonIcon={Chat16}
+                triggerButtonIconDescription="Add Comment"
+                modalHeading="Add Comment"
+                modalLabel="Add Comment"
+              >
+                <div style={{ maxHeight: "60vh" }}>
+                  <TextArea
+                    labelText="Add Comment"
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                </div>
+              </ModalWrapper>
+              <ModalWrapper
+                shouldSubmitOnEnter={false}
+                handleSubmit={(): boolean => {
+                  if (reviewStatus === "") {
+                    setstatusErrMsg("Please select a status");
+                    return false;
+                  }
+
+                  nm_ctx.request({
+                    path: `/reviews/${application.id}`,
+                    method: "POST",
+                    data: {
+                      status: reviewStatus,
+                    },
+                  });
+                  return true;
                 }}
               >
                 Submit

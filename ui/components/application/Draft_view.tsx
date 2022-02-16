@@ -1,64 +1,125 @@
 import {
   Button,
-  FileUploaderDropContainer,
   Form,
+  Link,
   Tag,
   TextArea,
   TextInput,
 } from "carbon-components-react";
-import Link from "next/link";
-import React, { KeyboardEvent, useState } from "react";
-import * as api from "../api";
+import { useContext, useState } from "react";
+import { UI_URL } from "../../api";
+import CopyableLink from "../CopyableLink";
+import CustomFileUploader from "../CustomFileUploader";
+import { NetworkManagerContext } from "../NetworkManager";
 
-const Submit = () => {
-  const [modiflag, setModiflag] = useState(false);
-  const [err_msg, setError_msg] = useState<string | null>(null);
-
+const Draft_view = (props: { id?: string }) => {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [field, setField] = useState<string>("");
   const [coauthors, setCoauthor] = useState<string[]>([]);
   const [supervisors, setSupervisors] = useState<string[]>([]);
 
-  const [pdfFile, setPdfFile] = useState<File>();
+  const [sync_timeout, setSync_timeout] = useState<null | NodeJS.Timeout>(null);
 
-  // let pdf_files: File[] = [];
+  const [prev_app, setPrev_app] = useState<{
+    name: string;
+    description: string;
+    field: string;
+    coauthors: string[];
+    supervisors: string[];
+  }>({
+    name: "",
+    description: "",
+    field: "",
+    coauthors: [],
+    supervisors: [],
+  });
+
+  const [app_id, setApp_id] = useState<string | null>(
+    props.id ? props.id : null
+  );
 
   const emailRegexp = new RegExp(
     "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
   );
 
-  const sendApplication = async () => {
-    const form_data = new FormData();
-    if (pdfFile) {
-      form_data.append("pdf_form", pdfFile);
-    } else {
-      console.error("No pdf file");
+  const nm_ctx = useContext(NetworkManagerContext);
+
+  const sync = async () => {
+    console.log("syncing");
+    // find fields that differ from previous version of application
+    let id = app_id;
+    let modiflag = false;
+    let diff_app = {} as {
+      name: string;
+      description: string;
+      field: string;
+      coauthors: string[];
+      supervisors: string[];
+      hasFile: boolean;
+    };
+    if (name != null && name != prev_app.name) {
+      diff_app.name = name;
+      modiflag = true;
+    }
+    if (description != null && description != prev_app.description) {
+      diff_app.description = description;
+      modiflag = true;
+    }
+    if (field != null && field != prev_app.field) {
+      diff_app.field = field;
+      modiflag = true;
+    }
+    if (
+      JSON.stringify(coauthors.sort()) !=
+      JSON.stringify(prev_app.coauthors.sort())
+    ) {
+      diff_app.coauthors = coauthors;
+      modiflag = true;
+    }
+    if (
+      JSON.stringify(supervisors.sort()) !=
+      JSON.stringify(prev_app.supervisors.sort())
+    ) {
+      diff_app.supervisors = supervisors;
+      modiflag = true;
     }
 
-    form_data.append(
-      "meta_data",
-      JSON.stringify({
-        name,
-        description,
-        field,
-        coauthors,
-        supervisors,
-      })
-    );
-    console.log(form_data);
+    if (modiflag === false) {
+      if (sync_timeout != null) {
+        clearTimeout(sync_timeout);
+      }
+      return;
+    }
 
-    api
-      .request({
+    if (id === null) {
+      // first negotiate a application id
+      const [res, err_code] = await nm_ctx.request({
         method: "POST",
-        path: "/applications",
-        data: form_data,
-      })
-      .then((resp) => {
-        if (resp.status != 201) {
-          setError_msg(resp.message);
-        }
+        path: "/applications/",
       });
+      if (err_code === 0) {
+        id = res.data;
+        window.history.pushState(null, "", `/application/${id}`);
+        setApp_id(res.data);
+      }
+    }
+
+    const sync_application = async () => {
+      setSync_timeout(null);
+      setPrev_app({ ...prev_app, ...diff_app });
+      const [_res, _err_code] = await nm_ctx.request({
+        method: "PATCH",
+        path: `/applications/${id}`,
+        data: diff_app,
+      });
+    };
+    if (sync_timeout == null) {
+      setSync_timeout(setTimeout(sync_application, 2000));
+    } else {
+      clearTimeout(sync_timeout);
+      setSync_timeout(setTimeout(sync_application, 2000));
+    }
   };
 
   return (
@@ -94,6 +155,19 @@ const Submit = () => {
           Carefully read over your form, ensure all necessary fields are filled.
           Also make sure to include any co-authors and/or supervisors.
         </p>
+        <div style={{ marginBottom: "1em", paddingBottom: "1em" }}>
+          <p
+            style={{
+              float: "right",
+            }}
+          >
+            Link:{" "}
+            <CopyableLink
+              link={`${UI_URL}/application/${app_id ? app_id : ""}`}
+              disabled={app_id ? false : true}
+            />
+          </p>
+        </div>
       </div>
       <Form
         style={{
@@ -106,12 +180,14 @@ const Submit = () => {
           name="name"
           labelText="Name of research project"
           placeholder="Name of research project"
+          value={name}
           style={{
             marginBottom: "1em",
           }}
           onChange={(e) => {
             setName(e.target.value);
           }}
+          onBlur={sync}
         />
 
         <TextInput
@@ -125,6 +201,7 @@ const Submit = () => {
           onChange={(e) => {
             setField(e.target.value);
           }}
+          onBlur={sync}
         />
 
         <TextArea
@@ -138,6 +215,7 @@ const Submit = () => {
           onChange={(e) => {
             setDescription(e.target.value);
           }}
+          onBlur={sync}
         />
 
         <TextInput
@@ -161,15 +239,17 @@ const Submit = () => {
               e.preventDefault();
             }
           }}
+          onBlur={sync}
         />
 
         <div>
           {coauthors.map((elem, i) => (
             <Tag
               key={i}
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault();
                 coauthors.splice(i, 1);
+                await sync();
                 setCoauthor([...coauthors]);
               }}
             >
@@ -186,7 +266,7 @@ const Submit = () => {
           style={{
             marginBottom: "1em",
           }}
-          onKeyDown={(e: KeyboardEvent) => {
+          onKeyDown={(e) => {
             const t = e.target as HTMLInputElement;
             if ((e.code === "Enter" || e.code === "Tab") && t.value) {
               if (t && t.value.length > 0) {
@@ -198,16 +278,17 @@ const Submit = () => {
               e.preventDefault();
             }
           }}
+          onBlur={sync}
         />
 
         <div>
           {supervisors.map((elem, i) => (
             <Tag
               key={i}
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault();
-
                 supervisors.splice(i, 1);
+                await sync();
                 setSupervisors([...supervisors]);
               }}
             >
@@ -216,42 +297,27 @@ const Submit = () => {
           ))}
         </div>
 
-        <FileUploaderDropContainer
-          name="Form upload"
-          style={{
-            width: "80%",
-            margin: "1.2em auto 2.4em 0",
+        <CustomFileUploader
+          add_remote_file_url={app_id ? `/applications/${app_id}/form` : null}
+          get_add_remote_file_url={async () => {
+            console.log("getting app id");
+            const [res, _err_code] = await nm_ctx.request({
+              method: "POST",
+              path: "/applications/",
+            });
+            setApp_id(res.data);
+            return `/applications/${res.data}/form`;
           }}
-          labelText="Drag and drop or click to select the Submission form in the format of PDF"
-          accept={[".pdf"]}
-          multiple={true}
-          onAddFiles={
-            // addedFiles extends File by adding a property
-            (
-              _event: any,
-              content: {
-                addedFiles: Array<File>;
-              }
-            ) => {
-              // @ts-ignore
-              if (!content.addedFiles[0].invalidFileType == true) {
-                // pdf_files.push(content.addedFiles[0]);
-                setPdfFile(content.addedFiles[0]);
-                console.log(content);
-                console.log(pdfFile, "added");
-              } else {
-                setModiflag(false);
-              }
-            }
-          }
         />
-        <Button disabled={modiflag} onClick={sendApplication}>
+        <Button
+          disabled={false}
+          // onClick={sendApplication}
+        >
           Submit Your Application
         </Button>
-        {err_msg ? <p style={{ color: "red" }}>{err_msg}</p> : <></>}
       </Form>
     </>
   );
 };
 
-export default Submit;
+export default Draft_view;

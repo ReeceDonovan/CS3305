@@ -66,7 +66,10 @@ export default function Head() {
               </SideNavItem>
               <SideNavItem>
                 <SideNavItems>
-                  <SideNavMenuItem className={styles.sideNav} href="/submit">
+                  <SideNavMenuItem
+                    className={styles.sideNav}
+                    href="/application/new"
+                  >
                     <DocumentPdf16 /> &nbsp; <span>Submit Application</span>
                   </SideNavMenuItem>
                 </SideNavItems>
