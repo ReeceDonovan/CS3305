@@ -15,7 +15,7 @@ export interface NiceParams extends RequestParams {
 }
 
 export const NetworkManagerContext = createContext({
-  request: async (params: NiceParams): Promise<[StandardResponse, number]> => {
+  request: async (_params: NiceParams): Promise<[StandardResponse, number]> => {
     return [{} as StandardResponse, 0];
   },
 });
@@ -129,7 +129,7 @@ export const NetworkManager = (props: any) => {
       </NetworkManagerContext.Provider>
       <NetworkNotification
         req_state={req_state}
-        close_fn={(e: any) => {
+        close_fn={() => {
           setReq_state([0, "", null]);
           return false;
         }}

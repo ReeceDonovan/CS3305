@@ -8,7 +8,7 @@ import {
 } from "carbon-components-react";
 import { useContext, useState } from "react";
 import { UI_URL } from "../../api";
-import CopyableLink from "../../pages/application/CopyableLink";
+import CopyableLink from "../CopyableLink";
 import CustomFileUploader from "../CustomFileUploader";
 import { NetworkManagerContext } from "../NetworkManager";
 
@@ -18,8 +18,6 @@ const Draft_view = (props: { id?: string }) => {
   const [field, setField] = useState<string>("");
   const [coauthors, setCoauthor] = useState<string[]>([]);
   const [supervisors, setSupervisors] = useState<string[]>([]);
-
-  const [pdfFile, setPdfFile] = useState<File>();
 
   const [sync_timeout, setSync_timeout] = useState<null | NodeJS.Timeout>(null);
 
@@ -157,6 +155,19 @@ const Draft_view = (props: { id?: string }) => {
           Carefully read over your form, ensure all necessary fields are filled.
           Also make sure to include any co-authors and/or supervisors.
         </p>
+        <div style={{ marginBottom: "1em", paddingBottom: "1em" }}>
+          <p
+            style={{
+              float: "right",
+            }}
+          >
+            Link:{" "}
+            <CopyableLink
+              link={`${UI_URL}/application/${app_id ? app_id : ""}`}
+              disabled={app_id ? false : true}
+            />
+          </p>
+        </div>
       </div>
       <Form
         style={{
@@ -299,17 +310,12 @@ const Draft_view = (props: { id?: string }) => {
           }}
         />
         <Button
-          disabled={name && pdfFile ? true : false}
+          disabled={false}
           // onClick={sendApplication}
         >
           Submit Your Application
         </Button>
       </Form>
-      {app_id ? (
-        <CopyableLink link={`${UI_URL}/application/${app_id}`} />
-      ) : (
-        <></>
-      )}
     </>
   );
 };
