@@ -5,11 +5,11 @@ import {
   SelectItem,
   TextInput,
   TextArea,
-  Tag
+  Tag,
 } from "carbon-components-react";
-import React, { useEffect, useState } from "react";
-import * as api from "../api";
+import React, { useContext, useEffect, useState } from "react";
 import { configInterface, emailConfig } from "../api/types";
+import { NetworkManagerContext } from "../components/NetworkManager";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -28,31 +28,37 @@ const Settings = () => {
   const [dbPort, setDBPort] = useState<number>(0);
   const [dbName, setDBName] = useState<string>("");
 
+  const [isLoading, setLoading] = useState(true);
+
+  const nm_ctx = useContext(NetworkManagerContext);
+
   useEffect(() => {
     async () => {
-      await api
-        .request({ path: "/admin/settings", method: "GET" })
-        .then((res) => {
-          console.log(res);
-          if (res.status === 200) {
-            setEmailProvider(res.data.emailProvider);
-            setEmailUser(res.data.emailUser);
-            setEmailToken(res.data.emailToken);
-            setEmailConfigs(res.data.emailConfigs);
-            setOAuthClientID(res.data.oauthConfig.oauthClientId);
-            setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
-            setAllowedDomains(res.data.oauthConfig.allowedDomains);
-            setLandingPageMD(res.data.landingPageMD);
-            setSigningKey(res.data.signingKey);
-            setDBUsername(res.data.databaseConfig.username);
-            setDBPassword(res.data.databaseConfig.password);
-            setDBHost(res.data.databaseConfig.host);
-            setDBPort(res.data.databaseConfig.port);
-            setDBName(res.data.databaseConfig.database);
-          }
-        });
+      if (isLoading) {
+        nm_ctx
+          .request({ path: "/admin/settings", method: "GET" })
+          .then(([res, err_code]) => {
+            if (err_code === 0) {
+              setEmailProvider(res.data.emailProvider);
+              setEmailUser(res.data.emailUser);
+              setEmailToken(res.data.emailToken);
+              setEmailConfigs(res.data.emailConfigs);
+              setOAuthClientID(res.data.oauthConfig.oauthClientId);
+              setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
+              setAllowedDomains(res.data.oauthConfig.allowedDomains);
+              setLandingPageMD(res.data.landingPageMD);
+              setSigningKey(res.data.signingKey);
+              setDBUsername(res.data.databaseConfig.username);
+              setDBPassword(res.data.databaseConfig.password);
+              setDBHost(res.data.databaseConfig.host);
+              setDBPort(res.data.databaseConfig.port);
+              setDBName(res.data.databaseConfig.database);
+            }
+          });
+      }
+      setLoading(false);
     };
-  }, []);
+  }, [isLoading, nm_ctx]);
 
   const onSubmit = (event: any) => {
     setSubmitting(true);
@@ -77,7 +83,7 @@ const Settings = () => {
         database: dbName,
       },
     };
-    api
+    nm_ctx
       .request({ path: "/admin/settings", method: "POST", data: newConfig })
       .then((_res) => {
         setSubmitting(false);
@@ -105,7 +111,9 @@ const Settings = () => {
               name="emailProvider"
               labelText="Select an Email Provider"
               defaultValue={emailProvider}
-              onChange={(e) => { setEmailProvider(e.target.value) }}
+              onChange={(e) => {
+                setEmailProvider(e.target.value);
+              }}
             >
               {["Gmail", "Outlook"].map((e, i) => {
                 return <SelectItem value={e.toLowerCase()} text={e} key={i} />;
@@ -121,7 +129,9 @@ const Settings = () => {
               labelText={"Email User"}
               placeholder="Email User"
               defaultValue={emailUser}
-              onChange={(e) => { setEmailUser(e.target.value) }}
+              onChange={(e) => {
+                setEmailUser(e.target.value);
+              }}
             />
           </div>
           <div className="bx--col">

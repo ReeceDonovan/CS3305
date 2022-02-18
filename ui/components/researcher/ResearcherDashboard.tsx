@@ -1,11 +1,15 @@
 import { Loading } from "carbon-components-react";
 import * as api from "../../api";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ApplicationTable from "../ApplicationTable";
+import { NetworkManagerContext } from "../NetworkManager";
 
 export default function ReviewerDataTable() {
   const [rowData, setRowdata] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // const nm_ctx = 
+  useContext(NetworkManagerContext);
 
   useEffect(() => {
     (async () => {
@@ -13,8 +17,9 @@ export default function ReviewerDataTable() {
         method: "GET",
         path: "/applications",
       });
-
+      console.log(resp);
       if (resp?.data != null) {
+        console.log(resp.data);
         for (let i = 0; i < resp.data.length; i++) {
           resp.data[i].submitter = resp.data[i].submitter?.email;
           resp.data[i].updatedAt = new Date(

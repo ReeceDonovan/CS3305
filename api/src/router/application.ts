@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* FIXME: Make form from body.meta_data in the `createApplication` function type safe. TS throws errors unless we disable these rules for now. */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -8,7 +9,7 @@ import multer from "multer";
 import path from "path";
 import { getRepository, In, Repository } from "typeorm";
 
-import { BadRequestError, NotAuthorizedError, NotFoundError } from "../errors";
+import { BadRequestError, ConflictError, NotAuthorizedError, NotFoundError } from "../errors";
 import { protectedRoute } from "../middleware/protected-route";
 import reqUser from "../middleware/store-user";
 import Application from "../models/application";
@@ -158,108 +159,27 @@ const getApplicationForm = async (
   }
 };
 
-const createApplication = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const user = res.locals.user;
+// need req otherwise res.locals.user is undefined
+const createApplication = async ( _req: Request, res: Response ) => {
+    const user = res.locals.user;
 
-  // TODO: Add a type for the form schema, see top of file
-  const form = JSON.parse(req.body.meta_data);
+  const new_application = await new Application({hasFile: false}).save();
 
-  // TODO: Add validation on the backend for email fields (and text fields if needed)
-  const coauthor_emails: string[] = form.coauthors;
-  const supervisor_emails: string[] = form.supervisors;
+  const userApplicationRepository: Repository<UsersApplications> = getRepository(UsersApplications);
 
-  const file = req.file;
-
-  try {
-    if (!file) throw new BadRequestError("No file was uploaded");
-
-    const coauthor_users = await User.find({
-      where: {
-        email: In(coauthor_emails),
-      },
-    });
-
-    const supervisor_users = await User.find({
-      where: {
-        email: In(supervisor_emails),
-      },
-    });
-
-    const applicationRepository: Repository<Application> =
-      getRepository(Application);
-
-    const temp_application: Partial<Application> = {
-      name: form.name,
-      description: form.description,
-      field: form.field,
-    };
-
-    const application = (await applicationRepository.save(
-      temp_application
-    )) as Application;
-
-    const userApplicationRepository: Repository<UsersApplications> =
-      getRepository(UsersApplications);
-
-    for (const coauthor of coauthor_users) {
-      const userApplication = new UsersApplications({
-        application,
-        user: coauthor,
-        role: RoleType.COAUTHOR,
-      });
-
-      await userApplicationRepository.save(userApplication);
-    }
-
-    for (const supervisor of supervisor_users) {
-      const userApplication = new UsersApplications({
-        application,
-        user: supervisor,
-        role: RoleType.SUPERVISOR,
-      });
-
-      await userApplicationRepository.save(userApplication);
-    }
-
-    console.log(user);
-
-    const userApplication = new UsersApplications({
-      application,
-      user,
+  const submitterApplication = new UsersApplications({
+      application: new_application,
+      user: user,
       role: RoleType.SUBMITTER,
     });
 
-    await userApplicationRepository.save(userApplication);
+  await userApplicationRepository.save(submitterApplication);
 
-    file.originalname.replace(" ", "%20");
-
-    fs.mkdirSync(
-      path.join(__dirname, `../../../data/pdf_store/${application.id}`)
-    );
-
-    fs.writeFile(
-      path.join(
-        __dirname,
-        `../../../data/pdf_store/${application.id}/form.pdf`
-      ),
-      file.buffer,
-      (err) => {
-        if (err) throw err;
-      }
-    );
-
-    res.json({
-      status: 201,
-      message: "Successfully created application",
-      data: application,
-    });
-  } catch (err) {
-    next(err);
-  }
+  res.send({
+    status: 201,
+    message: "Successfully created application",
+    data: new_application.id,
+  });
 };
 
 const updateApplication = async (
@@ -267,9 +187,16 @@ const updateApplication = async (
   res: Response,
   next: NextFunction
 ) => {
-  const body: Partial<Application> = req.body;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const body: any = req.body;
   const user = res.locals.user;
   const applicationId = req.params.id;
+
+  console.log(body);
+
+  // TODO: Add validation on the backend for email fields (and text fields if needed)
+  const coauthor_emails: string[] = body.coauthors;
+  const supervisor_emails: string[] = body.supervisors;
 
   try {
     const application = await Application.findOne(applicationId);
@@ -286,13 +213,169 @@ const updateApplication = async (
     const updatedApplication = await applicationRepository.save({
       ...application,
       ...body,
-    });
+    }) as Application;
+
+    if (coauthor_emails){
+      const new_coauthors = await User.find({
+      where: {
+        email: In(coauthor_emails),
+      },
+      });
+
+      const curr_coathors = await UsersApplications.find({
+        where: {
+          application: application,
+          role: RoleType.COAUTHOR
+        }
+      });
+
+      //for loops add new user application links as new they are found to be missing
+      for (const new_user of new_coauthors){
+        let found_flag = false;
+        for ( let i = 0; i < curr_coathors.length; i++ ){
+          const curr_user = curr_coathors[i];
+          if (new_user.id === curr_user.user.id){
+            curr_coathors.splice(i, 1);
+            found_flag = true;
+            break;
+          }
+        }
+
+        if ( found_flag === false ){
+          const new_link = new UsersApplications({
+            user,
+            application: updatedApplication,
+            role: RoleType.COAUTHOR
+          });
+
+          await new_link.save();
+        }
+      }
+
+      //left over curr_coauthors are links that no longer exist
+      for (const del_user of curr_coathors){
+        await del_user.remove();
+      }
+    }
+
+    if (supervisor_emails){
+
+      const new_supervisors = await User.find({
+        where: {
+          email: In(supervisor_emails),
+        },
+      });
+
+      const curr_supervisors = await UsersApplications.find({
+        where: {
+          application: application,
+          role: RoleType.SUPERVISOR
+        }
+      });
+
+      //for loops add new user application links as new they are found to be missing
+      for (const new_user of new_supervisors){
+        let found_flag = false;
+        for ( let i = 0; i < curr_supervisors.length; i++ ){
+          const curr_user = curr_supervisors[i];
+          if (new_user.id === curr_user.user.id){
+            curr_supervisors.splice(i, 1);
+            found_flag = true;
+            break;
+          }
+        }
+
+        if ( found_flag === false ){
+          const new_link = new UsersApplications({
+            user,
+            application: updatedApplication,
+            role: RoleType.SUPERVISOR
+          });
+
+          await new_link.save();
+        }
+      }
+
+      //left over curr_coauthors are links that no longer exist
+      for (const del_user of curr_supervisors){
+        await del_user.remove();
+      }
+
+    }
+    
 
     res.json({
       status: 200,
       message: "Successfully updated application",
       data: updatedApplication,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const uploadFile = async (req: Request, res:Response, next: NextFunction) => {
+  const file = req.file;
+  const user = res.locals.user;
+  const applicationId = req.params.id;
+  console.log(user);
+
+  try {
+    const application = await Application.findOne(applicationId);
+
+    if (!application) throw new NotFoundError();
+
+    if (!(await check_access(application, user)))
+      throw new NotAuthorizedError();
+
+    if (!file) throw new BadRequestError("No file was uploaded");
+
+    file.originalname.replace(" ", "%20");
+
+    if (fs.existsSync(path.join(__dirname, `../../../data/pdf_store/${applicationId}`))) {
+      if (!fs.existsSync(path.join(__dirname, `../../../data/pdf_store/${applicationId}/form.pdf`))) {
+        fs.writeFile(
+          path.join(
+            __dirname,
+            `../../../data/pdf_store/${applicationId}/form.pdf`
+          ),
+          file.buffer,
+          (err) => {
+            if (err) throw err;
+          }
+        );
+        application.hasFile = true;
+        await application.save();
+
+        res.json({
+          status: 200,
+          message: "Successfully updated file",
+        });
+      } else {
+        throw new ConflictError("File");
+      }
+    } else {
+      fs.mkdirSync(
+        path.join(__dirname, `../../../data/pdf_store/${applicationId}`)
+      );
+      fs.writeFile(
+        path.join(
+          __dirname,
+          `../../../data/pdf_store/${applicationId}/form.pdf`
+        ),
+        file.buffer,
+        (err) => {
+          if (err) throw err;
+        }
+      );
+      application.hasFile = true;
+      await application.save();
+
+      res.json({
+        status: 200,
+        message: "Successfully updated file",
+      });
+    }
   } catch (err) {
     next(err);
   }
@@ -317,12 +400,45 @@ const deleteApplication = async (
     const applicationRepository: Repository<Application> =
       getRepository(Application);
 
+     if (fs.existsSync(path.join(__dirname, `../../../data/pdf_store/${applicationId}/form.pdf`))) {
+      fs.unlinkSync(path.join(__dirname, `../../../data/pdf_store/${applicationId}/form.pdf`));
+    }
+
     // TODO: Test that this cascades to the user_application join table
     await applicationRepository.delete(application.id);
 
     res.json({
       status: 200,
       message: "Successfully deleted application",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
+  const user = res.locals.user;
+  const applicationId = req.params.id;
+
+  try{
+    const application = await Application.findOne(applicationId);
+
+    if (!application) throw new NotFoundError();
+
+    if (!(await check_access(application, user))) throw new NotAuthorizedError();
+
+    if (fs.existsSync(path.join(__dirname, `../../../data/pdf_store/${applicationId}/form.pdf`))) {
+      fs.unlinkSync(path.join(__dirname, `../../../data/pdf_store/${applicationId}/form.pdf`));
+    } else {
+      throw new NotFoundError();
+    }
+
+    application.hasFile = false;
+    await application.save();
+
+    res.json({
+      status: 200,
+      message: "Successfully deleted file",
     });
   } catch (err) {
     next(err);
@@ -420,9 +536,11 @@ appRouter.use(protectedRoute);
 appRouter.get("/", reqUser, getApplications);
 appRouter.get("/:id", reqUser, getApplication);
 appRouter.get("/:id/form", reqUser, getApplicationForm);
-appRouter.post("/", reqUser, upload.single("pdf_form"), createApplication);
+appRouter.post("/", reqUser, createApplication);
 appRouter.patch("/:id", reqUser, updateApplication);
+appRouter.post("/:id/form", upload.single("pdf_form"), reqUser, uploadFile);
 appRouter.delete("/:id", reqUser, deleteApplication);
+appRouter.delete("/:id/form", reqUser, deleteFile);
 appRouter.get("/:id/reviews", reqUser, getReviewsByApplication);
 appRouter.post("/:id/reviews", reqUser, createReviewByApplication);
 

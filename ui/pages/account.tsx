@@ -1,48 +1,36 @@
-import {
-  Checkmark32,
-  Error32,
-  InProgress32,
-  Login32,
-  Save32,
-} from "@carbon/icons-react";
-import { Button, Form, TextInput } from "carbon-components-react";
+import { Login32, Save32 } from "@carbon/icons-react";
+import { Button, Dropdown, Form, TextInput } from "carbon-components-react";
 import type { NextPage } from "next";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import * as api from "../api";
-import { request } from "../api/index";
 import styles from "../styles/account.module.css";
+import { NetworkManagerContext } from "../components/NetworkManager";
+import { User } from "../api/types";
 
 const AccountPage: NextPage = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
+  const [role, setRole] = useState("");
   const [school, setSchool] = useState("");
 
-  // 0 is nothing, 1 is in progress, 2 is failure, 3 is success
-  const [submit_success, setSubmit_success] = useState<number>(0);
-
-  let save_state = <> </>;
-  if (submit_success === 1) {
-    save_state = <InProgress32 className={styles.resultIcon} />;
-  } else if (submit_success == 2) {
-    save_state = <Error32 className={styles.resultIcon} />;
-  } else if (submit_success == 3) {
-    save_state = <Checkmark32 className={styles.resultIcon} />;
-  } else {
-    save_state = <> </>;
-  }
+  const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
     (async () => {
-      const user = await api.request({
+      const [res, err_code] = await nm_ctx.request({
         path: "/users",
         method: "GET",
       });
-      if (user.status == 200) {
-        setEmail(user.data.email);
-        setName(user.data.name);
-        setBio(user.data.bio);
-        setSchool(user.data.school);
+
+      if (res.status == 200) {
+        const user = res.data as User;
+
+        setEmail(user.email || "");
+        setName(user.name || "");
+        setBio(user.bio || "");
+        setSchool(user.school || "");
+      } else {
       }
     })();
   }, []);
@@ -57,6 +45,12 @@ const AccountPage: NextPage = () => {
         >
           {email}
         </h1>
+        <TextInput
+          value={email}
+          id="email"
+          labelText="Email"
+          className={styles.formElements}
+        />
         <TextInput
           className={styles.formElements}
           id="name"
@@ -108,25 +102,27 @@ const AccountPage: NextPage = () => {
             disabled={!name && !bio && !school}
             onClick={(e) => {
               e.preventDefault();
-              setSubmit_success(1);
-              request({
-                method: "PATCH",
-                path: "/users",
-                data: { name: name, bio: bio, school: school },
-              }).then((res) => {
-                if (res.status == 200) {
-                  setSubmit_success(3);
-                } else {
-                  setSubmit_success(2);
-                }
-              });
+              nm_ctx
+                .request({
+                  method: "PATCH",
+                  path: "/users",
+                  data: { name: name, bio: bio, school: school, role: role },
+                  show_progress: true,
+                })
+                .then((res) => {
+                  if (res[0].status == 200) {
+                    // FIXME: These functions literally dont exist!?
+                    // setSubmit_success(3);
+                  } else {
+                    // setSubmit_success(2);
+                  }
+                });
             }}
             renderIcon={Save32}
           >
             Save
           </Button>
         </div>
-        <span>{save_state}</span>
       </Form>
     </>
   );
