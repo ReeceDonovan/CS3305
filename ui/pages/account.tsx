@@ -13,6 +13,7 @@ import { request } from "../api/index";
 import styles from "../styles/account.module.css";
 
 const AccountPage: NextPage = () => {
+  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
@@ -38,15 +39,24 @@ const AccountPage: NextPage = () => {
         method: "GET",
       });
       if (user.status == 200) {
+        setEmail(user.data.email);
         setName(user.data.name);
         setBio(user.data.bio);
         setSchool(user.data.school);
       }
     })();
   }, []);
+
   return (
     <>
       <Form className={styles.form}>
+        <h1
+          style={{
+            marginBottom: "1rem",
+          }}
+        >
+          {email}
+        </h1>
         <TextInput
           className={styles.formElements}
           id="name"

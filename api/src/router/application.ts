@@ -75,9 +75,11 @@ const getApplications = async (
       }
       default: {
         const userApplications = await getRepository(UsersApplications).find({
-          where: {
-            user,
-          },
+          where: [
+            { user, role: RoleType.COAUTHOR },
+            { user, role: RoleType.SUBMITTER },
+            { user, role: RoleType.REVIEWER },
+          ],
           relations: ["application"],
         });
 
@@ -349,7 +351,18 @@ const getReviewsByApplication = async (
       where: {
         application,
       },
-      relations: ["application", "user"],
+      relations: ["user"],
+    });
+
+    if (!reviews) throw new NotFoundError();
+
+    reviews.forEach((review) => {
+      if (
+        res.locals.user.role !== UserType.COORDINATOR ||
+        res.locals.user != review.user
+      ) {
+        reviews.splice(reviews.indexOf(review), 1);
+      }
     });
 
     if (!reviews) throw new NotFoundError();
