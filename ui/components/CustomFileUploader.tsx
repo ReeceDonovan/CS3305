@@ -19,7 +19,7 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
   const [invalid_flag, setInvalid_flag] = useState<boolean>(false);
   const nm_ctx = useContext(NetworkManagerContext);
 
-  const onAddFiles = async (evt, { addedFiles }) => {
+  const onAddFiles = async (evt: { stopPropagation: () => void; }, { addedFiles }: any) => {
     let url = "";
     if (props.add_remote_file_url === null) {
       if (props.get_add_remote_file_url) {
@@ -46,7 +46,7 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
     }
   };
 
-  const remove_file = async (e, content: { uuid: string }) => {
+  const remove_file = async (_e: any, _content: { uuid: string }) => {
     const [_res, err_code] = await nm_ctx.request({
       method: "DELETE",
       path: props.delete_remote_file_url

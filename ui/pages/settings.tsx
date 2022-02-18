@@ -53,7 +53,7 @@ const Settings = () => {
           }
         });
     };
-  }, []);
+  }, [nm_ctx]);
 
   const onSubmit = (event: any) => {
     setSubmitting(true);

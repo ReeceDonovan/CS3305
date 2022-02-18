@@ -1,7 +1,4 @@
 import {
-  Checkmark32,
-  Error32,
-  InProgress32,
   Login32,
   Save32,
 } from "@carbon/icons-react";
@@ -9,7 +6,6 @@ import { Button, Dropdown, Form, TextInput } from "carbon-components-react";
 import type { NextPage } from "next";
 import React, { useEffect, useState, useContext } from "react";
 import * as api from "../api";
-import { request } from "../api/index";
 import styles from "../styles/account.module.css";
 import { NetworkManagerContext } from "../components/NetworkManager";
 import { User } from "../api/types";
@@ -18,6 +14,7 @@ const AccountPage: NextPage = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
+  const [role, setRole] = useState("");
   const [school, setSchool] = useState("");
 
   const nm_ctx = useContext(NetworkManagerContext);
@@ -30,9 +27,9 @@ const AccountPage: NextPage = () => {
       });
       const user: User = res.data;
       if (err_code === 0) {
-        setName(user.name);
-        setBio(user.bio);
-        setSchool(user.school);
+        setName(user.name!);
+        setBio(user.bio!);
+        setSchool(user.school!);
         setRole(user.role);
 
         const stored_user = await api.getToken();
@@ -41,7 +38,7 @@ const AccountPage: NextPage = () => {
         }
       }
     })();
-  }, []);
+  }, [nm_ctx]);
 
   let dropdown_items = [
     { id: "RESEARCHER", text: "RESEARCHER" },
@@ -129,10 +126,11 @@ const AccountPage: NextPage = () => {
                 data: { name: name, bio: bio, school: school, role: role },
                 show_progress: true,
               }).then((res) => {
-                if (res.status == 200) {
-                  setSubmit_success(3);
+                if (res[0].status == 200) {
+                  // FIXME: These functions literally dont exist!?
+                  // setSubmit_success(3);
                 } else {
-                  setSubmit_success(2);
+                  // setSubmit_success(2);
                 }
               });
             }}

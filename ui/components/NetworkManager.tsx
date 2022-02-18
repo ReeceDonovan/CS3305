@@ -3,6 +3,7 @@ import {
   InlineNotification,
   NotificationActionButton,
 } from "carbon-components-react";
+import Link from "next/link";
 import React, { createContext, useState } from "react";
 import { API_URL, RequestParams, StandardResponse } from "../api";
 import styles from "../styles/networknotif.module.css";
@@ -106,9 +107,11 @@ export const NetworkManager = (props: any) => {
 
             // ignore type error it works atm
             loc_req_state[2] = (
-              <NotificationActionButton href={`${API_URL}/login`}>
-                Try login with a different account?
-              </NotificationActionButton>
+              <Link href={`${API_URL}/login`} passHref>
+                <NotificationActionButton>
+                  Try login with a different account?
+                </NotificationActionButton>
+              </Link>
             );
           } else if (params?.err_msg) {
             loc_req_state[1] = params.err_msg;

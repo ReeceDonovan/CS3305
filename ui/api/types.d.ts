@@ -60,6 +60,7 @@ export interface Review {
   applicationId?: number;
   userId?: number;
   application?: Application;
+  reviewer: User;
   user?: User;
 }
 

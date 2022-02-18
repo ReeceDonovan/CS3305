@@ -2,25 +2,29 @@ import {
   Button,
   Dropdown,
   Form,
+  ModalWrapper,
   SkeletonPlaceholder,
   Tab,
   Tabs,
   TextArea,
   TextInput,
+  Tile,
 } from "carbon-components-react";
-import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
 import * as api from "../../api";
-import { User } from "../../api/types";
 import styles from "../../styles/application.module.css";
 
 import type { NextPage } from "next";
 import { Review, User } from "../../api/types";
-import { Add16, Chat16 } from "@carbon/icons-react";
+import { Chat16 } from "@carbon/icons-react";
 import Link from "next/link";
 import { NetworkManagerContext } from "../../components/NetworkManager";
+
+// FIXME: Unsure of the status of the page, I only made changes nessescary to fix this file,
+// All things considered its quite messed up and needs another review by the person who prev 
+// worked on this, or knows what's going on.
 
 const ApplicationPage: NextPage = () => {
   const [user, setUser] = useState<User>();
@@ -33,9 +37,13 @@ const ApplicationPage: NextPage = () => {
   const [supervisors, setSupervisors] = useState("");
   const [description, setDescription] = useState("");
 
+  const [copyStatus, setCopyStatus] = useState("");
+
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [comment, setComment] = useState("");
 
   const [reviewStatus, setReviewStatus] = useState("");
+  const [statusErrMsg, setstatusErrMsg] = useState("");
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -73,7 +81,7 @@ const ApplicationPage: NextPage = () => {
         });
       }
     })();
-  }, [router.query.slug]);
+  }, [nm_ctx, router.query.slug]);
 
   const sendReview = async () => {
     if (reviewStatus && reviewStatus !== "" && comment && comment !== "") {
@@ -303,7 +311,7 @@ const ApplicationPage: NextPage = () => {
                         comment: comment,
                       },
                     })
-                    .then(([res, err_code]) => {
+                    .then(([_, err_code]) => {
                       if (err_code == 0) {
                         setComment("");
                       }
@@ -354,8 +362,26 @@ const ApplicationPage: NextPage = () => {
                   return true;
                 }}
               >
-                Submit
-              </Button>
+                <Dropdown
+                  label="Status"
+                  items={["Pending", "In Review", "Accepted", "Rejected"]}
+                  id={""}
+                  onChange={(e) =>
+                    setReviewStatus(e.selectedItem ? e.selectedItem : "")
+                  }
+                  style={{
+                    paddingBottom: "160px",
+                  }}
+                />
+                {statusErrMsg && <div>{statusErrMsg}</div>}
+                <Button onClick={(_e) => {
+                  (async () => {
+                    await sendReview();
+                  })();
+                }}>
+                  Submit
+                </Button>
+              </ModalWrapper>
             </div>
           </Tab>
         ) : null}

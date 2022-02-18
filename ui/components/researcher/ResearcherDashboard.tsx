@@ -8,7 +8,8 @@ export default function ReviewerDataTable() {
   const [rowData, setRowdata] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const nm_ctx = useContext(NetworkManagerContext);
+  // const nm_ctx = 
+  useContext(NetworkManagerContext);
 
   useEffect(() => {
     (async () => {
