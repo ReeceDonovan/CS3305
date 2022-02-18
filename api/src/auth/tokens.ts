@@ -4,7 +4,7 @@ import User from "../models/user";
 
 export const decodeToken = async (
   token: string
-): Promise<{ user: User; exp: Number; iat: Number }> => {
+): Promise<{ user: User; exp: number; iat: number }> => {
   try {
     return jwt.verify(token, config.get().signingKey, (err, decoded) => {
       if (err) {

@@ -8,8 +8,8 @@ import Response, { sample_401_res, sample_404_res } from "../utils/response";
 const reviewRouter = express.Router();
 
 const check_access_rev = (application: Application, user: User) => {
-  return application.reviewers.includes(user) || user.role === "COORDINATOR"
-}
+  return application.reviewers.includes(user) || user.role === "COORDINATOR";
+};
 
 reviewRouter.get(
   "/:id",

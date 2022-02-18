@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { Transporter } from "nodemailer";
 import Mail from "nodemailer/lib/mailer";
 import config from "../config/config";
@@ -17,6 +16,9 @@ export class ExtendedTransporter {
     
   }
 
+  // Move this out cause it was causing a build failure
+  /** Button to Link away reuse this pls
+  <a style="min-width: 5rem;background: #222;padding: 1rem;max-width: 10rem;border-radius: 1rem;color: white;margin: 5rem;"></a> */
   // TODO: Make nice CSS for the HTML template, to give a feel for a refined product, use inline CSS, and make advantage of HTML tags, we may expand this to also be able to use and take a company logo etc.
   private boilerplateMessage(mailOptions: Mail.Options, callback: (err: Error | null, info: any) => void, options: boilerplateOptions) {
     this.transporter.sendMail({
@@ -33,8 +35,6 @@ export class ExtendedTransporter {
           <tr style="min-height: 280px;">
             <td style="display: flex;align-items: center;flex-direction: column;width: 90%;margin: 0 auto 0 auto;">
             ${mailOptions.html}
-            ${/** Button to Link away reuse this pls
-            <a style="min-width: 5rem;background: #222;padding: 1rem;max-width: 10rem;border-radius: 1rem;color: white;margin: 5rem;"></a> */}
             </td>
           </tr>
           <tr style="color: white;background: #222;">

@@ -2,6 +2,7 @@ import { Connection, createConnection } from "typeorm";
 
 import config from "../config/config";
 
+// eslint-disable-next-line no-var
 export var dbConn: Connection;
 
 export const createConn = async (): Promise<void> => {

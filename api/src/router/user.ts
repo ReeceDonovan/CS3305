@@ -5,7 +5,7 @@ import Response, { sample_401_res, sample_404_res } from "../utils/response";
 const userRouter = express.Router();
 
 userRouter.get("/:id", async (req, res) => {
-  let user = await User.getById(parseInt(req.params.id))
+  const user = await User.getById(parseInt(req.params.id));
   if (!user) {
     return res.status(404).json(sample_404_res);
   }
