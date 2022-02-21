@@ -18,6 +18,11 @@ export const NetworkManagerContext = createContext({
   request: async (_params: NiceParams): Promise<[StandardResponse, number]> => {
     return [{} as StandardResponse, 0];
   },
+  fetchFile: async (
+    _params: NiceParams
+  ): Promise<[StandardResponse, number]> => {
+    return [{} as StandardResponse, 0];
+  },
 });
 
 export const NetworkNotification = (props: {
@@ -75,25 +80,75 @@ export const NetworkManager = (props: any) => {
     request: async (
       params: NiceParams
     ): Promise<[StandardResponse, number]> => {
-      let res = null;
       let loc_req_state: [number, string, any] = [0, "", null];
       try {
         if (params.show_progress === true) {
           loc_req_state = [1, params.prog_msg ? params.prog_msg : "", null];
+          setReq_state(loc_req_state);
         }
 
-        res = await axios(`${API_URL}${params.path}`, {
+        const res = await axios(`${API_URL}${params.path}`, {
           ...(params as RequestParams),
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        console.log(res);
         if (params.show_progress === true) {
           loc_req_state = [3, params.succ_msg ? params.succ_msg : "", null];
         }
         setReq_state(loc_req_state);
         return [res.data as StandardResponse, 0];
+      } catch (e: any) {
+        loc_req_state = [2, "", null];
+
+        if (e?.response) {
+          console.log("err: ", e.response);
+          if (e.response.message) {
+            loc_req_state[1] = e.response.message;
+          } else if (e.response.status === 401) {
+            loc_req_state[1] = "You are not authenticated to access such data";
+
+            // ignore type error it works atm
+            loc_req_state[2] = (
+              <NotificationActionButton href={`${API_URL}/login`}>
+                Try login with a different account?
+              </NotificationActionButton>
+            );
+          } else if (params?.err_msg) {
+            loc_req_state[1] = params.err_msg;
+          }
+        }
+
+        setReq_state(loc_req_state);
+        const err_code = 2;
+        return [e.response.data as StandardResponse, err_code];
+      }
+    },
+    fetchFile: async (params: NiceParams) => {
+      let loc_req_state: [number, string, any] = [0, "", null];
+      try {
+        if (params.show_progress === true) {
+          loc_req_state = [1, params.prog_msg ? params.prog_msg : "", null];
+          setReq_state(loc_req_state);
+        }
+
+        const res = await axios({
+          url: `${API_URL}${params.path}`,
+          method: "GET",
+          responseType: "blob",
+          headers: {
+            authorization:
+              (await localStorage.getItem("token")) !== null
+                ? `Bearer ${localStorage.getItem("token")}`
+                : "",
+          },
+        });
+
+        if (params.show_progress === true) {
+          loc_req_state = [3, params.succ_msg ? params.succ_msg : "", null];
+        }
+        setReq_state(loc_req_state);
+        return [res.data as Blob, 0];
       } catch (e: any) {
         loc_req_state = [2, "", null];
 

@@ -1,36 +1,35 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   FileUploaderDropContainer,
   FileUploaderDropContainerProps,
   FileUploaderItem,
 } from "carbon-components-react";
-
 import { FileRef } from "../api/types";
 import { NetworkManagerContext } from "./NetworkManager";
-
 interface CustomFileUploaderProps extends FileUploaderDropContainerProps {
-  add_remote_file_url: string | null;
-  delete_remote_file_url?: string;
-  get_add_remote_file_url?: () => Promise<string>;
+  remote_file_url?: string;
+  init_file?: string;
+  get_remote_file_url?: () => Promise<string>;
 }
 
 export default function CustomFileUploader(props: CustomFileUploaderProps) {
   const [file, setFile] = useState<FileRef | null>(null);
-  const [invalid_flag, setInvalid_flag] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (props.init_file) {
+      setFile({ name: props.init_file, status: "edit" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const nm_ctx = useContext(NetworkManagerContext);
 
-  const onAddFiles = async (evt, { addedFiles }) => {
-    let url = "";
-    if (props.add_remote_file_url === null) {
-      if (props.get_add_remote_file_url) {
-        url = await props.get_add_remote_file_url();
-      } else {
-        url = "";
-      }
-    } else {
-      url = props.add_remote_file_url;
-    }
-    setInvalid_flag(false);
+  const onAddFiles = async (
+    evt: { stopPropagation: () => void },
+    { addedFiles }: any
+  ) => {
+    const url = props.remote_file_url
+      ? props.remote_file_url
+      : await props.get_remote_file_url;
     evt.stopPropagation();
     const new_file: File = addedFiles[0];
     setFile({ name: new_file.name, status: "uploading" } as FileRef);
@@ -38,7 +37,7 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
     form_data.append("pdf_form", new_file);
     const [_res, err_code] = await nm_ctx.request({
       method: "POST",
-      path: url,
+      path: url as string,
       data: form_data,
     });
     if (err_code === 0) {
@@ -46,22 +45,19 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
     }
   };
 
-  const remove_file = async (e, content: { uuid: string }) => {
+  const remove_file = async (_e: any, _content: { uuid: string }) => {
+    setFile({ name: file?.name as string, status: "uploading" });
     const [_res, err_code] = await nm_ctx.request({
       method: "DELETE",
-      path: props.delete_remote_file_url
-        ? props.delete_remote_file_url
-        : props.add_remote_file_url
-        ? props.add_remote_file_url
-        : "",
-      show_progress: true,
+      path: props.remote_file_url
+        ? props.remote_file_url
+        : await props.get_remote_file_url(),
     });
 
     if (err_code === 0) {
       setFile(null);
     } else {
       console.log(err_code);
-      setInvalid_flag(true);
     }
   };
 
@@ -71,12 +67,30 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
         <FileUploaderItem
           status={file.status}
           name={file.name}
-          invalid={invalid_flag}
           onDelete={remove_file}
           style={{ width: "100%", height: "100%" }}
+          onClick={async () => {
+            const [blob, err_code] = await nm_ctx.fetchFile({
+              method: "GET",
+              path: props.remote_file_url ? props.remote_file_url : "",
+            });
+            if (err_code === 0) {
+              // Stolen from https://github.com/eligrey/FileSaver.js/
+              const a = document.createElement("a");
+              const name = "form.pdf";
+              a.download = name;
+              a.rel = "noopener"; // tabnabbing
+              // ignore  error cause if err_code is 0 then this is not standard response
+              a.href = URL.createObjectURL(blob);
+              a.click();
+            }
+          }}
         />
       ) : (
-        <FileUploaderDropContainer {...props} onAddFiles={onAddFiles} />
+        <FileUploaderDropContainer
+          {...(props as FileUploaderDropContainerProps)}
+          onAddFiles={onAddFiles}
+        />
       )}
     </div>
   );

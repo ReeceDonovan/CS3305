@@ -159,7 +159,7 @@ const getApplicationForm = async (
 
 // need req otherwise res.locals.user is undefined
 const createApplication = async ( _req: Request, res: Response ) => {
-    const user = res.locals.user;
+  const user = res.locals.user;
 
   const new_application = await new Application({hasFile: false}).save();
 
@@ -189,8 +189,6 @@ const updateApplication = async (
   const body: any = req.body;
   const user = res.locals.user;
   const applicationId = req.params.id;
-
-  console.log(body);
 
   // TODO: Add validation on the backend for email fields (and text fields if needed)
   const coauthor_emails: string[] = body.coauthors;
@@ -316,7 +314,6 @@ const uploadFile = async (req: Request, res:Response, next: NextFunction) => {
   const file = req.file;
   const user = res.locals.user;
   const applicationId = req.params.id;
-  console.log(user);
 
   try {
     const application = await Application.findOne(applicationId);

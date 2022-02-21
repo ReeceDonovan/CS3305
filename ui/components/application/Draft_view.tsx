@@ -6,16 +6,21 @@ import {
   TextArea,
   TextInput,
 } from "carbon-components-react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UI_URL } from "../../api";
 import CopyableLink from "../CopyableLink";
 import CustomFileUploader from "../CustomFileUploader";
 import { NetworkManagerContext } from "../NetworkManager";
 
-const Draft_view = (props: { id?: string }) => {
-  const [name, setName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [field, setField] = useState<string>("");
+const Draft_view = (props: { id?: string; init_app?: any | null }) => {
+  const init_app = props.init_app ? props.init_app : {};
+  const [name, setName] = useState<string>(init_app?.name ? init_app.name : "");
+  const [description, setDescription] = useState<string>(
+    init_app?.description ? init_app.description : ""
+  );
+  const [field, setField] = useState<string>(
+    init_app?.field ? init_app.field : ""
+  );
   const [coauthors, setCoauthor] = useState<string[]>([]);
   const [supervisors, setSupervisors] = useState<string[]>([]);
 
@@ -28,11 +33,11 @@ const Draft_view = (props: { id?: string }) => {
     coauthors: string[];
     supervisors: string[];
   }>({
-    name: "",
-    description: "",
-    field: "",
-    coauthors: [],
-    supervisors: [],
+    name,
+    description,
+    field,
+    coauthors,
+    supervisors,
   });
 
   const [app_id, setApp_id] = useState<string | null>(
@@ -45,10 +50,10 @@ const Draft_view = (props: { id?: string }) => {
 
   const nm_ctx = useContext(NetworkManagerContext);
 
-  const sync = async () => {
-    console.log("syncing");
-    // find fields that differ from previous version of application
-    let id = app_id;
+  const sync_application = () => {
+    setSync_timeout(null);
+
+    //create diff application
     let modiflag = false;
     let diff_app = {} as {
       name: string;
@@ -92,28 +97,34 @@ const Draft_view = (props: { id?: string }) => {
       return;
     }
 
-    if (id === null) {
+    setPrev_app({ ...prev_app, ...diff_app });
+    nm_ctx.request({
+      method: "PATCH",
+      path: `/applications/${app_id}`,
+      data: diff_app,
+    });
+  };
+
+  const [getting_id, setGetting_id] = useState(false);
+
+  const debounce_sync = async () => {
+    //if id_get attempt is being attemped
+    if (getting_id === true) return;
+    //get id if it doesnt exist
+    if (app_id === null) {
       // first negotiate a application id
+      setGetting_id(true);
       const [res, err_code] = await nm_ctx.request({
         method: "POST",
         path: "/applications/",
       });
+      setGetting_id(false);
       if (err_code === 0) {
-        id = res.data;
-        window.history.pushState(null, "", `/application/${id}`);
+        window.history.pushState(null, "", `/application/${res.data}`);
         setApp_id(res.data);
       }
     }
 
-    const sync_application = async () => {
-      setSync_timeout(null);
-      setPrev_app({ ...prev_app, ...diff_app });
-      const [_res, _err_code] = await nm_ctx.request({
-        method: "PATCH",
-        path: `/applications/${id}`,
-        data: diff_app,
-      });
-    };
     if (sync_timeout == null) {
       setSync_timeout(setTimeout(sync_application, 2000));
     } else {
@@ -121,6 +132,17 @@ const Draft_view = (props: { id?: string }) => {
       setSync_timeout(setTimeout(sync_application, 2000));
     }
   };
+
+  const [firstRender, setFirstRender] = useState(true);
+
+  useEffect(() => {
+    if (firstRender) {
+      setFirstRender(false);
+    } else {
+      debounce_sync();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coauthors, supervisors, name, description, field]);
 
   return (
     <>
@@ -187,7 +209,6 @@ const Draft_view = (props: { id?: string }) => {
           onChange={(e) => {
             setName(e.target.value);
           }}
-          onBlur={sync}
         />
 
         <TextInput
@@ -201,7 +222,6 @@ const Draft_view = (props: { id?: string }) => {
           onChange={(e) => {
             setField(e.target.value);
           }}
-          onBlur={sync}
         />
 
         <TextArea
@@ -215,7 +235,6 @@ const Draft_view = (props: { id?: string }) => {
           onChange={(e) => {
             setDescription(e.target.value);
           }}
-          onBlur={sync}
         />
 
         <TextInput
@@ -239,17 +258,15 @@ const Draft_view = (props: { id?: string }) => {
               e.preventDefault();
             }
           }}
-          onBlur={sync}
         />
 
         <div>
           {coauthors.map((elem, i) => (
             <Tag
               key={i}
-              onClick={async (e) => {
+              onClick={(e) => {
                 e.preventDefault();
                 coauthors.splice(i, 1);
-                await sync();
                 setCoauthor([...coauthors]);
               }}
             >
@@ -278,7 +295,6 @@ const Draft_view = (props: { id?: string }) => {
               e.preventDefault();
             }
           }}
-          onBlur={sync}
         />
 
         <div>
@@ -288,7 +304,6 @@ const Draft_view = (props: { id?: string }) => {
               onClick={async (e) => {
                 e.preventDefault();
                 supervisors.splice(i, 1);
-                await sync();
                 setSupervisors([...supervisors]);
               }}
             >
@@ -298,20 +313,32 @@ const Draft_view = (props: { id?: string }) => {
         </div>
 
         <CustomFileUploader
-          add_remote_file_url={app_id ? `/applications/${app_id}/form` : null}
-          get_add_remote_file_url={async () => {
+          remote_file_url={app_id ? `/applications/${app_id}/form` : undefined}
+          get_remote_file_url={async () => {
             console.log("getting app id");
-            const [res, _err_code] = await nm_ctx.request({
+            const [res, err_code] = await nm_ctx.request({
               method: "POST",
               path: "/applications/",
             });
-            setApp_id(res.data);
-            return `/applications/${res.data}/form`;
+            if (err_code === 0) {
+              setApp_id(res.data);
+              window.history.pushState(null, "", `/application/${res.data}`);
+              return `/applications/${res.data}/form`;
+            }
+            return "";
           }}
+          init_file={init_app.hasFile ? "form.pdf" : undefined}
         />
         <Button
-          disabled={false}
-          // onClick={sendApplication}
+          disabled={app_id ? false : true}
+          onClick={() => {
+            nm_ctx.request({
+              method: "PATCH",
+              path: `/applications/${app_id}`,
+              data: { app_status: "PENDING" },
+              show_progress: true,
+            });
+          }}
         >
           Submit Your Application
         </Button>

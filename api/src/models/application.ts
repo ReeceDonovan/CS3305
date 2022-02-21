@@ -6,10 +6,10 @@ import Review, { ReviewStatus } from "./review";
 import UsersApplications from "./usersApplications";
 
 export enum AppStatus{
-  Draft,
-  Review,
-  Approval,
-  Rejection
+  Draft = "DRAFT",
+  Pending = "PENDING",
+  Reviewing = "REVIEWING",
+  Closed = "CLOSED"
 }
 
 @OrmEntity("applications")
