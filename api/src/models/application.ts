@@ -34,7 +34,7 @@ export default class Application extends Entity {
   @Expose({ name: "user_connection" })
   @OneToMany(
     () => UsersApplications,
-    (usersApplications) => usersApplications.user,
+    (usersApplications) => usersApplications.application,
     {
       onDelete: "CASCADE",
     }

@@ -103,14 +103,12 @@ export const NetworkManager = (props: any) => {
           if (e.response.message) {
             loc_req_state[1] = e.response.message;
           } else if (e.response.status === 401) {
-            loc_req_state[1] = "You are not authenticated to access such data";
+            loc_req_state[1] = "You are not logged in.";
 
             // ignore type error it works atm
             loc_req_state[2] = (
               <Link href={`${API_URL}/login`} passHref>
-                <NotificationActionButton>
-                  Try login with a different account?
-                </NotificationActionButton>
+                <NotificationActionButton>Login?</NotificationActionButton>
               </Link>
             );
           } else if (params?.err_msg) {

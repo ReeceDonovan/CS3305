@@ -8,7 +8,7 @@ import { IsEnum } from "class-validator";
 export enum ReviewStatus {
   APPROVED = "APPROVED",
   PENDING = "PENDING",
-  DECLINED = "DECLINED",
+  DECLINED = "REJECTED",
 }
 
 @OrmEntity("reviews")
