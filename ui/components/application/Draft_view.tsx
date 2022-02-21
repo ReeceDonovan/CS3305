@@ -7,8 +7,6 @@ import {
   TextInput,
 } from "carbon-components-react";
 import { useContext, useState } from "react";
-import { UI_URL } from "../../api";
-import CopyableLink from "../CopyableLink";
 import CustomFileUploader from "../CustomFileUploader";
 import { NetworkManagerContext } from "../NetworkManager";
 
