@@ -23,6 +23,7 @@ import {
   Checkmark24,
   Close16,
   Close24,
+  RotateCounterclockwise16,
 } from "@carbon/icons-react";
 
 const ApplicationPage: NextPage = () => {
@@ -120,6 +121,13 @@ const ApplicationPage: NextPage = () => {
     return <div>Loading...</div>;
   }
 
+  let submitterEmail = "";
+  for(const useridx in application.user_connection){
+    if(application.user_connection[useridx].role == "SUBMITTER"){
+      submitterEmail = application.user_connection[useridx].user.email;
+    }
+  }
+
   return (
     <>
       <Tabs
@@ -204,7 +212,7 @@ const ApplicationPage: NextPage = () => {
           )}
         </Tab>
 
-        {user?.email == application.submitter?.email && (
+        {user?.email == submitterEmail && (
           <Tab href="#edit" id="edit" label="Edit">
             <Form
               className={styles.edit}
