@@ -131,6 +131,8 @@ const ApplicationPage: NextPage = () => {
     }
   }
 
+  console.log(application);
+
   return (
     <>
       <Tabs
@@ -390,6 +392,152 @@ const ApplicationPage: NextPage = () => {
             </div>
           </Tab>
         ) : null}
+        
+        {/* Coordinator Tab */}
+        {user?.role == "COORDINATOR" ? (
+          <Tab href="#coordinator" id="coordinator" label="Coordinator">
+            {reviews?.map((review: Review) => (
+              <Tile
+                style={{
+                  padding: "2rem",
+                  margin: "2rem",
+                }}
+                key={review.id}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#fffa",
+                      }}
+                    >
+                      {review.user?.name
+                        ? review.user.name
+                        : review.user?.email}
+                    </span>
+                    <span>
+                      {review.status === "APPROVED" ? (
+                        <Checkmark24 />
+                      ) : review.status === "REJECTED" ? (
+                        <Close24 />
+                      ) : (
+                        <></>
+                      )}
+                    </span>
+                  </div>
+
+                  <p style={{ whiteSpace: "pre-wrap" }}>{review.comment}</p>
+                </div>
+              </Tile>
+            ))}
+
+            {application.status == 0 ? (
+              <>
+                <h1>This Application is still in draft mode</h1>
+                <p>Please wait for the application to be submitted before assigning it for review.</p>
+              </>
+            ) : null}
+
+            {application.status == 1 ? (
+              <>
+                <h1>Needs Reviewers Assigned</h1>
+                <p>Please assign reviewers to this application.</p>
+              </>
+            ) : null}
+
+            {application.status == 2 ? (
+              <>
+                <h1>Being Reviewed</h1>
+                <p>This application is currently under review.</p>
+              </>
+            ) : null}
+
+            {application.status == 3 ? (
+              <>
+                <h1>Pending Outcome</h1>
+                <p>Please Accept or Reject this application based on the reviews.</p>
+              </>
+            ) : null}
+
+            <div
+              style={{
+                marginTop: "3em",
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                paddingBottom: "150px",
+              }}
+            >
+              <Dropdown
+                style={{
+                  width: "200px",
+                  margin: "0px 50px",
+                }}
+                id="review-status"
+                items={[
+                  { id: "option-1", text: "APPROVED", icon: Checkmark16 },
+                  { id: "option-2", text: "REJECTED", icon: Close16 },
+                ]}
+                itemToString={(item) => (item ? item.text : "")}
+                itemToElement={(item) => (
+                  <>
+                    {React.createElement(item.icon)}
+                    <span
+                      style={{
+                        paddingLeft: "1rem",
+                        paddingBottom: "1rem",
+                      }}
+                    >
+                      {item.text}
+                    </span>
+                  </>
+                )}
+                // @ts-expect-error
+                renderSelectedItem={(item) => (
+                  <>
+                    {React.createElement(item.icon)}
+                    <span
+                      style={{
+                        paddingLeft: "1rem",
+                        paddingBottom: "1rem",
+                      }}
+                    >
+                      {item.text}
+                    </span>
+                  </>
+                )}
+                label={"Status"}
+                onChange={(e) => {
+                  if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                }}
+              />
+
+              <Button
+                style={{
+                  margin: "0px 50px",
+                }}
+                onClick={() => sendReview()}
+              >
+                Submit Review
+              </Button>
+            </div>
+          </Tab>
+        ) : null}
+
       </Tabs>
     </>
   );
