@@ -1,6 +1,6 @@
 import express from "express";
-// import { NotAuthorizedError } from "../errors";
-import User from "../models/user";
+import { NotAuthorizedError } from "../errors";
+import User, { UserType } from "../models/user";
 
 import config, { configInterface } from "../config/config";
 import { protectedRoute } from "../middleware/protected-route";
@@ -11,7 +11,9 @@ const getSettings = async (
   res: express.Response,
   next: express.NextFunction
 ) => {
+  const user = res.locals.user;
   try {
+    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
     res.json({
       status: 200,
       message: "Success",
@@ -27,10 +29,10 @@ const updateSettings = async (
   res: express.Response,
   next: express.NextFunction
 ) => {
-  // FIXME
-  /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
   const config_data: configInterface = req.body;
+  const user = res.locals.user;
   try {
+    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
     config.set(config_data);
     res.json({
       status: 200,
@@ -46,10 +48,10 @@ const getUsersPermissions = async (
   res: express.Response,
   next: express.NextFunction
 ) => { 
-  // const user = res.locals.user;
+  const user = res.locals.user;
 
   try {
-    // if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
+    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
     const users = await User.find();
     res.json({
       status: 200, 
@@ -66,7 +68,9 @@ const changeUserPermission = async (
   res: express.Response,
   next: express.NextFunction
 ) => {
+  const user = res.locals.user;
   try {
+    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
     User.update(req.body.id, req.body.partial)
     res.json({
       status: 200,

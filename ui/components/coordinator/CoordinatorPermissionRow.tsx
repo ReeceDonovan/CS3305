@@ -21,7 +21,7 @@ interface Cell {
 
 const permissionChange = async (id: number, role: string) => {
   try {
-    const resp = await api.request({
+    await api.request({
       path: `/admin/users`,
       method: "PATCH",
       data: {
@@ -31,8 +31,8 @@ const permissionChange = async (id: number, role: string) => {
         }
       },
     });
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
   }
 };
 

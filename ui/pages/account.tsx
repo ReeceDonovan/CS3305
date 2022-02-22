@@ -11,7 +11,6 @@ const AccountPage: NextPage = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
-  const [role, setRole] = useState("");
   const [school, setSchool] = useState("");
 
   const nm_ctx = useContext(NetworkManagerContext);
@@ -106,7 +105,7 @@ const AccountPage: NextPage = () => {
                 .request({
                   method: "PATCH",
                   path: "/users",
-                  data: { name: name, bio: bio, school: school, role: role },
+                  data: { name: name, bio: bio, school: school },
                   show_progress: true,
                 })
                 .then((res) => {
