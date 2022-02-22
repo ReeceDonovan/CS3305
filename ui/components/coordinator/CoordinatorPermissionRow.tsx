@@ -1,9 +1,12 @@
+/* eslint-disable @next/next/no-img-element */
 import { TableRow, TableCell, SelectItem, Select } from "carbon-components-react";
+import * as api from "../../api";
 
 interface PermissionRow {
   row: {
     cells: [Cell]
-  }
+  },
+  id: number
 }
 
 interface Cell {
@@ -16,8 +19,25 @@ interface Cell {
   value: any
 }
 
+const permissionChange = async (id: number, role: string) => {
+  try {
+    const resp = await api.request({
+      path: `/admin/users`,
+      method: "PATCH",
+      data: {
+        id: id,
+        partial: {
+          role: role
+        }
+      },
+    });
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 // FIXME: Switch img to Image
-const renderSwitchCell = (cell: Cell): React.ReactNode | null => {
+const renderSwitchCell = (cell: Cell, id: number): React.ReactNode | null => {
   switch(cell.info.header) {
     case "avatar":
       return <span>
@@ -25,14 +45,20 @@ const renderSwitchCell = (cell: Cell): React.ReactNode | null => {
           <img style={{height: 43, width: 43, borderRadius: "50%"}} src={cell.value} alt="avatar"/>
         </span>
     case "role":
-      console.log(cell)
+      let roles = ["RESEARCHER", "REVIEWER", "COORDINATOR"];
+      const rolesIndex = roles.indexOf(cell.value);
+      [roles[0], roles[rolesIndex]] = [roles[rolesIndex], roles[0]]
       return <span>
           <Select
             id={cell.id}
             name={cell.id}
+            defaultValue={cell.value}
             noLabel
+            onChange={e => {
+              permissionChange(id, e.target.value)
+            }}
           >
-            {["RESEARCHER", "REVIEWER", "COORDINATOR"].map((e, i) => {
+            {roles.map((e, i) => {
               return <SelectItem value={e} text={e} key={i} />;
             })}
           </Select>
@@ -55,7 +81,7 @@ export default function CoordinatorPermissionRow(props: PermissionRow) {
         {props.row.cells.map(
           (cell, _) => (
             <TableCell key={cell.id}>
-              {renderSwitchCell(cell)}
+              {renderSwitchCell(cell, props.id)}
             </TableCell>
           )
         )}

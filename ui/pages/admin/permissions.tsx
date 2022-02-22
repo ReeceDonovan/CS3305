@@ -57,7 +57,6 @@ const PermissionsPage: NextPage = () => {
         // isSortable
         useZebraStyles
         rows={rows}
-        // @ts-expect-error
         headers={headers}
       >
         {({
@@ -101,7 +100,7 @@ const PermissionsPage: NextPage = () => {
                   // @ts-expect-error
                   (row) => (
                     // eslint-disable-next-line react/jsx-key
-                    <CoordinatorPermissionRow row={row} />
+                    <CoordinatorPermissionRow row={row} id={row.cells[0].value} />
                   )
                 )}
               </TableBody>

@@ -61,16 +61,21 @@ const getUsersPermissions = async (
   }
 };
 
-// const changeUserPermission = async (
-//   req: express.Request,
-//   res: express.Response,
-//   next: express.NextFunction
-// ) => {
-//   res.json({
-//     status: 200,
-//     message: "Hi",
-//   })
-// }
+const changeUserPermission = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    User.update(req.body.id, req.body.partial)
+    res.json({
+      status: 200,
+      message: "Succesfully changed user permission",
+    })
+  } catch (err) {
+    next(err);
+  }
+}
 
 const adminRouter = express.Router();
 adminRouter.use(protectedRoute);
@@ -78,7 +83,7 @@ adminRouter.use(protectedRoute);
 adminRouter.get("/settings", reqUser, getSettings);
 adminRouter.post("/settings", reqUser, updateSettings);
 adminRouter.get("/users", reqUser, getUsersPermissions)
-// adminRouter.patch("/users", reqUser, changeUserPermission)
+adminRouter.patch("/users", reqUser, changeUserPermission)
 
 
 export default adminRouter;
