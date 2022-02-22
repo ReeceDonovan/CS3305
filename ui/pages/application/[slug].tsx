@@ -122,9 +122,12 @@ const ApplicationPage: NextPage = () => {
   }
 
   let submitterEmail = "";
+  let reviewers = [];
   for(const useridx in application.user_connection){
     if(application.user_connection[useridx].role == "SUBMITTER"){
       submitterEmail = application.user_connection[useridx].user.email;
+    }else if(application.user_connection[useridx].role == "REVIEWER"){
+      reviewers.push(application.user_connection[useridx].user.email);
     }
   }
 
@@ -137,6 +140,7 @@ const ApplicationPage: NextPage = () => {
         type="container"
         scrollIntoView={false}
       >
+        {/* View Tab */}
         <Tab href="#view" id="view" label="View">
           <div>
             {application && (
@@ -212,6 +216,7 @@ const ApplicationPage: NextPage = () => {
           )}
         </Tab>
 
+        {/* Edit Tab */}
         {user?.email == submitterEmail && (
           <Tab href="#edit" id="edit" label="Edit">
             <Form
@@ -255,7 +260,8 @@ const ApplicationPage: NextPage = () => {
           </Tab>
         )}
 
-        {user?.role == "COORDINATOR" || user?.role == "REVIEWER" ? (
+        {/* Reviewer Tab */}
+        { user?.role == "REVIEWER" && reviewers.includes(user?.email) ? (
           <Tab href="#review" id="review" label="Review">
             {reviews?.map((review: Review) => (
               <Tile
