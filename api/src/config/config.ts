@@ -1,3 +1,5 @@
+// FIXME
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import * as fs from "fs";
 import path from "path";
 
@@ -84,7 +86,7 @@ class Config {
 
   constructor() {
     if (!Config.config) {
-      var newConfig: configInterface = Config.readConfig();
+      const newConfig: configInterface = Config.readConfig();
       if (this.validate(newConfig)) {
         Config.config = newConfig;
       } else {
@@ -126,8 +128,8 @@ class Config {
 
   // validate config
   private validate(newConfig: configInterface): boolean {
-    var newKeys = Object.keys(newConfig).sort();
-    var defaultKeys = Object.keys(defaultConfig).sort();
+    const newKeys = Object.keys(newConfig).sort();
+    const defaultKeys = Object.keys(defaultConfig).sort();
     return JSON.stringify(newKeys) === JSON.stringify(defaultKeys);
   }
 }

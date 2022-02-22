@@ -1,12 +1,10 @@
-import { Connection, createConnection } from "typeorm";
+import { createConnection } from "typeorm";
 
 import config from "../config/config";
 
-export var dbConn: Connection;
-
-export const createConn = async (): Promise<void> => {
+export const createConn = async () => {
   try {
-    dbConn = await createConnection({
+    await createConnection({
       type: "postgres",
       host: config.get().databaseConfig.host,
       port: config.get().databaseConfig.port,
@@ -14,7 +12,7 @@ export const createConn = async (): Promise<void> => {
       password: config.get().databaseConfig.password,
       database: config.get().databaseConfig.database,
       synchronize: true,
-      logging: true,
+      logging: false,
       entities: [__dirname + "/../models/*.ts"],
     });
     console.log("Connected to database");

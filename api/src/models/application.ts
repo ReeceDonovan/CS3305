@@ -1,16 +1,16 @@
-import {
-  Column,
-  Entity as OrmEntity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany
-} from "typeorm";
-import { dbConn } from "./database";
+import { Expose } from "class-transformer";
+import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
+
 import Entity from "./entity";
 import Review, { ReviewStatus } from "./review";
-import User from "./user";
+import UsersApplications from "./usersApplications";
 
+export enum AppStatus {
+  Draft,
+  Review,
+  Approved,
+  Rejected,
+}
 
 @OrmEntity("applications")
 export default class Application extends Entity {
@@ -24,65 +24,35 @@ export default class Application extends Entity {
 
   @Column({ type: "text", nullable: true })
   description: string;
-  
+
   @Column({ type: "text", nullable: true })
   status: ReviewStatus;
 
   @Column({ type: "text", nullable: true })
   field: string;
 
-  @ManyToOne(() => User, (user) => user.applications)
-  // @JoinTable()
-  submitter: User;
+  @Expose({ name: "user_connection" })
+  @OneToMany(
+    () => UsersApplications,
+    (usersApplications) => usersApplications.application,
+    {
+      onDelete: "CASCADE",
+    }
+  )
+  usersApplications: UsersApplications[];
 
-  @ManyToMany(() => User, (user) => user.applications)
-  @JoinTable()
-  supervisors: User[];
-
-  @ManyToMany(() => User, (user) => user.applications)
-  @JoinTable()
-  coauthors: User[];
-
-  @ManyToMany(() => User, (user) => user.reviewerApplications)
-  @JoinTable()
-  reviewers: User[];
-
-  @OneToMany(() => Review, (review) => review.application)
-  // @JoinTable()
+  @OneToMany(() => Review, (review) => review.application, {
+    onDelete: "CASCADE",
+  })
   reviews: Review[];
 
-  static async getById(id: number, relations: string[] = []) {
-    const resp = await dbConn.getRepository(Application).findOne({
-      where: { id },
-      relations,
-    });
-    console.log(resp);
-    return resp;
-  }
+  @Column({ type: "bool" })
+  hasFile: boolean;
 
-  static async getByName(name: string) {
-    return await dbConn.getRepository(Application).findOne({ name });
-  }
-
-  static async getByField(field: string) {
-    return await dbConn.getRepository(Application).find({ field });
-  }
-
-  async addReview(review: Review) {
-    console.log("addReview");
-    // if (review.reviewer?.id) {
-    //   if (this.reviewers) {
-    //     this.reviewers.push(review.reviewer);
-    //   } else {
-    //     this.reviewers = [review.reviewer];
-    //   }
-    //   review.reviewer.save();
-    // }
-
-    await review.save();
-    this.reviews = this.reviews ? [...this.reviews, review] : [review];
-    await this.save();
-
-    console.log("got to end");
-  }
+  @Column({
+    type: "enum",
+    enum: AppStatus,
+    default: AppStatus.Draft,
+  })
+  app_status: AppStatus;
 }

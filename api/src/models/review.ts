@@ -1,21 +1,14 @@
-import {
-  Column,
-  Entity as OrmEntity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-} from "typeorm";
+import { Column, Entity as OrmEntity, JoinColumn, ManyToOne } from "typeorm";
 
 import Application from "./application";
-import { dbConn } from "./database";
 import Entity from "./entity";
 import User from "./user";
+import { IsEnum } from "class-validator";
 
 export enum ReviewStatus {
   APPROVED = "APPROVED",
-  INREVIEW = "INREVIEW",
   PENDING = "PENDING",
-  DECLINED = "DECLINED",
+  DECLINED = "REJECTED",
 }
 
 @OrmEntity("reviews")
@@ -28,54 +21,15 @@ export default class Review extends Entity {
   @Column({ type: "text", nullable: true })
   comment: string;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "enum", enum: ReviewStatus, default: ReviewStatus.PENDING })
+  @IsEnum(ReviewStatus)
   status: ReviewStatus;
 
-  @ManyToOne((_type) => Application, (application) => application.reviews)
-  // @JoinTable()
+  @ManyToOne(() => Application, (application) => application.reviews)
+  @JoinColumn({ name: "application_id" })
   application: Application;
 
-  @ManyToMany((_type) => User, (user) => user.reviews)
-  @JoinTable()
-  reviewer: User;
-
-  static async findById(id: string) {
-    return await dbConn.getRepository(Review).findOne(id);
-  }
-
-  static async findByApplication(application: Application) {
-    return await dbConn.getRepository(Review).find({ application });
-  }
-
-  static async findByReviewer(reviewer: User) {
-    return await dbConn.getRepository(Review).find({ reviewer });
-  }
-
-  static async findByStatus(status: ReviewStatus) {
-    return await dbConn.getRepository(Review).find({ status });
-  }
-}
-
-export async function createReviewers() {
-  let i = 0;
-  for await (const reviewer of await dbConn
-    .getRepository(User)
-    .find({ where: { type: "REVIEWER" } })) {
-    if (reviewer.reviews.length > 0) continue;
-
-    const applications = dbConn
-      .getRepository(Application)
-      .find({ relations: ["reviewers"] });
-    const application: Application = await applications[
-      i++ % (await applications).length
-    ];
-
-    const review = new Review({
-      status: ReviewStatus.PENDING,
-      application: application,
-      reviewer: reviewer,
-    });
-
-    await dbConn.getRepository(Review).save(review);
-  }
+  @ManyToOne(() => User, (user) => user.reviews)
+  @JoinColumn({ name: "user_id" })
+  user: User;
 }
