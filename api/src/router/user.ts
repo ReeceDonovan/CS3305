@@ -110,7 +110,7 @@ const getReviewers = async (
               orderBy: {
                 createdAt: "DESC",
               },
-              take: 1,
+              take: 2,
             },
           },
         });

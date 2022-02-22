@@ -43,7 +43,7 @@ export default class User extends Entity {
   @Expose({ name: "app_connection" })
   @OneToMany(
     () => UsersApplications,
-    (usersApplications) => usersApplications.application
+    (usersApplications) => usersApplications.user
   )
   usersApplications: UsersApplications[];
 

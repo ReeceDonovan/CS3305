@@ -1,5 +1,5 @@
 import { Login32, Save32 } from "@carbon/icons-react";
-import { Button, Dropdown, Form, TextInput } from "carbon-components-react";
+import { Button, Form, TextInput } from "carbon-components-react";
 import type { NextPage } from "next";
 import React, { useEffect, useState, useContext } from "react";
 import * as api from "../api";
@@ -12,27 +12,30 @@ const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
     (async () => {
-      const [res, err_code] = await nm_ctx.request({
-        path: "/users",
-        method: "GET",
-      });
+      if (loading) {
+        const [res] = await nm_ctx.request({
+          path: "/users",
+          method: "GET",
+        });
 
-      if (res.status == 200) {
-        const user = res.data as User;
+        if (res.status == 200) {
+          const user = res.data as User;
 
-        setEmail(user.email || "");
-        setName(user.name || "");
-        setBio(user.bio || "");
-        setSchool(user.school || "");
-      } else {
+          setEmail(user.email || "");
+          setName(user.name || "");
+          setBio(user.bio || "");
+          setSchool(user.school || "");
+        }
+        setLoading(false);
       }
     })();
-  }, []);
+  }, [loading, nm_ctx]);
 
   return (
     <>
@@ -44,12 +47,6 @@ const AccountPage: NextPage = () => {
         >
           {email}
         </h1>
-        <TextInput
-          value={email}
-          id="email"
-          labelText="Email"
-          className={styles.formElements}
-        />
         <TextInput
           className={styles.formElements}
           id="name"
@@ -101,21 +98,12 @@ const AccountPage: NextPage = () => {
             disabled={!name && !bio && !school}
             onClick={(e) => {
               e.preventDefault();
-              nm_ctx
-                .request({
-                  method: "PATCH",
-                  path: "/users",
-                  data: { name: name, bio: bio, school: school },
-                  show_progress: true,
-                })
-                .then((res) => {
-                  if (res[0].status == 200) {
-                    // FIXME: These functions literally dont exist!?
-                    // setSubmit_success(3);
-                  } else {
-                    // setSubmit_success(2);
-                  }
-                });
+              nm_ctx.request({
+                method: "PATCH",
+                path: "/users",
+                data: { name: name, bio: bio, school: school },
+                show_progress: true,
+              });
             }}
             renderIcon={Save32}
           >

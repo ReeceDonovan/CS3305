@@ -2,7 +2,6 @@ import {
   Button,
   Dropdown,
   Form,
-  ModalWrapper,
   SkeletonPlaceholder,
   Tab,
   Tabs,
@@ -18,13 +17,18 @@ import styles from "../../styles/application.module.css";
 
 import type { NextPage } from "next";
 import { Review, User } from "../../api/types";
-import { Chat16 } from "@carbon/icons-react";
-import Link from "next/link";
 import { NetworkManagerContext } from "../../components/NetworkManager";
+import {
+  Checkmark16,
+  Checkmark24,
+  Close16,
+  Close24,
+} from "@carbon/icons-react";
 
 const ApplicationPage: NextPage = () => {
-  const [user, setUser] = useState<User>();
   const router = useRouter();
+
+  const [user, setUser] = useState<User>();
   const [application, setApplication] = useState<any>();
   const [pdf, setPDF] = useState<ArrayBuffer>();
 
@@ -33,17 +37,16 @@ const ApplicationPage: NextPage = () => {
   const [supervisors, setSupervisors] = useState("");
   const [description, setDescription] = useState("");
 
-  const [copyStatus, setCopyStatus] = useState("");
-
   const [reviews, setReviews] = useState<Review[]>([]);
   const [comment, setComment] = useState("");
 
   const [reviewStatus, setReviewStatus] = useState("");
-  const [statusErrMsg, setstatusErrMsg] = useState("");
 
   const [isLoading, setIsLoading] = useState(true);
 
   const nm_ctx = useContext(NetworkManagerContext);
+
+  const commentRef = React.useRef<HTMLTextAreaElement>();
 
   useEffect(() => {
     (async () => {
@@ -78,14 +81,14 @@ const ApplicationPage: NextPage = () => {
           api.fetchPDF(slug).then((response) => {
             setPDF(response);
           });
+          setIsLoading(false);
         }
       }
-
-      setIsLoading(false);
     })();
   }, [isLoading, nm_ctx, router.query.slug]);
 
   const sendReview = async () => {
+    console.log("sending review");
     if (reviewStatus && reviewStatus !== "" && comment && comment !== "") {
       try {
         console.log(application.id);
@@ -100,7 +103,12 @@ const ApplicationPage: NextPage = () => {
 
         if (resp.status == 201) {
           console.log("Success");
-          window.location.reload();
+          setReviews([...reviews, resp.data]);
+          setComment("");
+          setReviewStatus("");
+          if (commentRef.current) {
+            commentRef.current.value = "";
+          }
         }
       } catch (e) {
         console.error(e);
@@ -238,154 +246,133 @@ const ApplicationPage: NextPage = () => {
             </Form>
           </Tab>
         )}
-        <Tab href="#share" id="share" label="Share">
-          <span>
-            <p>Shareable URL (only to co-authors and supervisors):</p>
-            <br />
-            <p>
-              <Link
-                href={`/application/${application.id}`}
-              >{`/application/${application.id}`}</Link>
-            </p>
-            <br />
-            <Button
-              small
-              onClick={() => {
-                navigator.clipboard
-                  .writeText(
-                    `http://localhost:3000/application/${application.id}`
-                  )
-                  .then(() => {
-                    setCopyStatus("Copied to clipboard!");
-                  });
-              }}
-            >
-              Click to Copy
-            </Button>
-            <p>{copyStatus}</p>
-          </span>
-        </Tab>
 
-        {user?.role == "COORDINATOR" ||
-        user?.email == application.submitter?.email ||
-        user?.role == "REVIEWER" ? (
+        {user?.role == "COORDINATOR" || user?.role == "REVIEWER" ? (
           <Tab href="#review" id="review" label="Review">
-            {application.reviews.map((review: Review, i: Number) =>
-              review.comment ? (
-                <Tile className={styles.reviewTile}>
-                  {i == 0 ? (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        fontSize: "1.5rem",
-                      }}
-                    >
-                      <h2>Application submitted</h2>
-                    </div>
-                  ) : (
-                    <>
-                      <div>{review.comment ? review.comment : ""}</div>
-                      <div>
-                        {review.reviewer
-                          ? review.reviewer?.name
-                            ? review.reviewer.name
-                            : review.reviewer.email
-                          : "No data"}
-                      </div>
-                    </>
-                  )}
-                </Tile>
-              ) : (
-                <h3 style={{ textAlign: "center" }}>
-                  Added {review.status} status
-                </h3>
-              )
-            )}
-            <div className={styles.reviewControls}>
-              <ModalWrapper
-                shouldSubmitOnEnter={false}
-                handleSubmit={(): boolean => {
-                  nm_ctx
-                    .request({
-                      path: `/reviews/${application.id}`,
-                      method: "POST",
-                      data: {
-                        comment: comment,
-                      },
-                    })
-                    .then(([_, err_code]) => {
-                      if (err_code == 0) {
-                        setComment("");
-                      }
-                    });
-                  return true;
+            {reviews?.map((review: Review) => (
+              <Tile
+                style={{
+                  padding: "2rem",
+                  margin: "2rem",
                 }}
-                onSubmit={async (_e) => {
-                  const [res, err_code] = await nm_ctx.request({
-                    path: `/review/${application.id}`,
-                    method: "POST",
-                    data: {
-                      comment: comment,
-                    },
-                  });
-                  if (err_code === 0) {
-                    setComment("");
-                    setReviews([...reviews, res.data]);
-                  }
-                }}
-                buttonTriggerText="Add Comment"
-                renderTriggerButtonIcon={Chat16}
-                triggerButtonIconDescription="Add Comment"
-                modalHeading="Add Comment"
-                modalLabel="Add Comment"
+                key={review.id}
               >
-                <div style={{ maxHeight: "60vh" }}>
-                  <TextArea
-                    labelText="Add Comment"
-                    onChange={(e) => setComment(e.target.value)}
-                  />
-                </div>
-              </ModalWrapper>
-              <ModalWrapper
-                shouldSubmitOnEnter={false}
-                handleSubmit={(): boolean => {
-                  if (reviewStatus === "") {
-                    setstatusErrMsg("Please select a status");
-                    return false;
-                  }
-
-                  nm_ctx.request({
-                    path: `/reviews/${application.id}`,
-                    method: "POST",
-                    data: {
-                      status: reviewStatus,
-                    },
-                  });
-                  return true;
-                }}
-              >
-                <Dropdown
-                  label="Status"
-                  items={["Pending", "In Review", "Accepted", "Rejected"]}
-                  id={""}
-                  onChange={(e) =>
-                    setReviewStatus(e.selectedItem ? e.selectedItem : "")
-                  }
+                <div
                   style={{
-                    paddingBottom: "160px",
-                  }}
-                />
-                {statusErrMsg && <div>{statusErrMsg}</div>}
-                <Button
-                  onClick={(_e) => {
-                    (async () => {
-                      await sendReview();
-                    })();
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  Submit
-                </Button>
-              </ModalWrapper>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#fffa",
+                      }}
+                    >
+                      {review.user?.name
+                        ? review.user.name
+                        : review.user?.email}
+                    </span>
+                    <span>
+                      {review.status === "APPROVED" ? (
+                        <Checkmark24 />
+                      ) : review.status === "REJECTED" ? (
+                        <Close24 />
+                      ) : (
+                        <></>
+                      )}
+                    </span>
+                  </div>
+
+                  <p style={{ whiteSpace: "pre-wrap" }}>{review.comment}</p>
+                </div>
+              </Tile>
+            ))}
+
+            <TextArea
+              style={{
+                width: "calc(100% - 4rem)",
+                margin: "auto",
+              }}
+              // @ts-expect-error
+              // react moment
+              ref={commentRef}
+              rows={12}
+              labelText="Review Comment"
+              helperText="Summary of thoughts that motivated your review choice"
+              onChange={(e) => setComment(e.target.value)}
+            />
+
+            <div
+              style={{
+                marginTop: "3em",
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                paddingBottom: "150px",
+              }}
+            >
+              <Dropdown
+                style={{
+                  width: "200px",
+                  margin: "0px 50px",
+                }}
+                id="review-status"
+                items={[
+                  { id: "option-1", text: "APPROVED", icon: Checkmark16 },
+                  { id: "option-2", text: "REJECTED", icon: Close16 },
+                ]}
+                itemToString={(item) => (item ? item.text : "")}
+                itemToElement={(item) => (
+                  <>
+                    {React.createElement(item.icon)}
+                    <span
+                      style={{
+                        paddingLeft: "1rem",
+                        paddingBottom: "1rem",
+                      }}
+                    >
+                      {item.text}
+                    </span>
+                  </>
+                )}
+                // @ts-expect-error
+                renderSelectedItem={(item) => (
+                  <>
+                    {React.createElement(item.icon)}
+                    <span
+                      style={{
+                        paddingLeft: "1rem",
+                        paddingBottom: "1rem",
+                      }}
+                    >
+                      {item.text}
+                    </span>
+                  </>
+                )}
+                label={"Status"}
+                onChange={(e) => {
+                  if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                }}
+              />
+
+              <Button
+                style={{
+                  margin: "0px 50px",
+                }}
+                onClick={() => sendReview()}
+              >
+                Submit Review
+              </Button>
             </div>
           </Tab>
         ) : null}
