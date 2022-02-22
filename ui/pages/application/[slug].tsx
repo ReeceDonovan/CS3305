@@ -131,8 +131,6 @@ const ApplicationPage: NextPage = () => {
     }
   }
 
-  console.log(application);
-
   return (
     <>
       <Tabs
@@ -444,28 +442,28 @@ const ApplicationPage: NextPage = () => {
               </Tile>
             ))}
 
-            {application.status == 0 ? (
+            {application.app_status == 0 ? (
               <>
                 <h1>This Application is still in draft mode</h1>
                 <p>Please wait for the application to be submitted before assigning it for review.</p>
               </>
             ) : null}
 
-            {application.status == 1 ? (
+            {application.app_status == 1 ? (
               <>
                 <h1>Needs Reviewers Assigned</h1>
                 <p>Please assign reviewers to this application.</p>
               </>
             ) : null}
 
-            {application.status == 2 ? (
+            {application.app_status == 2 ? (
               <>
                 <h1>Being Reviewed</h1>
                 <p>This application is currently under review.</p>
               </>
             ) : null}
 
-            {application.status == 3 ? (
+            {application.app_status == 3 ? (
               <>
                 <h1>Pending Outcome</h1>
                 <p>Please Accept or Reject this application based on the reviews.</p>
