@@ -17,7 +17,7 @@ const reviewer_routes = [
   "/reviews/:id",
 ];
 
-const coordinator_routes = ["/admin", "/settings", "/admin/settings", "/users/reviewers"];
+const coordinator_routes = ["/admin", "/settings", "/admin/settings", "/admin/users", "/users/reviewers"];
 
 export const protectedRoute = (
   req: Request,

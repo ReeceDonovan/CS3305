@@ -10,8 +10,8 @@ import appRouter from "./router/application";
 import aboutRouter from "./router/landingPage";
 import loginRouter from "./router/login";
 import reviewRouter from "./router/reviews";
-import settingsRouter from "./router/settings";
 import userRouter from "./router/user";
+import adminRouter from "./router/admin";
 
 const PORT = 8000;
 
@@ -29,7 +29,7 @@ const createApp = (): Express => {
 
   app.use("/login", loginRouter);
   app.use("/about", aboutRouter);
-  app.use("/admin", settingsRouter);
+  app.use("/admin", adminRouter);
 
   app.use("/users", userRouter);
   app.use("/applications", appRouter);
