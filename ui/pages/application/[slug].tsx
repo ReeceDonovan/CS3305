@@ -23,7 +23,6 @@ import {
   Checkmark24,
   Close16,
   Close24,
-  RotateCounterclockwise16,
 } from "@carbon/icons-react";
 
 const ApplicationPage: NextPage = () => {
