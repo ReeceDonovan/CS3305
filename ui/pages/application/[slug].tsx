@@ -120,6 +120,16 @@ const ApplicationPage: NextPage = () => {
     return <div>Loading...</div>;
   }
 
+  let submitterEmail = "";
+  let reviewers = [];
+  for(const useridx in application.user_connection){
+    if(application.user_connection[useridx].role == "SUBMITTER"){
+      submitterEmail = application.user_connection[useridx].user.email;
+    }else if(application.user_connection[useridx].role == "REVIEWER"){
+      reviewers.push(application.user_connection[useridx].user.email);
+    }
+  }
+
   return (
     <>
       <Tabs
@@ -129,6 +139,7 @@ const ApplicationPage: NextPage = () => {
         type="container"
         scrollIntoView={false}
       >
+        {/* View Tab */}
         <Tab href="#view" id="view" label="View">
           <div>
             {application && (
@@ -204,7 +215,8 @@ const ApplicationPage: NextPage = () => {
           )}
         </Tab>
 
-        {user?.email == application.submitter?.email && (
+        {/* Edit Tab */}
+        {user?.email == submitterEmail && (
           <Tab href="#edit" id="edit" label="Edit">
             <Form
               className={styles.edit}
@@ -247,7 +259,8 @@ const ApplicationPage: NextPage = () => {
           </Tab>
         )}
 
-        {user?.role == "COORDINATOR" || user?.role == "REVIEWER" ? (
+        {/* Reviewer Tab */}
+        { user?.role == "REVIEWER" && reviewers.includes(user?.email) ? (
           <Tab href="#review" id="review" label="Review">
             {reviews?.map((review: Review) => (
               <Tile
@@ -376,6 +389,213 @@ const ApplicationPage: NextPage = () => {
             </div>
           </Tab>
         ) : null}
+        
+        {/* Coordinator Tab */}
+        {user?.role == "COORDINATOR" ? (
+          <Tab href="#coordinator" id="coordinator" label="Coordinator">
+            {reviews?.map((review: Review) => (
+              <Tile
+                style={{
+                  padding: "2rem",
+                  margin: "2rem",
+                }}
+                key={review.id}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#fffa",
+                      }}
+                    >
+                      {review.user?.name
+                        ? review.user.name
+                        : review.user?.email}
+                    </span>
+                    <span>
+                      {review.status === "APPROVED" ? (
+                        <Checkmark24 />
+                      ) : review.status === "REJECTED" ? (
+                        <Close24 />
+                      ) : (
+                        <></>
+                      )}
+                    </span>
+                  </div>
+
+                  <p style={{ whiteSpace: "pre-wrap" }}>{review.comment}</p>
+                </div>
+              </Tile>
+            ))}
+
+            {application.app_status == "DRAFT" ? (
+              <>
+                <h1>This Application is still in draft mode</h1>
+                <p>Please wait for the application to be submitted before assigning it for review.</p>
+              </>
+            ) : null}
+
+            {application.app_status == "SUBMITTED" ? (
+              <>
+                <h1>Needs Reviewers Assigned</h1>
+                <p>Please assign reviewers to this application.</p>
+                <div style={{
+                    marginTop: "3em",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingBottom: "150px",
+                  }}
+                >
+                  <Dropdown
+                    style={{
+                      width: "200px",
+                      margin: "0px 50px",
+                    }}
+                    id="review-status"
+                    items={[
+                      { id: "option-1", text: "Auto-Assign Reviewers", icon: Checkmark16 },
+                      { id: "option-2", text: "Manually Assign Reviewers", icon: Close16 },
+                    ]}
+                    itemToString={(item) => (item ? item.text : "")}
+                    itemToElement={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    // @ts-expect-error
+                    renderSelectedItem={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    label={"Assign Reviewers"}
+                    onChange={(e) => {
+                      if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                    }}
+                  />
+
+                  <Button
+                    style={{
+                      margin: "0px 50px",
+                    }}
+                    onClick={() => sendReview()}
+                  >
+                    Assign
+                  </Button>
+                </div>
+              </>
+            ) : null}
+
+            {application.app_status == "REVIEWING" ? (
+              <>
+                <h1>Being Reviewed</h1>
+                <p>This application is currently under review.</p>
+              </>
+            ) : null}
+
+            {application.app_status == "PENDING" ? (
+              <>
+                <h1>Pending Outcome</h1>
+                <p>Please Accept or Reject this application based on the reviews.</p>
+                  <div style={{
+                    marginTop: "3em",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingBottom: "150px",
+                  }}
+                  >
+                  <Dropdown
+                    style={{
+                      width: "200px",
+                      margin: "0px 50px",
+                    }}
+                    id="review-status"
+                    items={[
+                      { id: "option-1", text: "ACCEPT", icon: Checkmark16 },
+                      { id: "option-2", text: "REJECT", icon: Close16 },
+                    ]}
+                    itemToString={(item) => (item ? item.text : "")}
+                    itemToElement={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    // @ts-expect-error
+                    renderSelectedItem={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    label={"Status"}
+                    onChange={(e) => {
+                      if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                    }}
+                  />
+
+                  <Button
+                    style={{
+                      margin: "0px 50px",
+                    }}
+                    onClick={() => sendReview()}
+                  >
+                    Submit Review
+                  </Button>
+                </div>
+              </>
+            ) : null}
+
+          </Tab>
+        ) : null}
+
       </Tabs>
     </>
   );

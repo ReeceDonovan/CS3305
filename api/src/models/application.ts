@@ -1,4 +1,5 @@
 import { Expose } from "class-transformer";
+import { IsEnum } from "class-validator";
 import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
 
 import Entity from "./entity";
@@ -6,10 +7,11 @@ import Review, { ReviewStatus } from "./review";
 import UsersApplications from "./usersApplications";
 
 export enum AppStatus {
-  Draft,
-  Review,
-  Approved,
-  Rejected,
+  DRAFT = "DRAFT",
+  SUBMITTED = "SUBMITTED",
+  REVIEW = "REVIEW",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
 }
 
 @OrmEntity("applications")
@@ -50,9 +52,9 @@ export default class Application extends Entity {
   hasFile: boolean;
 
   @Column({
-    type: "enum",
-    enum: AppStatus,
-    default: AppStatus.Draft,
+    type: "text",
+    default: AppStatus.DRAFT,
   })
+  @IsEnum(AppStatus)
   app_status: AppStatus;
 }
