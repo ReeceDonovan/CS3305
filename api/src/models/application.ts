@@ -1,4 +1,4 @@
-import { Expose } from "class-transformer";
+import { Exclude, Expose } from "class-transformer";
 import { IsEnum } from "class-validator";
 import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
 
@@ -33,7 +33,15 @@ export default class Application extends Entity {
   @Column({ type: "text", nullable: true })
   field: string;
 
-  @Expose({ name: "user_connection" })
+  @Expose({ name: "users" })
+  get users() {
+    return this.usersApplications?.map((userConnection) => ({
+      ...userConnection.user,
+      application_role: userConnection.role,
+    }));
+  }
+
+  @Exclude()
   @OneToMany(
     () => UsersApplications,
     (usersApplications) => usersApplications.application,
@@ -54,7 +62,8 @@ export default class Application extends Entity {
   @Column({
     type: "text",
     default: AppStatus.DRAFT,
+    name: "app_status",
   })
   @IsEnum(AppStatus)
-  app_status: AppStatus;
+  appStatus: AppStatus;
 }

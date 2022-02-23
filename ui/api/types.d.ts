@@ -1,49 +1,36 @@
 import { FileStatus } from "carbon-components-react/lib/components/FileUploader/shared";
 
-export interface User {
+export interface BaseEntity {
   id: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface User extends BaseEntity {
   role: string;
   email: string;
   name?: string;
   bio?: string;
   school?: string;
   avatar?: string;
-  appConnection?: UsersApplications[];
+  applications?: Application[];
+  applicationRole?: string;
   reviews?: Review[];
 }
 
-export interface FileRef{
-  name: string;
-  status: FileStatus;
-}
-
-export enum AppStatus{
-  Draft,
-  Review,
-  Approval,
-  Rejection
-}
-
-export interface Application {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
+export interface Application extends BaseEntity {
   name: string;
   description?: string;
   status?: string;
   field?: string;
-  userConnection?: UsersApplications[];
-  reviews?: Review[];
   hasFile?: boolean;
   appStatus: AppStatus;
+  users?: User[];
+  applicationRole?: string;
+  reviews?: Review[];
 }
 
-export interface UsersApplications {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
+export interface UsersApplications extends BaseEntity {
   role: string;
   userId?: number;
   applicationId?: number;
@@ -51,17 +38,25 @@ export interface UsersApplications {
   application?: Application;
 }
 
-export interface Review {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
+export interface Review extends BaseEntity {
   comment?: string;
   status: string;
-  applicationId?: number;
-  userId?: number;
+  application_id?: number;
   application?: Application;
-  reviewer: User;
+  user_id?: number;
   user?: User;
+}
+
+export interface FileRef {
+  name: string;
+  status: FileStatus;
+}
+
+export enum AppStatus {
+  Draft,
+  Review,
+  Approval,
+  Rejection,
 }
 
 export interface configInterface {

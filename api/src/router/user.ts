@@ -39,16 +39,20 @@ const getUser = async (
   }
 };
 
-const getCurrentUser = (
+const getCurrentUser = async (
   _: express.Request,
   res: express.Response,
   next: express.NextFunction
 ) => {
   try {
+    const user = await User.findOne(res.locals.user.id, {
+      relations: ["usersApplications", "usersApplications.application"],
+    });
+
     res.json({
       status: 200,
       message: "Successfully fetched users",
-      data: res.locals.user,
+      data: user,
     });
   } catch (err) {
     next(err);
