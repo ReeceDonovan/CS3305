@@ -16,6 +16,7 @@ import CoordinatorPermissionRow from "../../components/coordinator/CoordinatorPe
 import { NetworkManagerContext } from "../../components/NetworkManager";
 
 import styles from "../../styles/permissions.module.css";
+import style from "../../styles/index.module.css";
 
 const DescriptionTable = () => {
   return (
@@ -123,67 +124,70 @@ const PermissionsPage: NextPage = () => {
 
   return (
     <>
-      <DataTable
-        // isSortable
-        useZebraStyles
-        rows={rows}
-        headers={headers}
-      >
-        {({
-          // @ts-expect-error
-          rows,
-          // @ts-expect-error
-          headers,
-          // @ts-expect-error
-          getTableProps,
-          // @ts-expect-error
-          getHeaderProps,
-          // @ts-expect-error
-          getRowProps,
-          // @ts-expect-error
-          onInputChange
-        }) => (
-          <TableContainer
-            title={"Users Permissions"}
-            description={<DescriptionTable />}
-          >
-            <TableToolbarContent>
-              <TableToolbar aria-label="data table toolbar">
-                <TableToolbarContent>
-                  <TableToolbarSearch onChange={onInputChange} />
-                </TableToolbarContent>
-              </TableToolbar>
-            </TableToolbarContent>
-            <Table {...getTableProps()}>
-              <TableHead>
-                <TableRow>
-                  {headers.map(
+      <div className={style.panel}>
+        <DataTable
+          // isSortable
+          useZebraStyles
+          rows={rows}
+          headers={headers}
+        >
+          {({
+            // @ts-expect-error
+            rows,
+            // @ts-expect-error
+            headers,
+            // @ts-expect-error
+            getTableProps,
+            // @ts-expect-error
+            getHeaderProps,
+            // @ts-expect-error
+            getRowProps,
+            // @ts-expect-error
+            onInputChange
+          }) => (
+            <TableContainer
+              title={"Users Permissions"}
+              description={<DescriptionTable />}
+            >
+              <TableToolbarContent>
+                <TableToolbar aria-label="data table toolbar">
+                  <TableToolbarContent>
+                    <TableToolbarSearch onChange={onInputChange} />
+                  </TableToolbarContent>
+                </TableToolbar>
+              </TableToolbarContent>
+              <Table {...getTableProps()}>
+                <TableHead>
+                  <TableRow>
+                    {headers.map(
+                      // @ts-expect-error
+                      (header) => (
+                        // eslint-disable-next-line react/jsx-key
+                        <TableHeader {...getHeaderProps({ header })}>
+                          {header.header}
+                        </TableHeader>
+                      )
+                    )}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map(
                     // @ts-expect-error
-                    (header) => (
+                    (row) => (
                       // eslint-disable-next-line react/jsx-key
-                      <TableHeader {...getHeaderProps({ header })}>
-                        {header.header}
-                      </TableHeader>
+                      <CoordinatorPermissionRow
+                        row={row}
+                        id={row.cells[0].value}
+                        key={row.cells[0].value}
+                      />
                     )
                   )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map(
-                  // @ts-expect-error
-                  (row) => (
-                    // eslint-disable-next-line react/jsx-key
-                    <CoordinatorPermissionRow
-                      row={row}
-                      id={row.cells[0].value}
-                    />
-                  )
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </DataTable>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DataTable>
+      </div>
     </>
   );
 };
