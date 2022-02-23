@@ -1,8 +1,75 @@
-import { DataTable, TableContainer, TableToolbarContent, TableToolbar, Table, TableHead, TableRow, TableHeader, TableBody } from "carbon-components-react";
+import {
+  DataTable,
+  TableContainer,
+  TableToolbarContent,
+  TableToolbar,
+  Table,
+  TableHead,
+  TableRow,
+  TableHeader,
+  TableBody,
+} from "carbon-components-react";
 import type { NextPage } from "next";
 import React, { useEffect, useContext, useState } from "react";
 import CoordinatorPermissionRow from "../../components/coordinator/CoordinatorPermissionRow";
 import { NetworkManagerContext } from "../../components/NetworkManager";
+
+import styles from "../../styles/permissions.module.css";
+
+const DescriptionTable = () => {
+  return (
+    <table className={styles.descriptiontable}>
+      <tbody>
+        <tr>
+          <td>
+            <strong>Researcher</strong>
+          </td>
+          <td>
+            <p>
+              Researchers can create new applications, view those applications,
+              and edit their own applications.
+            </p>
+            <p>
+              If they are marked as a coauthor or supervisor on an application,
+              they can also view and edit that application.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Reviewer</strong>
+          </td>
+          <td>
+            <p>
+              Reviewers can do all of the above with additional new features.
+            </p>
+            <p>
+              Reviewers are also apart of the review board, which is responsible
+              for reviewing new applications made by researchers.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Coordinator</strong>
+          </td>
+          <td>
+            <p>
+              Coordinators can do all of the above with additional new features.
+            </p>
+            <p>
+              Coordinators have the highest permission within the system. 
+            </p>
+            <p>
+              They are capable of using administrative-level features such as system settings,
+              changing others&apos; permissions, assigning reviewers etc.
+            </p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+};
 
 const PermissionsPage: NextPage = () => {
   const [rows, setRows] = useState([]);
@@ -16,39 +83,38 @@ const PermissionsPage: NextPage = () => {
       });
 
       if (res.status == 200) {
-        console.log(res)
-        setRows(res.data)
+        console.log(res);
+        setRows(res.data);
       }
     })();
   }, [nm_ctx]);
 
-  
   const headers = [
-      {
-        key: "id",
-        header: "ID",
-      },
-      {
-        key: "avatar",
-        header: "Avatar",
-      },
-      {
-        key: "school",
-        header: "School",
-      },
-      {
-        key: "name",
-        header: "Name",
-      },
-      {
-        key: "email",
-        header: "Email",
-      },
-      {
-        key: "role",
-        header: "Role",
-      },
-    ]
+    {
+      key: "id",
+      header: "ID",
+    },
+    {
+      key: "avatar",
+      header: "Avatar",
+    },
+    {
+      key: "school",
+      header: "School",
+    },
+    {
+      key: "name",
+      header: "Name",
+    },
+    {
+      key: "email",
+      header: "Email",
+    },
+    {
+      key: "role",
+      header: "Role",
+    },
+  ];
 
   return (
     <>
@@ -70,13 +136,10 @@ const PermissionsPage: NextPage = () => {
           // @ts-expect-error
           getRowProps,
         }) => (
-          <TableContainer title={"Users Permissions"} description={<div><p>You can select new users permissions, to promote/users to Researcher, Reviewer and Coordinator status.</p>
-          <p><b>Researcher:</b></p>
-          <p>Researchers can create new applications, view applications, and edit their own applications.</p>
-          <p><b>Reviewer:</b></p>
-          <p>Reviewers can do all of the above with additional new features. Reviewers are also apart of the review board; Which is responsible for reviewing any new applications made by researchers.</p>
-          <p><b>Coordinator:</b></p>
-          <p>Coordinators can do all of the above with additional new features. Coordinators are the highet permission within the system. They are capable of using administrative level features such as settings, changing other permissions, assigning reviewers etc.</p></div>}>
+          <TableContainer
+            title={"Users Permissions"}
+            description={<DescriptionTable />}
+          >
             <TableToolbarContent>
               <TableToolbar aria-label="data table toolbar"></TableToolbar>
             </TableToolbarContent>
@@ -99,7 +162,10 @@ const PermissionsPage: NextPage = () => {
                   // @ts-expect-error
                   (row) => (
                     // eslint-disable-next-line react/jsx-key
-                    <CoordinatorPermissionRow row={row} id={row.cells[0].value} />
+                    <CoordinatorPermissionRow
+                      row={row}
+                      id={row.cells[0].value}
+                    />
                   )
                 )}
               </TableBody>

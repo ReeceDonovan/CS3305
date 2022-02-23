@@ -1,0 +1,19 @@
+.descriptiontable {
+    margin: 1em;
+}
+
+.descriptiontable tr:nth-child(odd) {
+    background-color: #333;
+}
+
+.descriptiontable td:first-child {
+    font-size: 1.2em;
+}
+
+.descriptiontable td {
+    padding: 0.5em 1em;
+}
+
+.descriptiontable p {
+    margin: 0.6em 1em;
+}
