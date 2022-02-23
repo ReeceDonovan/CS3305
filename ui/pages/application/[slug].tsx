@@ -453,6 +453,68 @@ const ApplicationPage: NextPage = () => {
               <>
                 <h1>Needs Reviewers Assigned</h1>
                 <p>Please assign reviewers to this application.</p>
+                <div style={{
+                    marginTop: "3em",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingBottom: "150px",
+                  }}
+                >
+                  <Dropdown
+                    style={{
+                      width: "200px",
+                      margin: "0px 50px",
+                    }}
+                    id="review-status"
+                    items={[
+                      { id: "option-1", text: "Auto-Assign Reviewers", icon: Checkmark16 },
+                      { id: "option-2", text: "Manually Assign Reviewers", icon: Close16 },
+                    ]}
+                    itemToString={(item) => (item ? item.text : "")}
+                    itemToElement={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    // @ts-expect-error
+                    renderSelectedItem={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    label={"Assign Reviewers"}
+                    onChange={(e) => {
+                      if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                    }}
+                  />
+
+                  <Button
+                    style={{
+                      margin: "0px 50px",
+                    }}
+                    onClick={() => sendReview()}
+                  >
+                    Assign
+                  </Button>
+                </div>
               </>
             ) : null}
 
@@ -467,72 +529,71 @@ const ApplicationPage: NextPage = () => {
               <>
                 <h1>Pending Outcome</h1>
                 <p>Please Accept or Reject this application based on the reviews.</p>
+                  <div style={{
+                    marginTop: "3em",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingBottom: "150px",
+                  }}
+                  >
+                  <Dropdown
+                    style={{
+                      width: "200px",
+                      margin: "0px 50px",
+                    }}
+                    id="review-status"
+                    items={[
+                      { id: "option-1", text: "ACCEPT", icon: Checkmark16 },
+                      { id: "option-2", text: "REJECT", icon: Close16 },
+                    ]}
+                    itemToString={(item) => (item ? item.text : "")}
+                    itemToElement={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    // @ts-expect-error
+                    renderSelectedItem={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    label={"Status"}
+                    onChange={(e) => {
+                      if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                    }}
+                  />
+
+                  <Button
+                    style={{
+                      margin: "0px 50px",
+                    }}
+                    onClick={() => sendReview()}
+                  >
+                    Submit Review
+                  </Button>
+                </div>
               </>
             ) : null}
 
-            <div
-              style={{
-                marginTop: "3em",
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                paddingBottom: "150px",
-              }}
-            >
-              <Dropdown
-                style={{
-                  width: "200px",
-                  margin: "0px 50px",
-                }}
-                id="review-status"
-                items={[
-                  { id: "option-1", text: "APPROVED", icon: Checkmark16 },
-                  { id: "option-2", text: "REJECTED", icon: Close16 },
-                ]}
-                itemToString={(item) => (item ? item.text : "")}
-                itemToElement={(item) => (
-                  <>
-                    {React.createElement(item.icon)}
-                    <span
-                      style={{
-                        paddingLeft: "1rem",
-                        paddingBottom: "1rem",
-                      }}
-                    >
-                      {item.text}
-                    </span>
-                  </>
-                )}
-                // @ts-expect-error
-                renderSelectedItem={(item) => (
-                  <>
-                    {React.createElement(item.icon)}
-                    <span
-                      style={{
-                        paddingLeft: "1rem",
-                        paddingBottom: "1rem",
-                      }}
-                    >
-                      {item.text}
-                    </span>
-                  </>
-                )}
-                label={"Status"}
-                onChange={(e) => {
-                  if (e.selectedItem) setReviewStatus(e.selectedItem.text);
-                }}
-              />
-
-              <Button
-                style={{
-                  margin: "0px 50px",
-                }}
-                onClick={() => sendReview()}
-              >
-                Submit Review
-              </Button>
-            </div>
           </Tab>
         ) : null}
 
