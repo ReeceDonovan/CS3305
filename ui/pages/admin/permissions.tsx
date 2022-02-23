@@ -8,6 +8,7 @@ import {
   TableRow,
   TableHeader,
   TableBody,
+  TableToolbarSearch,
 } from "carbon-components-react";
 import type { NextPage } from "next";
 import React, { useEffect, useContext, useState } from "react";
@@ -57,12 +58,11 @@ const DescriptionTable = () => {
             <p>
               Coordinators can do all of the above with additional new features.
             </p>
+            <p>Coordinators have the highest permission within the system.</p>
             <p>
-              Coordinators have the highest permission within the system. 
-            </p>
-            <p>
-              They are capable of using administrative-level features such as system settings,
-              changing others&apos; permissions, assigning reviewers etc.
+              They are capable of using administrative-level features such as
+              system settings, changing others&apos; permissions, assigning
+              reviewers etc.
             </p>
           </td>
         </tr>
@@ -73,21 +73,26 @@ const DescriptionTable = () => {
 
 const PermissionsPage: NextPage = () => {
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
     (async () => {
-      const [res, _] = await nm_ctx.request({
-        path: "/admin/users",
-        method: "GET",
-      });
+      if (loading) {
+        const [res, _] = await nm_ctx.request({
+          path: "/admin/users",
+          method: "GET",
+        });
 
-      if (res.status == 200) {
-        console.log(res);
-        setRows(res.data);
+        if (res.status == 200) {
+          console.log(res);
+          setRows(res.data);
+        }
+        setLoading(false);
       }
     })();
-  }, [nm_ctx]);
+  }, [loading, nm_ctx]);
 
   const headers = [
     {
@@ -135,13 +140,19 @@ const PermissionsPage: NextPage = () => {
           getHeaderProps,
           // @ts-expect-error
           getRowProps,
+          // @ts-expect-error
+          onInputChange
         }) => (
           <TableContainer
             title={"Users Permissions"}
             description={<DescriptionTable />}
           >
             <TableToolbarContent>
-              <TableToolbar aria-label="data table toolbar"></TableToolbar>
+              <TableToolbar aria-label="data table toolbar">
+                <TableToolbarContent>
+                  <TableToolbarSearch onChange={onInputChange} />
+                </TableToolbarContent>
+              </TableToolbar>
             </TableToolbarContent>
             <Table {...getTableProps()}>
               <TableHead>
