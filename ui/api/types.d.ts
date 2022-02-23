@@ -61,6 +61,7 @@ export interface Review {
   userId?: number;
   application?: Application;
   reviewer: User;
+  user?: User;
 }
 
 export interface configInterface {

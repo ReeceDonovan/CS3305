@@ -1,4 +1,4 @@
-import { DataTable, TableContainer, TableToolbarContent, TableToolbar, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, Link } from "carbon-components-react";
+import { DataTable, TableContainer, TableToolbarContent, TableToolbar, Table, TableHead, TableRow, TableHeader, TableBody } from "carbon-components-react";
 import type { NextPage } from "next";
 import React, { useEffect, useContext, useState } from "react";
 import CoordinatorPermissionRow from "../../components/coordinator/CoordinatorPermissionRow";
@@ -10,7 +10,7 @@ const PermissionsPage: NextPage = () => {
 
   useEffect(() => {
     (async () => {
-      const [res, err_code] = await nm_ctx.request({
+      const [res, _] = await nm_ctx.request({
         path: "/admin/users",
         method: "GET",
       });
@@ -18,10 +18,9 @@ const PermissionsPage: NextPage = () => {
       if (res.status == 200) {
         console.log(res)
         setRows(res.data)
-      } else {
       }
     })();
-  }, []);
+  }, [nm_ctx]);
 
   
   const headers = [
