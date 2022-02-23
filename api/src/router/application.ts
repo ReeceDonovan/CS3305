@@ -7,7 +7,7 @@ import { NextFunction, Request, Response, Router } from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
-import { getRepository, In, Repository } from "typeorm";
+import { getRepository, Repository } from "typeorm";
 
 import {
   BadRequestError,
@@ -15,6 +15,7 @@ import {
   NotAuthorizedError,
   NotFoundError,
 } from "../errors";
+import { InternalError } from "../errors/internal-error";
 import { protectedRoute } from "../middleware/protected-route";
 import reqUser from "../middleware/store-user";
 import Application from "../models/application";
@@ -22,7 +23,6 @@ import Review from "../models/review";
 import User, { UserType } from "../models/user";
 import UsersApplications, { RoleType } from "../models/usersApplications";
 import response from "../utils/response";
-import { InternalError } from "../errors/internal-error";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -82,12 +82,16 @@ const getApplications = async (
       }
       default: {
         const userApplications = await getRepository(UsersApplications).find({
-          where: [
-            { user, role: RoleType.COAUTHOR },
-            { user, role: RoleType.SUBMITTER },
-            { user, role: RoleType.SUPERVISOR },
+          where: {
+            user,
+            role:
+              RoleType.SUBMITTER || RoleType.COAUTHOR || RoleType.SUPERVISOR,
+          },
+          relations: [
+            "application",
+            "application.usersApplications",
+            "application.usersApplications.user",
           ],
-          relations: ["application"],
         });
 
         const applications = userApplications.map((u) => u.application);
@@ -130,7 +134,6 @@ const getApplication = async (
     if (!(await check_access(application, user)))
       throw new NotAuthorizedError();
 
-    console.log(application.usersApplications);
     res.json({
       status: 200,
       message: "Successfully retrieved application",
@@ -212,119 +215,108 @@ const updateApplication = async (
   const user = res.locals.user;
   const applicationId = req.params.id;
 
-  console.log(body);
-
-  // TODO: Add validation on the backend for email fields (and text fields if needed)
-  const coauthor_emails: string[] = body.coauthors;
-  const supervisor_emails: string[] = body.supervisors;
-
   try {
-    const application = await Application.findOne(applicationId);
+    const applicationRepository: Repository<Application> =
+      getRepository(Application);
+
+    const userRepository: Repository<User> = getRepository(User);
+
+    const userApplicationRepository: Repository<UsersApplications> =
+      getRepository(UsersApplications);
+
+    const application = await applicationRepository.findOne(applicationId);
 
     if (!application) throw new NotFoundError();
 
     if (!(await check_access(application, user)))
       throw new NotAuthorizedError();
 
-    const applicationRepository: Repository<Application> =
-      getRepository(Application);
-
-    // TODO: Test updating an application (specifically adding/removing coauthors)
-    const updatedApplication = (await applicationRepository.save({
+    const updated_application = await applicationRepository.save({
       ...application,
       ...body,
-    })) as Application;
+    });
 
-    if (coauthor_emails) {
-      const new_coauthors = await User.find({
-        where: {
-          email: In(coauthor_emails),
-        },
-      });
+    if (!updated_application) throw new InternalError();
 
-      const curr_coathors = await UsersApplications.find({
-        where: {
-          application: application,
-          role: RoleType.COAUTHOR,
-        },
-      });
+    const request_coauthor_emails: string[] = body.coauthors
+      ? body.coauthors
+      : [];
+    const request_supervisor_emails: string[] = body.supervisors
+      ? body.supervisors
+      : [];
 
-      //for loops add new user application links as new they are found to be missing
-      for (const new_user of new_coauthors) {
-        let found_flag = false;
-        for (let i = 0; i < curr_coathors.length; i++) {
-          const curr_user = curr_coathors[i];
-          if (new_user.id === curr_user.user.id) {
-            curr_coathors.splice(i, 1);
-            found_flag = true;
-            break;
-          }
-        }
+    const current_coauthors = await userApplicationRepository.find({
+      where: {
+        application: updated_application,
+        role: RoleType.COAUTHOR,
+      },
+      relations: ["user"],
+    });
 
-        if (found_flag === false) {
-          const new_link = new UsersApplications({
-            user,
-            application: updatedApplication,
-            role: RoleType.COAUTHOR,
-          });
+    const current_supervisors = await userApplicationRepository.find({
+      where: {
+        application: updated_application,
+        role: RoleType.SUPERVISOR,
+      },
+      relations: ["user"],
+    });
 
-          await new_link.save();
-        }
-      }
-
-      //left over curr_coauthors are links that no longer exist
-      for (const del_user of curr_coathors) {
-        await del_user.remove();
+    for (const coauthor of current_coauthors) {
+      if (!request_coauthor_emails.includes(coauthor.user.email)) {
+        await userApplicationRepository.remove(coauthor);
       }
     }
 
-    if (supervisor_emails) {
-      const new_supervisors = await User.find({
-        where: {
-          email: In(supervisor_emails),
-        },
-      });
-
-      const curr_supervisors = await UsersApplications.find({
-        where: {
-          application: application,
-          role: RoleType.SUPERVISOR,
-        },
-      });
-
-      //for loops add new user application links as new they are found to be missing
-      for (const new_user of new_supervisors) {
-        let found_flag = false;
-        for (let i = 0; i < curr_supervisors.length; i++) {
-          const curr_user = curr_supervisors[i];
-          if (new_user.id === curr_user.user.id) {
-            curr_supervisors.splice(i, 1);
-            found_flag = true;
-            break;
-          }
-        }
-
-        if (found_flag === false) {
-          const new_link = new UsersApplications({
-            user,
-            application: updatedApplication,
-            role: RoleType.SUPERVISOR,
-          });
-
-          await new_link.save();
-        }
-      }
-
-      //left over curr_coauthors are links that no longer exist
-      for (const del_user of curr_supervisors) {
-        await del_user.remove();
+    for (const supervisor of current_supervisors) {
+      if (!request_supervisor_emails.includes(supervisor.user.email)) {
+        await userApplicationRepository.remove(supervisor);
       }
     }
 
-    res.json({
+    for (const coauthor_email of request_coauthor_emails) {
+      const coauthor = await userRepository.findOne({
+        where: { email: coauthor_email },
+      });
+
+      if (!coauthor) throw new NotFoundError();
+
+      const coauthor_application = new UsersApplications({
+        application: updated_application,
+        user: coauthor,
+        role: RoleType.COAUTHOR,
+      });
+
+      const newRelation = await userApplicationRepository.save(
+        coauthor_application
+      );
+
+      if (!newRelation) throw new InternalError();
+    }
+
+    for (const supervisor_email of request_supervisor_emails) {
+      const supervisor = await userRepository.findOne({
+        where: { email: supervisor_email },
+      });
+
+      if (!supervisor) throw new NotFoundError();
+
+      const supervisor_application = new UsersApplications({
+        application: updated_application,
+        user: supervisor,
+        role: RoleType.SUPERVISOR,
+      });
+
+      const newRelation = await userApplicationRepository.save(
+        supervisor_application
+      );
+
+      if (!newRelation) throw new InternalError();
+    }
+
+    res.send({
       status: 200,
       message: "Successfully updated application",
-      data: updatedApplication,
+      data: updated_application,
     });
   } catch (err) {
     next(err);
@@ -335,7 +327,6 @@ const uploadFile = async (req: Request, res: Response, next: NextFunction) => {
   const file = req.file;
   const user = res.locals.user;
   const applicationId = req.params.id;
-  console.log(user);
 
   try {
     const application = await Application.findOne(applicationId);
