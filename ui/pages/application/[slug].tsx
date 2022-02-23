@@ -441,14 +441,14 @@ const ApplicationPage: NextPage = () => {
               </Tile>
             ))}
 
-            {application.app_status == 0 ? (
+            {application.app_status == "DRAFT" ? (
               <>
                 <h1>This Application is still in draft mode</h1>
                 <p>Please wait for the application to be submitted before assigning it for review.</p>
               </>
             ) : null}
 
-            {application.app_status == 1 ? (
+            {application.app_status == "SUBMITTED" ? (
               <>
                 <h1>Needs Reviewers Assigned</h1>
                 <p>Please assign reviewers to this application.</p>
@@ -517,14 +517,14 @@ const ApplicationPage: NextPage = () => {
               </>
             ) : null}
 
-            {application.app_status == 2 ? (
+            {application.app_status == "REVIEWING" ? (
               <>
                 <h1>Being Reviewed</h1>
                 <p>This application is currently under review.</p>
               </>
             ) : null}
 
-            {application.app_status == 3 ? (
+            {application.app_status == "PENDING" ? (
               <>
                 <h1>Pending Outcome</h1>
                 <p>Please Accept or Reject this application based on the reviews.</p>
