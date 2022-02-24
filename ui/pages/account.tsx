@@ -11,7 +11,6 @@ const AccountPage: NextPage = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
-  const [role, setRole] = useState("");
   const [school, setSchool] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +31,6 @@ const AccountPage: NextPage = () => {
           setName(user.name || "");
           setBio(user.bio || "");
           setSchool(user.school || "");
-          setRole(user.role || "");
         }
         setLoading(false);
       }
@@ -103,7 +101,7 @@ const AccountPage: NextPage = () => {
               nm_ctx.request({
                 method: "PATCH",
                 path: "/users",
-                data: { name: name, bio: bio, school: school, role: role },
+                data: { name: name, bio: bio, school: school },
                 show_progress: true,
               });
             }}

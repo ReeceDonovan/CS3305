@@ -1,18 +1,19 @@
-/**
- * Temporary file, until there is a better place to put this
- */
 import express from "express";
+import { NotAuthorizedError } from "../errors";
+import { UserType } from "../models/user";
 
 import config, { configInterface } from "../config/config";
 import { protectedRoute } from "../middleware/protected-route";
 import reqUser from "../middleware/store-user";
 
-const getSettings = (
+const getSettings = async (
   _: express.Request,
   res: express.Response,
   next: express.NextFunction
 ) => {
+  const user = res.locals.user;
   try {
+    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
     res.json({
       status: 200,
       message: "Success",
@@ -23,15 +24,15 @@ const getSettings = (
   }
 };
 
-const updateSettings = (
+const updateSettings = async (
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
 ) => {
-  // FIXME
-  /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
   const config_data: configInterface = req.body;
+  const user = res.locals.user;
   try {
+    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
     config.set(config_data);
     res.json({
       status: 200,
@@ -42,10 +43,11 @@ const updateSettings = (
   }
 };
 
-const settingsRouter = express.Router();
-settingsRouter.use(protectedRoute);
+const adminRouter = express.Router();
+adminRouter.use(protectedRoute);
 
-settingsRouter.get("/", reqUser, getSettings);
-settingsRouter.post("/", reqUser, updateSettings);
+adminRouter.get("/settings", reqUser, getSettings);
+adminRouter.post("/settings", reqUser, updateSettings);
 
-export default settingsRouter;
+
+export default adminRouter;
