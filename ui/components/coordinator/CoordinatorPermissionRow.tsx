@@ -9,7 +9,7 @@ interface PermissionRow {
   id: number
 }
 
-interface Cell {
+export interface Cell {
   errors: any
   id: string
   info: { header: string }
@@ -22,7 +22,7 @@ interface Cell {
 const permissionChange = async (id: number, role: string) => {
   try {
     await api.request({
-      path: `/admin/users`,
+      path: `/users/permissions`,
       method: "PATCH",
       data: {
         id: id,
@@ -36,12 +36,10 @@ const permissionChange = async (id: number, role: string) => {
   }
 };
 
-// FIXME: Switch img to Image
 const renderSwitchCell = (cell: Cell, id: number): React.ReactNode | null => {
   switch(cell.info.header) {
     case "avatar":
       return <span>
-          {/* I don't know why but next/Image doesn't work yes I know the build will fail :troll: */} 
           <img style={{height: 43, width: 43, borderRadius: "50%"}} src={cell.value} alt="avatar"/>
         </span>
     case "role":

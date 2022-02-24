@@ -159,12 +159,47 @@ const getReviewers = async (
   }
 };
 
+const getUsersPermissions = async (
+  _: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => { 
+  try {
+    const users = await User.find();
+    res.json({
+      status: 200, 
+      message: "Successfully fetched users",
+      data: users
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const changeUserPermission = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    await User.update(req.body.id, req.body.partial);
+    res.json({
+      status: 200,
+      message: "Succesfully changed user permission",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const userRouter = express.Router();
 userRouter.use(protectedRoute);
 
+userRouter.get("/permissions", reqUser, getUsersPermissions);
+userRouter.patch("/permissions", reqUser, changeUserPermission);
+userRouter.get("/reviewers", reqUser, getReviewers);
 userRouter.get("/:id", reqUser, getUser);
 userRouter.get("/", reqUser, getCurrentUser);
 userRouter.patch("/", reqUser, updateUser);
-userRouter.get("/reviewers", reqUser, getReviewers);
 
 export default userRouter;

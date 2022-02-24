@@ -17,6 +17,8 @@ import { NetworkManagerContext } from "../../components/NetworkManager";
 
 import styles from "../../styles/permissions.module.css";
 import style from "../../styles/index.module.css";
+import { User } from "../../api/types";
+import * as api from "../../api";
 
 const DescriptionTable = () => {
   return (
@@ -75,6 +77,7 @@ const DescriptionTable = () => {
 const PermissionsPage: NextPage = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User>();
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -82,7 +85,7 @@ const PermissionsPage: NextPage = () => {
     (async () => {
       if (loading) {
         const [res, _] = await nm_ctx.request({
-          path: "/admin/users",
+          path: "/users/permissions",
           method: "GET",
         });
 
@@ -90,6 +93,12 @@ const PermissionsPage: NextPage = () => {
           console.log(res);
           setRows(res.data);
         }
+
+        const user = await api.getToken();
+        if (user) {
+          setUser(user);
+        }
+
         setLoading(false);
       }
     })();
@@ -124,6 +133,7 @@ const PermissionsPage: NextPage = () => {
 
   return (
     <>
+      {user?.role !== "COORDINATOR" && !loading ? window.location.href="/" : null}
       <div className={style.panel}>
         <DataTable
           // isSortable
