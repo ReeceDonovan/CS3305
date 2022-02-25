@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
   TableToolbar,
-  TableToolbarContent
+  TableToolbarContent,
 } from "carbon-components-react";
 
 import Link from "next/link";
@@ -21,10 +21,6 @@ ApplicationTable.defaultProps = {
     {
       key: "name",
       header: "Name",
-    },
-    {
-      key: "submitter",
-      header: "Submitter",
     },
     {
       key: "field",
@@ -51,7 +47,6 @@ export default function ApplicationTable(props: {
   headers: Array<{ key: string; header: string }>;
   rows: Array<Object>;
 }) {
-
   const headerData = props.headers;
 
   return (
@@ -77,8 +72,7 @@ export default function ApplicationTable(props: {
         }) => (
           <TableContainer title={props.title} description={props.description}>
             <TableToolbarContent>
-              <TableToolbar aria-label="data table toolbar">
-              </TableToolbar>
+              <TableToolbar aria-label="data table toolbar"></TableToolbar>
             </TableToolbarContent>
             <Table {...getTableProps()}>
               <TableHead>

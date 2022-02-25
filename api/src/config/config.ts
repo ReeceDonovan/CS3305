@@ -1,3 +1,5 @@
+// FIXME
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import * as fs from "fs";
 import path from "path";
 

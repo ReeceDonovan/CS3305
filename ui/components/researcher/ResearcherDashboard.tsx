@@ -1,11 +1,16 @@
-import { Loading } from "carbon-components-react";
+import { Button, Loading } from "carbon-components-react";
 import * as api from "../../api";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ApplicationTable from "../ApplicationTable";
+import { NetworkManagerContext } from "../NetworkManager";
+import { Add16 } from "@carbon/icons-react";
 
 export default function ReviewerDataTable() {
   const [rowData, setRowdata] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // const nm_ctx =
+  useContext(NetworkManagerContext);
 
   useEffect(() => {
     (async () => {
@@ -13,8 +18,9 @@ export default function ReviewerDataTable() {
         method: "GET",
         path: "/applications",
       });
-
+      console.log(resp);
       if (resp?.data != null) {
+        console.log(resp.data);
         for (let i = 0; i < resp.data.length; i++) {
           resp.data[i].submitter = resp.data[i].submitter?.email;
           resp.data[i].updatedAt = new Date(
@@ -23,8 +29,6 @@ export default function ReviewerDataTable() {
           resp.data[i].createdAt = new Date(
             resp.data[i].createdAt
           ).toLocaleDateString();
-          resp.data[i].status =
-            resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
           console.log(resp.data[i]);
         }
 
@@ -42,11 +46,16 @@ export default function ReviewerDataTable() {
       {loading == true ? (
         <Loading />
       ) : (
-        <ApplicationTable
-          title={"My Applications"}
-          description={"Applications you've submitted"}
-          rows={rowData}
-        />
+        <>
+          <Button style={{}} renderIcon={Add16}>
+            Create new application
+          </Button>
+          <ApplicationTable
+            title={"My Applications"}
+            description={"Applications you've submitted"}
+            rows={rowData}
+          />
+        </>
       )}
     </>
   );

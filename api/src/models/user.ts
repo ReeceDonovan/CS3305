@@ -1,18 +1,10 @@
+import { Expose } from "class-transformer";
 import { IsEmail, IsEnum } from "class-validator";
-import {
-  Column,
-  Entity as OrmEntity,
-  Index,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-} from "typeorm";
+import { Column, Entity as OrmEntity, Index, OneToMany } from "typeorm";
 
-import Application from "./application";
-import { dbConn } from "./database";
 import Entity from "./entity";
 import Review from "./review";
+import UsersApplications from "./usersApplications";
 
 export enum UserType {
   RESEARCHER = "RESEARCHER",
@@ -48,30 +40,13 @@ export default class User extends Entity {
   @Column({ type: "text", nullable: true })
   avatar: string;
 
-  @ManyToMany(() => Application, (application) => application.submitter)
-  @JoinTable()
-  applications: Application[];
+  @Expose({ name: "app_connection" })
+  @OneToMany(
+    () => UsersApplications,
+    (usersApplications) => usersApplications.user
+  )
+  usersApplications: UsersApplications[];
 
-  @ManyToMany(() => Application, (application) => application.reviewers)
-  @JoinTable()
-  reviewerApplications: Application[];
-
-  @OneToMany(() => Review, (review) => review.reviewer)
-  @JoinTable()
+  @OneToMany(() => Review, (review) => review.user)
   reviews: Review[];
-
-  static async getByEmail(email: string) {
-    return await dbConn.getRepository(User).findOne({ email });
-  }
-
-  static async getById(id: number, relations: string[] = []) {
-    return await dbConn.getRepository(User).findOne({
-      where: { id },
-      relations,
-    });
-  }
-
-  static async getByType(role: UserType) {
-    return await dbConn.getRepository(User).find({ role });
-  }
 }

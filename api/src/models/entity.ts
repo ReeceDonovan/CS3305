@@ -1,3 +1,4 @@
+import { classToPlain } from "class-transformer";
 import {
   BaseEntity,
   CreateDateColumn,
@@ -7,11 +8,15 @@ import {
 
 export default abstract class Entity extends BaseEntity {
   @PrimaryGeneratedColumn("increment")
-    id: number;
+  id: number;
 
   @CreateDateColumn()
-    createdAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-    updatedAt: Date;
+  updatedAt: Date;
+
+  toJSON() {
+    return classToPlain(this);
+  }
 }

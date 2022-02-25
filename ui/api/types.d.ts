@@ -1,30 +1,60 @@
-export interface User {
-  name: string;
-  email: string;
-  bio: string;
-  field: string;
-  role: string;
-  reviews: Review[];
+import { FileStatus } from "carbon-components-react/lib/components/FileUploader/shared";
+
+export interface BaseEntity {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface Application {
-  id: number;
-  name: string;
-  description: string;
-  field: string;
-  submitter: User;
-  authors?: User[];
-  supervisors?: User[];
-  reviewers?: User[];
+export interface User extends BaseEntity {
+  role: string;
+  email: string;
+  name?: string;
+  bio?: string;
+  school?: string;
+  avatar?: string;
+  appConnection?: UsersApplications[];
   reviews?: Review[];
 }
 
-export interface Review {
-  id: number;
-  application: Application;
-  reviewer: User;
+export interface Application extends BaseEntity {
+  name: string;
+  description?: string;
+  status?: string;
+  field?: string;
+  userConnection?: UsersApplications[];
+  reviews?: Review[];
+  hasFile?: boolean;
+  appStatus: AppStatus;
+}
+
+export interface UsersApplications extends BaseEntity {
+  role: string;
+  userId?: number;
+  applicationId?: number;
+  user?: User;
+  application?: Application;
+}
+
+export interface Review extends BaseEntity{
+  comment?: string;
   status: string;
-  comment: string;
+  application_id?: number;
+  application?: Application;
+  user_id?: number;
+  user?: User;
+}
+
+export interface FileRef{
+  name: string;
+  status: FileStatus;
+}
+
+export enum AppStatus{
+  Draft,
+  Review,
+  Approval,
+  Rejection
 }
 
 export interface configInterface {
@@ -59,4 +89,18 @@ export interface configInterface {
     password: string;
     database: string;
   };
+}
+
+export interface oauthConfig {
+  oauthClientId: string;
+  oauthClientSecret: string;
+  allowedDomains: Array<string>;
+}
+
+export interface databaseConfig {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
 }

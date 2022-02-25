@@ -10,9 +10,8 @@ import {
 } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import * as api from "../api";
-import { configInterface } from "../api/types";
-import { NetworkManagerContext } from "../components/NetworkManager";
+import { configInterface } from "../../api/types";
+import { NetworkManagerContext } from "../../components/NetworkManager";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -43,6 +42,8 @@ const Settings = () => {
   const [dbHost, setDBHost] = useState<string>("");
   const [dbPort, setDBPort] = useState<number>(0);
   const [dbName, setDBName] = useState<string>("");
+
+  const [isLoading, setLoading] = useState(true);
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -80,8 +81,9 @@ const Settings = () => {
             setDBName(res.data.databaseConfig.database);
           }
         });
+      setLoading(false);
     };
-  }, []);
+  }, [isLoading, nm_ctx]);
 
   const onSubmit = (event: any) => {
     setSubmitting(true);
@@ -121,10 +123,10 @@ const Settings = () => {
     };
     nm_ctx
       .request({ path: "/admin/settings", method: "POST", data: newConfig })
-      .then((_res) => {
+      .then((_) => {
         setSubmitting(false);
       })
-      .catch((_err) => {
+      .catch((_) => {
         setSubmitting(false);
       });
   };
