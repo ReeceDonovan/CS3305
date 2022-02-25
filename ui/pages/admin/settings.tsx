@@ -10,8 +10,9 @@ import {
 } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { configInterface } from "../../api/types";
+import { configInterface, User } from "../../api/types";
 import { NetworkManagerContext } from "../../components/NetworkManager";
+import * as api from "../../api";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -43,47 +44,57 @@ const Settings = () => {
   const [dbPort, setDBPort] = useState<number>(0);
   const [dbName, setDBName] = useState<string>("");
 
-  const [isLoading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User>();
 
   const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
-    async () => {
-      nm_ctx
-        .request({ path: "/admin/settings", method: "GET" })
-        .then(([res, err_code]) => {
-          if (err_code === 0) {
-            setUiURL(res.data.uiURL);
-            setApiURL(res.data.apiURL);
-            setSigningKey(res.data.signingKey);
-            setLandingPageMD(res.data.landingPageMD);
-            setCompanyLogo(res.data.companyLogo);
-      
-            setEmailProvider(res.data.emailConfig.provider);
-            setEmailLessSecure(res.data.emailConfig.lessSecure);
-            setEmailUser(res.data.emailConfig.user);
-            setEmailClientID(res.data.emailConfig.clientId);
-            setEmailToken(res.data.emailConfig.token);
-            setEmailRefreshToken(res.data.emailConfig.refreshToken);
-            setEmailHost(res.data.emailConfig.host);
-            setEmailPort(res.data.emailConfig.port);
-            setEmailSecure(res.data.emailConfig.emailSecure);
-            setCiphers(res.data.emailConfig.tls.ciphers);
-            
-            setOAuthClientID(res.data.oauthConfig.oauthClientId);
-            setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
-            setAllowedDomains(res.data.oauthConfig.allowedDomains);
-
-            setDBUsername(res.data.databaseConfig.username);
-            setDBPassword(res.data.databaseConfig.password);
-            setDBHost(res.data.databaseConfig.host);
-            setDBPort(res.data.databaseConfig.port);
-            setDBName(res.data.databaseConfig.database);
-          }
+    (async () => {
+      if (loading) {
+        const [res, _] = await nm_ctx.request({ 
+          path: "/admin/settings", 
+          method: "GET" 
         });
-      setLoading(false);
-    };
-  }, [isLoading, nm_ctx]);
+
+        if (res.status == 200) {
+          setUiURL(res.data.uiURL);
+          setApiURL(res.data.apiURL);
+          setSigningKey(res.data.signingKey);
+          setLandingPageMD(res.data.landingPageMD);
+          setCompanyLogo(res.data.companyLogo);
+
+          setEmailProvider(res.data.emailConfig.provider);
+          setEmailLessSecure(res.data.emailConfig.lessSecure);
+          setEmailUser(res.data.emailConfig.user);
+          setEmailClientID(res.data.emailConfig.clientId);
+          setEmailToken(res.data.emailConfig.token);
+          setEmailRefreshToken(res.data.emailConfig.refreshToken);
+          setEmailHost(res.data.emailConfig.host);
+          setEmailPort(res.data.emailConfig.port);
+          setEmailSecure(res.data.emailConfig.emailSecure);
+          setCiphers(res.data.emailConfig.tls.ciphers);
+          
+          setOAuthClientID(res.data.oauthConfig.oauthClientId);
+          setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
+          setAllowedDomains(res.data.oauthConfig.allowedDomains);
+
+          setDBUsername(res.data.databaseConfig.username);
+          setDBPassword(res.data.databaseConfig.password);
+          setDBHost(res.data.databaseConfig.host);
+          setDBPort(res.data.databaseConfig.port);
+          setDBName(res.data.databaseConfig.database);
+        }
+
+        const user = await api.getToken();
+        if (user) {
+          setUser(user);
+        }
+
+        setLoading(false);
+      }
+    })();
+  }, [loading, nm_ctx]);
 
   const onSubmit = (event: any) => {
     setSubmitting(true);
@@ -133,6 +144,7 @@ const Settings = () => {
 
   return (
     <>
+      {user?.role !== "COORDINATOR" && !loading ? window.location.href="/" : null}
       <Form
         className="bx--grid bx--grid--narrow"
         style={{
