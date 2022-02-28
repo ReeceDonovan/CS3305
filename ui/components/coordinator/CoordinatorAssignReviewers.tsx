@@ -1,7 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import { Button, ComboBox, InlineLoading, Tag } from "carbon-components-react";
-import React, { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import React, { useContext, useEffect, useState } from "react";
+
+import { User } from "../../api/types";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 import styles from "../../styles/coordinatorAssignReviewers.module.css";
 
@@ -21,10 +23,11 @@ export default function CoordinatorAssignReviewers() {
       if (loading) {
         const [res] = await nm_ctx.request({
           method: "GET",
-          path: `/users/reviewers`,
+          path: `/users/reviewers?t=suggest`,
         });
         if (res.data) {
-          setComboReviewers(res.data);
+          const reviewers = res.data as User[];
+          setComboReviewers(reviewers);
         }
         setLoading(false);
       }
@@ -40,7 +43,6 @@ export default function CoordinatorAssignReviewers() {
               id={""}
               placeholder={"Assign Reviewer"}
               items={comboReviewers}
-              // itemToString={(item) => (item ? item.email : "No data")}
               itemToElement={(item) => (
                 <span
                   style={{
