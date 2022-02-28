@@ -75,7 +75,7 @@ const ApplicationPage: NextPage = () => {
             console.log(application);
             setApplication(application);
             setName(application.name);
-            setDescription(application?.description);
+            setDescription(application ? application.description : "No data");
             setSubmitter(
               application.user_connection?.find((u) => u.role === "SUBMITTER")
                 .user
