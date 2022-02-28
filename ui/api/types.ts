@@ -13,7 +13,7 @@ export interface User extends BaseEntity {
   bio?: string;
   school?: string;
   avatar?: string;
-  appConnection?: UsersApplications[];
+  app_connection?: UsersApplications[];
   reviews?: Review[];
 }
 
@@ -22,10 +22,10 @@ export interface Application extends BaseEntity {
   description?: string;
   status?: string;
   field?: string;
-  userConnection?: UsersApplications[];
+  user_connection?: UsersApplications[];
   reviews?: Review[];
   hasFile?: boolean;
-  appStatus: AppStatus;
+  app_status: AppStatus;
 }
 
 export interface UsersApplications extends BaseEntity {
@@ -52,6 +52,8 @@ export interface FileRef{
 
 export enum AppStatus{
   Draft,
+  Submitted,
+  Pending,
   Review,
   Approval,
   Rejection

@@ -25,10 +25,8 @@ const exampleResponse: StandardResponse = {
 export const getToken = async (): Promise<User | null> => {
   const jwt = await localStorage.getItem("token");
   if (jwt) {
-    console.log(jwt);
     const claims = jwt.split(".")[1];
     const parsedClaims: User = JSON.parse(atob(claims))?.user;
-    console.log(parsedClaims);
     return parsedClaims;
   }
   return null;
