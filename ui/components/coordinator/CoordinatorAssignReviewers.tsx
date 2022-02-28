@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
-import { Button, ComboBox, InlineLoading, Tag } from 'carbon-components-react';
-import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import { Button, ComboBox, InlineLoading, Tag } from "carbon-components-react";
+import { useRouter } from "next/router";
+import React, { useContext, useEffect, useState } from "react";
 
-import User from '../../../api/src/models/user';
-import { NetworkManagerContext } from '../../components/NetworkManager';
-import styles from '../../styles/coordinatorAssignReviewers.module.css';
+import { User } from "../../api/types";
+import { NetworkManagerContext } from "../../components/NetworkManager";
+import styles from "../../styles/coordinatorAssignReviewers.module.css";
 
 export default function CoordinatorAssignReviewers() {
   const router = useRouter();
