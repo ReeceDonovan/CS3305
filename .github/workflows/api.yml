@@ -32,4 +32,4 @@ jobs:
         with:
           context: ./api
           push: true
-          tags: ghcr.io/ReeceDonovan/cs3305-api:latest
+          tags: ghcr.io/reecedonovan/cs3305-api:latest
