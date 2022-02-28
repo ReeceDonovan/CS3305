@@ -12,6 +12,7 @@ export enum AppStatus {
   REVIEW = "REVIEW",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
+  PENDING = "PENDING",
 }
 
 @OrmEntity("applications")

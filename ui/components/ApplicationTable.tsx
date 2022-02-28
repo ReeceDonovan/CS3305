@@ -35,7 +35,7 @@ ApplicationTable.defaultProps = {
       header: "Updated",
     },
     {
-      key: "status",
+      key: "app_status",
       header: "Status",
     },
   ],
