@@ -1,22 +1,28 @@
 /* eslint-disable @next/next/no-img-element */
-import { TableRow, TableCell, SelectItem, Select } from "carbon-components-react";
+import {
+  Select,
+  SelectItem,
+  TableCell,
+  TableRow,
+} from "carbon-components-react";
+
 import * as api from "../../api";
 
 interface PermissionRow {
   row: {
-    cells: [Cell]
-  },
-  id: number
+    cells: [Cell];
+  };
+  id: number;
 }
 
 export interface Cell {
-  errors: any
-  id: string
-  info: { header: string }
-  isEditable: boolean
-  isEditing: boolean
-  isValid: boolean
-  value: any
+  errors: any;
+  id: string;
+  info: { header: string };
+  isEditable: boolean;
+  isEditing: boolean;
+  isValid: boolean;
+  value: any;
 }
 
 const permissionChange = async (id: number, role: string) => {
@@ -24,12 +30,7 @@ const permissionChange = async (id: number, role: string) => {
     await api.request({
       path: `/users/permissions`,
       method: "PATCH",
-      data: {
-        id: id,
-        partial: {
-          role: role
-        }
-      },
+      data: { id, role },
     });
   } catch (err) {
     console.error(err);
