@@ -19,7 +19,7 @@ import { InternalError } from "../errors/internal-error";
 import { protectedRoute } from "../middleware/protected-route";
 import reqUser from "../middleware/store-user";
 import Application, { AppStatus } from "../models/application";
-import Review from "../models/review";
+import Review, { ReviewStatus } from "../models/review";
 import User, { UserType } from "../models/user";
 import UsersApplications, { RoleType } from "../models/usersApplications";
 import response from "../utils/response";
@@ -623,6 +623,48 @@ const createReviewByApplication = async (
       application,
       user,
     });
+    if (
+      body.status &&
+      (body.status === ReviewStatus.APPROVED ||
+        body.status === ReviewStatus.DECLINED)
+    ) {
+      // find if every reviewer has made a review, if so check that all
+      // reviewers have made a review with a status
+      const reviews = await reviewRepository.find({
+        where: {
+          application,
+        },
+        relations: ["user"],
+      });
+
+      if (reviews.length === 0) {
+        throw new InternalError();
+      }
+
+      const reviewers = await UsersApplications.find({
+        where: {
+          application,
+          role: RoleType.REVIEWER,
+        },
+        relations: ["user", "user.reviews"],
+      });
+
+      // check if all reviewers have made a review
+      const allReviewersReviewed = reviewers.every(
+        (reviewer: UsersApplications) => {
+          return reviews.some((review) => {
+            return review.user.id === reviewer.user.id && review.status;
+          });
+        }
+      );
+
+      if (!allReviewersReviewed) {
+        console.log("1 Not all reviewers have made a review");
+      } else {
+        application.app_status = AppStatus.PENDING;
+        await application.save();
+      }
+    }
 
     const savedReview = await reviewRepository.save(review);
 
