@@ -1,8 +1,13 @@
 import axios, { Method } from "axios";
 import { User } from "./types";
 
-export const API_URL: string = process.env.API_URL || "http://localhost:8000";
-export const UI_URL: string = process.env.UI_URL || "http://localhost:3000";
+export const API_URL: string =
+  process.env.API_URL !== undefined ? process.env.API_URL : "/api";
+
+export const UI_URL: string =
+  process.env.UI_URL !== undefined ? process.env.UI_URL : "/";
+
+console.log(process.env.API_URL);
 
 export interface RequestParams {
   path: string;
