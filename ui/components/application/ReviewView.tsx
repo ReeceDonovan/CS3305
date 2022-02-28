@@ -1,11 +1,17 @@
-import { InlineLoading, ModalWrapper, Tile } from "carbon-components-react";
+import { Chat16 } from "@carbon/icons-react";
+import { InlineLoading, ModalWrapper, TextArea, Tile } from "carbon-components-react";
 import { useContext, useState } from "react";
 import { Application, Review } from "../../api/types";
 import styles from "../../styles/application.module.css"; 
 import { NetworkManagerContext } from "../NetworkManager";
 
 const ReviewView = (props: { application: Application }) => {
+  const application = props.application;
+
   const [reviews, setReviews] = useState<null | Review[]>(null);
+  const [comment, setComment] = useState("");
+  const [reviewStatus, setReviewStatus] = useState("");
+  const [statusErrMsg, setStatusErrMsg] = useState("");
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -13,7 +19,7 @@ const ReviewView = (props: { application: Application }) => {
 
   return (
     <>
-      {application.reviews.map((review: Review, i: Number) =>
+      {application?.reviews?.map((review: Review, i: Number) =>
         review.comment ? (
           <Tile className={styles.reviewTile}>
             {i == 0 ? (
@@ -29,10 +35,10 @@ const ReviewView = (props: { application: Application }) => {
               <>
                 <div>{review.comment ? review.comment : ""}</div>
                 <div>
-                  {review.reviewer
-                    ? review.reviewer?.name
-                      ? review.reviewer.name
-                      : review.reviewer.email
+                  {review.user
+                    ? review.user?.name
+                      ? review.user.name
+                      : review.user.email
                     : "No data"}
                 </div>
               </>
@@ -110,6 +116,7 @@ const ReviewView = (props: { application: Application }) => {
           Submit
         </Button>
       </div>
+    </>
   );
 
 export default ReviewView;

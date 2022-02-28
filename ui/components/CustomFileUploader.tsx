@@ -29,7 +29,8 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
   ) => {
     const url = props.remote_file_url
       ? props.remote_file_url
-      : await props.get_remote_file_url;
+      : await props.get_remote_file_url();
+
     evt.stopPropagation();
     const new_file: File = addedFiles[0];
     setFile({ name: new_file.name, status: "uploading" } as FileRef);

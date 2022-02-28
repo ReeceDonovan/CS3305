@@ -1,237 +1,148 @@
-import {
-  Button,
-  Form,
-  Loading,
-  SkeletonPlaceholder,
-  Tab,
-  Tabs,
-  TextArea,
-  TextInput,
-  Tile,
-} from "carbon-components-react";
+import { Button, Loading, Tab, Tabs } from "carbon-components-react";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
-import * as api from "../../api";
-import styles from "../../styles/application.module.css";
-
-import { Application, Review, User } from "../../api/types";
-import { Chat16 } from "@carbon/icons-react";
-import Link from "next/link";
+import { StringExtendedApplication, User } from "../../api/types";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 import Draft_view from "../../components/application/Draft_view";
 import StaticApplication from "../../components/application/StaticApplication";
 import ReviewView from "../../components/application/ReviewView";
-
-// const ApplicationPage: NextPage = () => {
-//   const [user, setUser] = useState<User>();
-//   const router = useRouter();
-//   const [application, setApplication] = useState<any>();
-//   const [pdf, setPDF] = useState<ArrayBuffer>();
-
-//   const [name, setName] = useState("");
-//   const [author, setAuthor] = useState("");
-//   const [supervisors, setSupervisors] = useState("");
-//   const [description, setDescription] = useState("");
-
-//   const [comment, setComment] = useState("");
-
-//   const [reviewStatus, setReviewStatus] = useState("");
-
-//   const nm_ctx = useContext(NetworkManagerContext);
-
-//   useEffect(() => {
-//     (async () => {
-//       const user = await api.getToken();
-//       if (user) {
-//         setUser(user);
-//       }
-//     })();
-//   }, []);
-
-//   useEffect(() => {
-//     (async () => {
-//       const slug = router.query.slug as string;
-//       if (slug && slug.length > 0) {
-//         const [res, err_code] = await nm_ctx.request({
-//           path: `/applications/${slug}`,
-//           method: "GET",
-//         });
-//         if (err_code === 0) {
-//           console.log(res.data);
-//           setApplication(res.data);
-//           setAuthor(res.data.submitter?.email);
-//           setSupervisors(
-//             res.data.supervisors ? res.data.supervisors[0]?.email : ""
-//           );
-//           setDescription(res.data.description);
-//           setName(res.data.name);
-
-//           setReviews(res.data.reviews);
-//         }
-//         api.fetchPDF(slug).then((response) => {
-//           setPDF(response);
-//         });
-//       }
-//     })();
-//   }, [router.query.slug]);
-
-//   const sendReview = async () => {
-//     if (reviewStatus && reviewStatus !== "" && comment && comment !== "") {
-//       try {
-//         console.log(application.id);
-//         const resp = await api.request({
-//           path: `/applications/${application?.id}/reviews`,
-//           method: "POST",
-//           data: {
-//             comment,
-//             status: reviewStatus,
-//           },
-//         });
-
-//         if (resp.status == 201) {
-//           console.log("Success");
-//           window.location.reload();
-//         }
-//       } catch (e) {
-//         console.error(e);
-//       }
-//     }
-//   };
-
-//   if (!application) {
-//     return <div>Loading...</div>;
-//   }
-
-//   return (
-//     <>
-//       <Tabs
-//         style={{
-//           margin: "0px",
-//         }}
-//         type="container"
-//         scrollIntoView={false}
-//       >
-//         {user?.role == "COORDINATOR" ||
-//         user?.email == application.submitter?.email ||
-//         user?.role == "REVIEWER" ? (
-//           <Tab href="#review" id="review" label="Review">
-//             {application.reviews.map((review: Review, i: Number) =>
-//               review.comment ? (
-//                 <Tile className={styles.reviewTile}>
-//                   {i == 0 ? (
-//                     <div
-//                       style={{
-//                         textAlign: "center",
-//                         fontSize: "1.5rem",
-//                       }}
-//                     >
-//                       <h2>Application submitted</h2>
-//                     </div>
-//                   ) : (
-//                     <>
-//                       <div>{review.comment ? review.comment : ""}</div>
-//                       <div>
-//                         {review.reviewer
-//                           ? review.reviewer?.name
-//                             ? review.reviewer.name
-//                             : review.reviewer.email
-//                           : "No data"}
-//                       </div>
-//                     </>
-//                   )}
-//                 </Tile>
-//               ) : (
-//                 <h3 style={{ textAlign: "center" }}>
-//                   Added {review.status} status
-//                 </h3>
-//               )
-//             )}
-//             <div className={styles.reviewControls}>
-//               <ModalWrapper
-//                 shouldSubmitOnEnter={false}
-//                 handleSubmit={(): boolean => {
-//                   nm_ctx
-//                     .request({
-//                       path: `/reviews/${application.id}`,
-//                       method: "POST",
-//                       data: {
-//                         comment: comment,
-//                       },
-//                     })
-//                     .then(([res, err_code]) => {
-//                       if (err_code == 0) {
-//                         setComment("");
-//                       }
-//                     });
-//                   return true;
-//                 }}
-//                 onSubmit={async (_e) => {
-//                   const [res, err_code] = await nm_ctx.request({
-//                     path: `/review/${application.id}`,
-//                     method: "POST",
-//                     data: {
-//                       comment: comment,
-//                     },
-//                   });
-//                   if (err_code === 0) {
-//                     setComment("");
-//                     setReviews([...reviews, res.data]);
-//                   }
-//                 }}
-//                 buttonTriggerText="Add Comment"
-//                 renderTriggerButtonIcon={Chat16}
-//                 triggerButtonIconDescription="Add Comment"
-//                 modalHeading="Add Comment"
-//                 modalLabel="Add Comment"
-//               >
-//                 <div style={{ maxHeight: "60vh" }}>
-//                   <TextArea
-//                     labelText="Add Comment"
-//                     onChange={(e) => setComment(e.target.value)}
-//                   />
-//                 </div>
-//               </ModalWrapper>
-//               <ModalWrapper
-//                 shouldSubmitOnEnter={false}
-//                 handleSubmit={(): boolean => {
-//                   if (reviewStatus === "") {
-//                     setstatusErrMsg("Please select a status");
-//                     return false;
-//                   }
-
-//                   nm_ctx.request({
-//                     path: `/reviews/${application.id}`,
-//                     method: "POST",
-//                     data: {
-//                       status: reviewStatus,
-//                     },
-//                   });
-//                   return true;
-//                 }}
-//               >
-//                 Submit
-//               </Button>
-//             </div>
-//           </Tab>
-//         ) : null}
-//       </Tabs>
-//     </>
-//   );
-// };
+import { getToken } from "../../api";
 
 const ApplicationPage = () => {
-  const [application, setApplication] = useState<null | Application>(null);
+  const [application, setApplication] = useState<StringExtendedApplication>();
+  const [prev_app, setPrev_app] = useState<StringExtendedApplication>();
+
+  const [user, setUser] = useState<User | null>(null);
 
   const nm_ctx = useContext(NetworkManagerContext);
 
   const router = useRouter();
   const slug = router.query.slug as string;
 
+  const [sync_timeout, setSync_timeout] = useState<null | NodeJS.Timeout>(null);
+  const [getting_id, setGetting_id] = useState<boolean>(false);
+
+  const request_id = async (): Promise<[string, number]> => {
+    // first negotiate a application id
+    setGetting_id(true);
+    const [res, err_code] = await nm_ctx.request({
+      method: "POST",
+      path: "/applications/",
+    });
+    setGetting_id(false);
+    if (err_code === 0) {
+      window.history.pushState(null, "", `/application/${res.data}`);
+      application.id = parseInt(res.data);
+      setApplication(application);
+      return [res.data, 0];
+    } else {
+      return ["", err_code];
+    }
+  };
+
+  const sync_and_send = async () => {
+    setSync_timeout(null);
+
+    if (getting_id) {
+      setSync_timeout(setTimeout(sync_and_send, 2000));
+    }
+
+    //create diff application
+    let modiflag = false;
+    let diff_app = {} as StringExtendedApplication;
+    if (application?.name != null && application.name != prev_app?.name) {
+      diff_app.name = application.name;
+      modiflag = true;
+    }
+    if (
+      application?.description != null &&
+      application?.description != prev_app?.description
+    ) {
+      diff_app.description = application?.description;
+      modiflag = true;
+    }
+    if (application?.field != null && application?.field != prev_app?.field) {
+      diff_app.field = application?.field;
+      modiflag = true;
+    }
+    if (
+      JSON.stringify(application?.coauthors?.sort()) !=
+      JSON.stringify(prev_app?.coauthors?.sort())
+    ) {
+      diff_app.coauthors = application?.coauthors;
+      modiflag = true;
+    }
+    if (
+      JSON.stringify(application?.supervisors?.sort()) !=
+      JSON.stringify(prev_app?.supervisors?.sort())
+    ) {
+      diff_app.supervisors = prev_app?.supervisors;
+      modiflag = true;
+    }
+
+    if (modiflag === false) {
+      if (sync_timeout != null) {
+        clearTimeout(sync_timeout);
+      }
+      return;
+    }
+
+    let id = application?.id;
+    if (!id) {
+      const [res, err_code] = await request_id();
+      if (err_code === 0) {
+        id = parseInt(res);
+      } else {
+        return;
+      }
+    }
+    setPrev_app({ ...prev_app, ...diff_app });
+    nm_ctx.request({
+      method: "PATCH",
+      path: `/applications/${id}`,
+      data: diff_app,
+    });
+  };
+
+  const debounce_sync = async () => {
+    if (sync_timeout == null) {
+      setSync_timeout(setTimeout(sync_and_send, 2000));
+    } else {
+      clearTimeout(sync_timeout);
+      setSync_timeout(setTimeout(sync_and_send, 2000));
+    }
+  };
+
   useEffect(() => {
     (async () => {
-      if (slug === "new") {
-        setApplication({} as Application);
+      if (slug && slug === "new") {
+        setApplication({
+          id: 0,
+          name: "",
+          description: "",
+          field: "",
+          hasFile: false,
+          coauthors: [],
+          submitter: "",
+          supervisors: [],
+          appStatus: "DRAFT",
+          createdAt: "",
+          updatedAt: "",
+        } as StringExtendedApplication);
+        setPrev_app({
+          id: 0,
+          name: "",
+          description: "",
+          field: "",
+          hasFile: false,
+          coauthors: [],
+          submitter: "",
+          supervisors: [],
+          appStatus: "DRAFT",
+          createdAt: "",
+          updatedAt: "",
+        } as StringExtendedApplication);
       } else if (slug && slug.length > 0) {
         const [res, err_code] = await nm_ctx.request({
           path: `/applications/${slug}`,
@@ -239,34 +150,70 @@ const ApplicationPage = () => {
         });
         if (err_code === 0) {
           console.log(res.data);
-          setApplication(res.data);
+          let fielded_app = res.data as StringExtendedApplication;
+          fielded_app.coauthors = [];
+          fielded_app.supervisors = [];
+          for (let user of fielded_app.users ? fielded_app.users : []) {
+            if (user.applicationRole === "SUBMITTER") {
+              fielded_app.submitter = user.email;
+            } else if (user.applicationRole === "SUPERVISOR") {
+              fielded_app.supervisors.push(user.email);
+            } else if (user.applicationRole === "COAUTHOR") {
+              fielded_app.coauthors.push(user.email);
+            }
+          }
+          setApplication(fielded_app);
+          setPrev_app(fielded_app);
         }
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.slug]);
 
-  if (slug === "new") {
-    return (
-      <Draft_view application={application} setApplication={setApplication} />
-    );
-  }
-
   if (!application) return <Loading />;
 
-  if (application.app_status === "DRAFT")
-    return <Draft_view id={slug} init_app={application} />;
-
-  if (application.app_status === "PENDING")
-    return <StaticApplication application={application} />;
-
-  if (application.app_status === "REVIEWING")
+  if (slug === "new" && application.id === 0) {
     return (
-      <>
-        <StaticApplication application={application} />
-        <ReviewView application={application} />
-      </>
+      <Draft_view
+        application={application}
+        setApplication={setApplication}
+        debounce_sync={debounce_sync}
+        request_id={request_id}
+      />
     );
+  } else {
+    console.log(application.appStatus);
+    return (
+      <Tabs
+        style={{
+          margin: "0px",
+        }}
+        type="container"
+        scrollIntoView={false}
+      >
+        {application.appStatus === "DRAFT" && (
+          <Tab href="#edit" id="edit" label="Edit">
+            <Draft_view
+              application={application}
+              setApplication={setApplication}
+              debounce_sync={debounce_sync}
+            />
+          </Tab>
+        )}
+
+        {(application.appStatus === "DRAFT" ||
+          application.status === "SUBMITTED") && (
+          <Tab href="#view" id="view" label="View">
+            <StaticApplication application={application} />
+            {user?.role != "RESEARCHER" && (
+              <></>
+              // <ReviewView application={application as Application} />
+            )}
+          </Tab>
+        )}
+      </Tabs>
+    );
+  }
 };
 
 export default ApplicationPage;

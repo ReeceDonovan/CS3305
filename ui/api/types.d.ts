@@ -14,8 +14,11 @@ export interface User extends BaseEntity {
   school?: string;
   avatar?: string;
   applications?: Application[];
-  applicationRole?: string;
   reviews?: Review[];
+}
+
+export interface LinkedUser extends User{
+  applicationRole: string;
 }
 
 export enum AppStatus{
@@ -32,9 +35,15 @@ export interface Application extends BaseEntity {
   field?: string;
   hasFile?: boolean;
   appStatus: AppStatus;
-  users?: User[];
+  users?: LinkedUser[];
   applicationRole?: string;
   reviews?: Review[];
+}
+
+export interface StringExtendedApplication extends Application {
+  coauthors?: string[];
+  supervisors?: string[];
+  submitter?: string;
 }
 
 export interface UsersApplications extends BaseEntity {

@@ -7,134 +7,31 @@ import {
   TextInput,
 } from "carbon-components-react";
 import { useContext, useEffect, useState } from "react";
-import { UI_URL } from "../../api";
-import { Application } from "../../api/types";
-import CopyableLink from "../CopyableLink";
+import { StringExtendedApplication } from "../../api/types";
 import CustomFileUploader from "../CustomFileUploader";
 import { NetworkManagerContext } from "../NetworkManager";
 
 const Draft_view = (props: {
-  application: Application;
-  setApplication: any;
+  application: StringExtendedApplication;
+  setApplication: React.Dispatch<
+    React.SetStateAction<StringExtendedApplication | undefined>
+  >;
+  debounce_sync: () => {};
+  request_id?: () => Promise<[string, number]>;
 }) => {
+  const nm_ctx = useContext(NetworkManagerContext);
+
   const app = props.application;
-  const [sync_timeout, setSync_timeout] = useState<null | NodeJS.Timeout>(null);
 
-  const [prev_app, setPrev_app] = useState<{
-    name: string;
-    description: string;
-    field: string;
-    coauthors: string[];
-    supervisors: string[];
-  }>({
-    name,
-    description,
-    field,
-    coauthors,
-    supervisors,
-  });
-
-  const [app_id, setApp_id] = useState<string | null>(
-    props.id ? props.id : null
-  );
+  const [name, setName] = useState(app.name);
+  const [field, setField] = useState(app.field);
+  const [description, setDescription] = useState(app.description);
+  const [coauthors, setCoauthors] = useState(app.coauthors);
+  const [supervisors, setSupervisors] = useState(app.supervisors);
 
   const emailRegexp = new RegExp(
     "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
   );
-
-  const nm_ctx = useContext(NetworkManagerContext);
-
-  const [getting_id, setGetting_id] = useState(false);
-
-  const sync_application = async () => {
-    if (getting_id === true) {
-      setSync_timeout(setTimeout(sync_application, 2000));
-      return;
-    }
-
-    setSync_timeout(null);
-
-    //create diff application
-    let modiflag = false;
-    let diff_app = {} as {
-      name: string;
-      description: string;
-      field: string;
-      coauthors: string[];
-      supervisors: string[];
-      hasFile: boolean;
-    };
-    if (name != null && name != prev_app.name) {
-      diff_app.name = name;
-      modiflag = true;
-    }
-    if (description != null && description != prev_app.description) {
-      diff_app.description = description;
-      modiflag = true;
-    }
-    if (field != null && field != prev_app.field) {
-      diff_app.field = field;
-      modiflag = true;
-    }
-    if (
-      JSON.stringify(coauthors.sort()) !=
-      JSON.stringify(prev_app.coauthors.sort())
-    ) {
-      diff_app.coauthors = coauthors;
-      modiflag = true;
-    }
-    if (
-      JSON.stringify(supervisors.sort()) !=
-      JSON.stringify(prev_app.supervisors.sort())
-    ) {
-      diff_app.supervisors = supervisors;
-      modiflag = true;
-    }
-
-    if (modiflag === false) {
-      if (sync_timeout != null) {
-        clearTimeout(sync_timeout);
-      }
-      return;
-    }
-
-    let id = app_id;
-
-    //get id if it doesnt exist
-    if (id === null) {
-      // first negotiate a application id
-      setGetting_id(true);
-      const [res, err_code] = await nm_ctx.request({
-        method: "POST",
-        path: "/applications/",
-      });
-      setGetting_id(false);
-      if (err_code === 0) {
-        window.history.pushState(null, "", `/application/${res.data}`);
-        id = res.data;
-        setApp_id(res.data);
-      }
-    }
-
-    setPrev_app({ ...prev_app, ...diff_app });
-    nm_ctx.request({
-      method: "PATCH",
-      path: `/applications/${id}`,
-      data: diff_app,
-    });
-  };
-
-  const debounce_sync = async () => {
-    //if id_get attempt is being attemped
-    if (getting_id === true) return;
-
-    if (sync_timeout == null) {
-      setSync_timeout(setTimeout(sync_application, 2000));
-    } else {
-      clearTimeout(sync_timeout);
-      setSync_timeout(setTimeout(sync_application, 2000));
-    }
-  };
 
   const [firstRender, setFirstRender] = useState(true);
 
@@ -142,10 +39,19 @@ const Draft_view = (props: {
     if (firstRender) {
       setFirstRender(false);
     } else {
-      debounce_sync();
+      if (!name) return;
+      app.name = name;
+      app.field = field;
+      app.description = description;
+      app.coauthors = coauthors;
+      app.supervisors = supervisors;
+      props.setApplication(app);
+      props.debounce_sync();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coauthors, supervisors, name, description, field]);
+  }, [name, field, description, coauthors, supervisors]);
+
+  const [title_error, setTitle_error] = useState(false);
 
   return (
     <>
@@ -199,12 +105,20 @@ const Draft_view = (props: {
           name="name"
           labelText="Name of research project"
           placeholder="Name of research project"
-          value={app.name}
+          value={name}
           style={{
             marginBottom: "1em",
           }}
           onChange={(e) => {
             setName(e.target.value);
+            setTitle_error(false);
+          }}
+          invalidText={"Title required"}
+          invalid={title_error}
+          onBlur={(e) => {
+            if (e.target.value === "") {
+              setTitle_error(true);
+            }
           }}
         />
 
@@ -213,6 +127,7 @@ const Draft_view = (props: {
           name="field"
           labelText="Field of study"
           placeholder="Field of study"
+          value={field}
           style={{
             marginBottom: "1em",
           }}
@@ -226,6 +141,7 @@ const Draft_view = (props: {
           name="description"
           labelText="Brief description of research project"
           placeholder="Brief description"
+          value={description}
           style={{
             marginBottom: "1em",
           }}
@@ -248,7 +164,7 @@ const Draft_view = (props: {
               const t = e.target as HTMLInputElement;
               if (t.value && t.value.length > 0) {
                 if (emailRegexp.test(t.value)) {
-                  setCoauthor([...coauthors, t.value]);
+                  setCoauthors([...(coauthors ? coauthors : []), t.value]);
                   t.value = "";
                 }
               }
@@ -258,13 +174,13 @@ const Draft_view = (props: {
         />
 
         <div>
-          {app.coauthors.map((elem, i) => (
+          {coauthors?.map((elem, i) => (
             <Tag
               key={i}
               onClick={(e) => {
                 e.preventDefault();
-                coauthors.splice(i, 1);
-                setCoauthor([...coauthors]);
+                coauthors?.splice(i, 1);
+                setCoauthors(coauthors);
               }}
             >
               {elem}
@@ -285,7 +201,10 @@ const Draft_view = (props: {
             if ((e.code === "Enter" || e.code === "Tab") && t.value) {
               if (t && t.value.length > 0) {
                 if (emailRegexp.test(t.value)) {
-                  setSupervisors([...supervisors, t.value]);
+                  setSupervisors([
+                    ...(supervisors ? supervisors : []),
+                    t.value,
+                  ]);
                   t.value = "";
                 }
               }
@@ -295,13 +214,13 @@ const Draft_view = (props: {
         />
 
         <div>
-          {supervisors.map((elem, i) => (
+          {supervisors?.map((elem, i) => (
             <Tag
               key={i}
               onClick={async (e) => {
                 e.preventDefault();
-                supervisors.splice(i, 1);
-                setSupervisors([...supervisors]);
+                supervisors?.splice(i, 1);
+                setSupervisors(supervisors);
               }}
             >
               {elem}
@@ -310,29 +229,27 @@ const Draft_view = (props: {
         </div>
 
         <CustomFileUploader
-          remote_file_url={app_id ? `/applications/${app_id}/form` : undefined}
+          remote_file_url={app.id ? `/applications/${app.id}/form` : undefined}
           get_remote_file_url={async () => {
             console.log("getting app id");
-            const [res, err_code] = await nm_ctx.request({
-              method: "POST",
-              path: "/applications/",
-            });
+            const [res, err_code] = await props.request_id();
             if (err_code === 0) {
-              setApp_id(res.data);
-              window.history.pushState(null, "", `/application/${res.data}`);
-              return `/applications/${res.data}/form`;
+              app.id = parseInt(res);
+              props.setApplication(app);
+              window.history.pushState(null, "", `/application/${app.id}`);
+              return `/applications/${app.id}/form`;
             }
             return "";
           }}
-          init_file={init_app.hasFile ? "form.pdf" : undefined}
+          init_file={app.hasFile ? "form.pdf" : undefined}
         />
         <Button
-          disabled={app_id ? false : true}
+          disabled={app.id ? false : true}
           onClick={() => {
             nm_ctx.request({
               method: "PATCH",
-              path: `/applications/${app_id}`,
-              data: { app_status: "PENDING" },
+              path: `/applications/${app.id}`,
+              data: { app_status: "SUBMITTED" },
               show_progress: true,
             });
           }}
