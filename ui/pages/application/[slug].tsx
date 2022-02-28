@@ -20,7 +20,7 @@ import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
 import * as api from "../../api";
-import { Application, Review, User } from "../../api/types";
+import { Application, AppStatus, Review, User } from "../../api/types";
 import CoordinatorAssignReviewers from "../../components/coordinator/CoordinatorAssignReviewers";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 import styles from "../../styles/application.module.css";
@@ -30,15 +30,15 @@ const ApplicationPage: NextPage = () => {
   const router = useRouter();
 
   const [user, setUser] = useState<User>();
-  const [application, setApplication] = useState<Application>();
+  const [application, setApplication] = useState<Application | undefined>();
   const [pdf, setPDF] = useState<ArrayBuffer>();
 
   const [name, setName] = useState<string>("No name");
   const [description, setDescription] = useState<string>("No data");
 
-  const [submitter, setSubmitter] = useState<User>();
-  const [coauthors, setCoauthors] = useState<User[]>([]);
-  const [supervisors, setSupervisors] = useState<User[]>([]);
+  const [submitter, setSubmitter] = useState<User | undefined>();
+  const [coauthors, setCoauthors] = useState<User[] | undefined>();
+  const [supervisors, setSupervisors] = useState<User[] | undefined>();
   const [reviewers, setReviewers] = useState<User[]>([]);
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -72,38 +72,45 @@ const ApplicationPage: NextPage = () => {
           if (err_code === 0) {
             console.log(res.data);
             const application = res.data as Application;
-            console.log(application);
+
+            // make sure application and all other data is not undefined
+
             setApplication(application);
             setName(application.name);
             setDescription(
-              application.description ? application.description : "No data"
+              application.description
+                ? application.description
+                : "No description"
             );
+
             setSubmitter(
               application.user_connection?.find((u) => u.role === "SUBMITTER")
-                .user
+                ?.user
             );
-            setCoauthors(
-              application.user_connection
-                ?.filter((u) => u.role === "COAUTHOR")
-                .map((u) => u.user)
-            );
-            setSupervisors(
-              application.user_connection
-                ?.filter((u) => u.role === "SUPERVISOR")
-                .map((u) => u.user)
-            );
-            setReviewers(
-              application.user_connection
-                ?.filter((u) => u.role === "REVIEWER")
-                .map((u) => u.user)
-            );
-            setReviews(application.reviews);
+            const coauthors = application.user_connection
+              ?.filter((u) => u.role === "COAUTHOR")
+              ?.map((u) => u.user as User);
+            setCoauthors(coauthors ? coauthors : []);
+
+            const supervisors = application.user_connection
+              ?.filter((u) => u.role === "SUPERVISOR")
+              ?.map((u) => u.user as User);
+            setSupervisors(supervisors ? supervisors : []);
+
+            const reviewers = application.user_connection
+              ?.filter((u) => u.role === "REVIEWER")
+              ?.map((u) => u.user as User);
+
+            setReviewers(reviewers ? reviewers : []);
+
+            const reviews = application.reviews?.map((r) => r as Review);
+            setReviews(reviews ? reviews : []);
           }
-          api.fetchPDF(slug).then((response) => {
-            setPDF(response);
-          });
-          setIsLoading(false);
         }
+        api.fetchPDF(slug).then((response) => {
+          setPDF(response);
+        });
+        setIsLoading(false);
       }
     })();
   }, [isLoading, nm_ctx, router.query.slug]);
@@ -112,7 +119,6 @@ const ApplicationPage: NextPage = () => {
     console.log("sending review");
     if (reviewStatus && reviewStatus !== "" && comment && comment !== "") {
       try {
-        console.log(application.id);
         const resp = await api.request({
           path: `/applications/${application?.id}/reviews`,
           method: "POST",
@@ -217,7 +223,7 @@ const ApplicationPage: NextPage = () => {
         {user &&
           submitter &&
           user.email == submitter.email &&
-          application.app_status == "DRAFT" && (
+          application.app_status == AppStatus.Draft && (
             <Tab href="#edit" id="edit" label="Edit">
               <Form
                 className={styles.edit}
@@ -246,15 +252,25 @@ const ApplicationPage: NextPage = () => {
                   id="supervisor"
                   labelText="Supervisors"
                   placeholder="Supervisor"
-                  value={supervisors ? supervisors : ""}
-                  onChange={(e) => setSupervisors(e.target.value)}
+                  value={
+                    supervisors
+                      ? supervisors.map((s) => s.email).join(", ")
+                      : ""
+                  }
+                  // FIXME: This is a temp solution
+                  onChange={(e) => {
+                    setSupervisors(
+                      e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .map((s) => ({ email: s })) as User[]
+                    );
+                  }}
                 />
 
                 <Button
                   type="submit"
-                  disabled={
-                    (name === "" || author === "") && supervisors === ""
-                  }
+                  disabled={(name === "" || !submitter) && !supervisors}
                 >
                   Update
                 </Button>
@@ -276,9 +292,7 @@ const ApplicationPage: NextPage = () => {
           )}
 
         {/* Reviewer Tab */}
-        {user?.role == "REVIEWER" &&
-        reviewers &&
-        reviewers.includes(user?.email) ? (
+        {user?.role == "REVIEWER" && reviewers && reviewers.includes(user) ? (
           <Tab href="#review" id="review" label="Review">
             {reviews?.map((review: Review) => (
               <Tile
@@ -410,7 +424,7 @@ const ApplicationPage: NextPage = () => {
         {/* Coordinator Tab */}
         {user?.role == "COORDINATOR" ? (
           <Tab href="#coordinator" id="coordinator" label="Coordinator">
-            {application.app_status == "DRAFT" ? (
+            {application.app_status == AppStatus.Draft ? (
               <>
                 <h1>This Application is still in draft mode</h1>
                 <p>
@@ -420,14 +434,14 @@ const ApplicationPage: NextPage = () => {
               </>
             ) : null}
 
-            {application.app_status == "SUBMITTED" ? (
+            {application.app_status == AppStatus.Submitted ? (
               <>
                 <h1>Needs Reviewers Assigned</h1>
                 <p>Please assign reviewers to this application.</p>
               </>
             ) : null}
 
-            {application.app_status == "REVIEW" ? (
+            {application.app_status == AppStatus.Review ? (
               <>
                 <h1>Being Reviewed</h1>
                 <p>This application is currently under review.</p>
@@ -504,7 +518,7 @@ const ApplicationPage: NextPage = () => {
               </Tile>
             ))}
 
-            {application.app_status == "PENDING" ? (
+            {application.app_status == AppStatus.Pending ? (
               <>
                 <h1>Pending Outcome</h1>
                 <p>

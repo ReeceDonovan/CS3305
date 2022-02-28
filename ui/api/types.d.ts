@@ -25,7 +25,7 @@ export interface Application extends BaseEntity {
   user_connection?: UsersApplications[];
   reviews?: Review[];
   hasFile?: boolean;
-  appStatus: AppStatus;
+  app_status: AppStatus;
 }
 
 export interface UsersApplications extends BaseEntity {
@@ -52,6 +52,8 @@ export interface FileRef{
 
 export enum AppStatus{
   Draft,
+  Submitted,
+  Pending,
   Review,
   Approval,
   Rejection
