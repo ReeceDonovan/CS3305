@@ -123,10 +123,10 @@ const ApplicationPage: NextPage = () => {
 
   let submitterEmail = "";
   let reviewers = [];
-  for(const useridx in application.user_connection){
-    if(application.user_connection[useridx].role == "SUBMITTER"){
+  for (const useridx in application.user_connection) {
+    if (application.user_connection[useridx].role == "SUBMITTER") {
       submitterEmail = application.user_connection[useridx].user.email;
-    }else if(application.user_connection[useridx].role == "REVIEWER"){
+    } else if (application.user_connection[useridx].role == "REVIEWER") {
       reviewers.push(application.user_connection[useridx].user.email);
     }
   }
@@ -267,14 +267,14 @@ const ApplicationPage: NextPage = () => {
                   });
                 }}
               >
-              Submit Your Application
-            </Button>
+                Submit Your Application
+              </Button>
             </Form>
           </Tab>
         )}
 
         {/* Reviewer Tab */}
-        { user?.role == "REVIEWER" && reviewers.includes(user?.email) ? (
+        {user?.role == "REVIEWER" && reviewers.includes(user?.email) ? (
           <Tab href="#review" id="review" label="Review">
             {reviews?.map((review: Review) => (
               <Tile
@@ -403,7 +403,7 @@ const ApplicationPage: NextPage = () => {
             </div>
           </Tab>
         ) : null}
-        
+
         {/* Coordinator Tab */}
         {user?.role == "COORDINATOR" ? (
           <Tab href="#coordinator" id="coordinator" label="Coordinator">
@@ -458,7 +458,10 @@ const ApplicationPage: NextPage = () => {
             {application.app_status == "DRAFT" ? (
               <>
                 <h1>This Application is still in draft mode</h1>
-                <p>Please wait for the application to be submitted before assigning it for review.</p>
+                <p>
+                  Please wait for the application to be submitted before
+                  assigning it for review.
+                </p>
               </>
             ) : null}
 
@@ -466,7 +469,8 @@ const ApplicationPage: NextPage = () => {
               <>
                 <h1>Needs Reviewers Assigned</h1>
                 <p>Please assign reviewers to this application.</p>
-                <div style={{
+                <div
+                  style={{
                     marginTop: "3em",
                     display: "flex",
                     flexDirection: "row",
@@ -475,7 +479,7 @@ const ApplicationPage: NextPage = () => {
                     paddingBottom: "150px",
                   }}
                 >
-                  <CoordinatorAssignReviewers/>
+                  <CoordinatorAssignReviewers />
                 </div>
               </>
             ) : null}
@@ -490,8 +494,11 @@ const ApplicationPage: NextPage = () => {
             {application.app_status == "PENDING" ? (
               <>
                 <h1>Pending Outcome</h1>
-                <p>Please Accept or Reject this application based on the reviews.</p>
-                  <div style={{
+                <p>
+                  Please Accept or Reject this application based on the reviews.
+                </p>
+                <div
+                  style={{
                     marginTop: "3em",
                     display: "flex",
                     flexDirection: "row",
@@ -499,7 +506,7 @@ const ApplicationPage: NextPage = () => {
                     alignItems: "center",
                     paddingBottom: "150px",
                   }}
-                  >
+                >
                   <Dropdown
                     style={{
                       width: "200px",
@@ -555,10 +562,8 @@ const ApplicationPage: NextPage = () => {
                 </div>
               </>
             ) : null}
-
           </Tab>
         ) : null}
-
       </Tabs>
     </>
   );
