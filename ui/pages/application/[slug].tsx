@@ -1,3 +1,10 @@
+// TODO: Further cleanup
+import {
+  Checkmark16,
+  Checkmark24,
+  Close16,
+  Close24,
+} from "@carbon/icons-react";
 import {
   Button,
   Dropdown,
@@ -13,41 +20,36 @@ import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
 import * as api from "../../api";
+import { Application, Review, User } from "../../api/types";
+import CoordinatorAssignReviewers from "../../components/coordinator/CoordinatorAssignReviewers";
+import { NetworkManagerContext } from "../../components/NetworkManager";
 import styles from "../../styles/application.module.css";
 
 import type { NextPage } from "next";
-import { Review, User } from "../../api/types";
-import { NetworkManagerContext } from "../../components/NetworkManager";
-import {
-  Checkmark16,
-  Checkmark24,
-  Close16,
-  Close24,
-} from "@carbon/icons-react";
-import CoordinatorAssignReviewers from "../../components/coordinator/CoordinatorAssignReviewers";
-
 const ApplicationPage: NextPage = () => {
   const router = useRouter();
 
   const [user, setUser] = useState<User>();
-  const [application, setApplication] = useState<any>();
+  const [application, setApplication] = useState<Application>();
   const [pdf, setPDF] = useState<ArrayBuffer>();
 
-  const [name, setName] = useState("");
-  const [author, setAuthor] = useState("");
-  const [supervisors, setSupervisors] = useState("");
-  const [description, setDescription] = useState("");
+  const [name, setName] = useState<string>("No name");
+  const [description, setDescription] = useState<string>("No data");
+
+  const [submitter, setSubmitter] = useState<User>();
+  const [coauthors, setCoauthors] = useState<User[]>([]);
+  const [supervisors, setSupervisors] = useState<User[]>([]);
+  const [reviewers, setReviewers] = useState<User[]>([]);
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [comment, setComment] = useState("");
+  const [reviewStatus, setReviewStatus] = useState<string>("No status");
 
-  const [reviewStatus, setReviewStatus] = useState("");
+  const [comment, setComment] = useState<string>("No comment");
+  const commentRef = React.useRef<HTMLTextAreaElement>();
 
   const [isLoading, setIsLoading] = useState(true);
 
   const nm_ctx = useContext(NetworkManagerContext);
-
-  const commentRef = React.useRef<HTMLTextAreaElement>();
 
   useEffect(() => {
     (async () => {
@@ -69,15 +71,31 @@ const ApplicationPage: NextPage = () => {
           });
           if (err_code === 0) {
             console.log(res.data);
-            setApplication(res.data);
-            setAuthor(res.data.submitter?.email);
-            setSupervisors(
-              res.data.supervisors ? res.data.supervisors[0]?.email : ""
+            const application = res.data as Application;
+            console.log(application);
+            setApplication(application);
+            setName(application.name);
+            setDescription(application.description);
+            setSubmitter(
+              application.user_connection?.find((u) => u.role === "SUBMITTER")
+                .user
             );
-            setDescription(res.data.description);
-            setName(res.data.name);
-
-            setReviews(res.data.reviews);
+            setCoauthors(
+              application.user_connection
+                ?.filter((u) => u.role === "COAUTHOR")
+                .map((u) => u.user)
+            );
+            setSupervisors(
+              application.user_connection
+                ?.filter((u) => u.role === "SUPERVISOR")
+                .map((u) => u.user)
+            );
+            setReviewers(
+              application.user_connection
+                ?.filter((u) => u.role === "REVIEWER")
+                .map((u) => u.user)
+            );
+            setReviews(application.reviews);
           }
           api.fetchPDF(slug).then((response) => {
             setPDF(response);
@@ -117,18 +135,8 @@ const ApplicationPage: NextPage = () => {
     }
   };
 
-  if (!application) {
+  if (!application || !user || !submitter) {
     return <div>Loading...</div>;
-  }
-
-  let submitterEmail = "";
-  let reviewers = [];
-  for (const useridx in application.user_connection) {
-    if (application.user_connection[useridx].role == "SUBMITTER") {
-      submitterEmail = application.user_connection[useridx].user.email;
-    } else if (application.user_connection[useridx].role == "REVIEWER") {
-      reviewers.push(application.user_connection[useridx].user.email);
-    }
   }
 
   return (
@@ -146,33 +154,20 @@ const ApplicationPage: NextPage = () => {
             {application && (
               <div className={styles.view}>
                 <h2>
-                  Title: {application.name ? application.name : "No data"}
+                  Title: {application.name ? application.name : "No name"}
                 </h2>
-                <h4>
-                  Author:{" "}
-                  {application.submitter?.email
-                    ? application.submitter.email
-                    : "No data"}
-                </h4>
+                <h4>Author: {submitter?.email}</h4>
                 <h4>
                   Supervisors:{" "}
-                  {application.supervisors?.length > 0
-                    ? application.supervisors
-                        ?.map((supervisor: User) =>
-                          supervisor.name ? supervisor.name : supervisor.email
-                        )
-                        .join(", ")
-                    : "No data"}
+                  {supervisors && supervisors.length > 0
+                    ? supervisors.map((supervisor) => supervisor.email)
+                    : "No supervisors"}
                 </h4>
                 <h4>
                   Coauthors:{" "}
-                  {application.coauthors
-                    ? application.coauthors
-                        ?.map((coauthor: User) =>
-                          coauthor.name ? coauthor.name : coauthor.email
-                        )
-                        .join(", ")
-                    : "No data"}
+                  {coauthors && coauthors.length > 0
+                    ? coauthors.map((coauthor) => coauthor.email)
+                    : "No coauthors"}
                 </h4>
                 <h4>
                   Field of Study:{" "}
@@ -217,64 +212,71 @@ const ApplicationPage: NextPage = () => {
         </Tab>
 
         {/* Edit Tab */}
-        {user?.email == submitterEmail && (
-          <Tab href="#edit" id="edit" label="Edit">
-            <Form
-              className={styles.edit}
-              style={{
-                height: "90vh",
-                width: "100%",
-              }}
-            >
-              <TextInput
-                id="title"
-                labelText="Application Title"
-                placeholder="Title"
-                value={name ? name : ""}
-                onChange={(e) => setName(e.target.value)}
-              />
-
-              <TextArea
-                id="description"
-                labelText="Description"
-                placeholder="Description"
-                value={description ? description : ""}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-
-              <TextInput
-                id="supervisor"
-                labelText="Supervisors"
-                placeholder="Supervisor"
-                value={supervisors ? supervisors : ""}
-                onChange={(e) => setSupervisors(e.target.value)}
-              />
-
-              <Button
-                type="submit"
-                disabled={(name === "" || author === "") && supervisors === ""}
-              >
-                Update
-              </Button>
-              <Button
-                disabled={application.id ? false : true}
-                onClick={() => {
-                  nm_ctx.request({
-                    method: "PATCH",
-                    path: `/applications/${application.id}`,
-                    data: { app_status: "SUBMITTED" },
-                    show_progress: true,
-                  });
+        {user &&
+          submitter &&
+          user.email == submitter.email &&
+          application.app_status == "DRAFT" && (
+            <Tab href="#edit" id="edit" label="Edit">
+              <Form
+                className={styles.edit}
+                style={{
+                  height: "90vh",
+                  width: "100%",
                 }}
               >
-                Submit Your Application
-              </Button>
-            </Form>
-          </Tab>
-        )}
+                <TextInput
+                  id="title"
+                  labelText="Application Title"
+                  placeholder="Title"
+                  value={name ? name : ""}
+                  onChange={(e) => setName(e.target.value)}
+                />
+
+                <TextArea
+                  id="description"
+                  labelText="Description"
+                  placeholder="Description"
+                  value={description ? description : ""}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+
+                <TextInput
+                  id="supervisor"
+                  labelText="Supervisors"
+                  placeholder="Supervisor"
+                  value={supervisors ? supervisors : ""}
+                  onChange={(e) => setSupervisors(e.target.value)}
+                />
+
+                <Button
+                  type="submit"
+                  disabled={
+                    (name === "" || author === "") && supervisors === ""
+                  }
+                >
+                  Update
+                </Button>
+                <Button
+                  disabled={application.id ? false : true}
+                  onClick={() => {
+                    nm_ctx.request({
+                      method: "PATCH",
+                      path: `/applications/${application.id}`,
+                      data: { app_status: "SUBMITTED" },
+                      show_progress: true,
+                    });
+                  }}
+                >
+                  Submit Your Application
+                </Button>
+              </Form>
+            </Tab>
+          )}
 
         {/* Reviewer Tab */}
-        {user?.role == "REVIEWER" && reviewers.includes(user?.email) ? (
+        {user?.role == "REVIEWER" &&
+        reviewers &&
+        reviewers.includes(user?.email) ? (
           <Tab href="#review" id="review" label="Review">
             {reviews?.map((review: Review) => (
               <Tile
@@ -330,7 +332,6 @@ const ApplicationPage: NextPage = () => {
                 margin: "auto",
               }}
               // @ts-expect-error
-              // react moment
               ref={commentRef}
               rows={12}
               labelText="Review Comment"
@@ -407,6 +408,52 @@ const ApplicationPage: NextPage = () => {
         {/* Coordinator Tab */}
         {user?.role == "COORDINATOR" ? (
           <Tab href="#coordinator" id="coordinator" label="Coordinator">
+            {application.app_status == "DRAFT" ? (
+              <>
+                <h1>This Application is still in draft mode</h1>
+                <p>
+                  Please wait for the application to be submitted before
+                  assigning it for review.
+                </p>
+              </>
+            ) : null}
+
+            {application.app_status == "SUBMITTED" ? (
+              <>
+                <h1>Needs Reviewers Assigned</h1>
+                <p>Please assign reviewers to this application.</p>
+              </>
+            ) : null}
+
+            {application.app_status == "REVIEW" ? (
+              <>
+                <h1>Being Reviewed</h1>
+                <p>This application is currently under review.</p>
+              </>
+            ) : null}
+
+            {!reviewers || reviewers.length < 2 ? (
+              <>
+                <h2 style={{ marginTop: "2rem" }}>
+                  Currently Assigned Reviewers:{" "}
+                  {reviewers ? reviewers.length : 0}
+                </h2>
+                <p>Please assign at least two reviewers to this application.</p>
+                <div
+                  style={{
+                    marginTop: "3em",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingBottom: "150px",
+                  }}
+                >
+                  <CoordinatorAssignReviewers />
+                </div>
+              </>
+            ) : null}
+
             {reviews?.map((review: Review) => (
               <Tile
                 style={{
@@ -454,42 +501,6 @@ const ApplicationPage: NextPage = () => {
                 </div>
               </Tile>
             ))}
-
-            {application.app_status == "DRAFT" ? (
-              <>
-                <h1>This Application is still in draft mode</h1>
-                <p>
-                  Please wait for the application to be submitted before
-                  assigning it for review.
-                </p>
-              </>
-            ) : null}
-
-            {application.app_status == "SUBMITTED" ? (
-              <>
-                <h1>Needs Reviewers Assigned</h1>
-                <p>Please assign reviewers to this application.</p>
-                <div
-                  style={{
-                    marginTop: "3em",
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingBottom: "150px",
-                  }}
-                >
-                  <CoordinatorAssignReviewers />
-                </div>
-              </>
-            ) : null}
-
-            {application.app_status == "REVIEWING" ? (
-              <>
-                <h1>Being Reviewed</h1>
-                <p>This application is currently under review.</p>
-              </>
-            ) : null}
 
             {application.app_status == "PENDING" ? (
               <>
