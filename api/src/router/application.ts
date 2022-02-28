@@ -634,6 +634,7 @@ const createReviewByApplication = async (
         where: {
           application,
         },
+        relations: ["user"],
       });
 
       if (reviews.length === 0) {
@@ -645,7 +646,7 @@ const createReviewByApplication = async (
           application,
           role: RoleType.REVIEWER,
         },
-        relations: ["user"],
+        relations: ["user", "user.reviews"],
       });
 
       // check if all reviewers have made a review
@@ -658,7 +659,7 @@ const createReviewByApplication = async (
       );
 
       if (!allReviewersReviewed) {
-        console.log("Not all reviewers have made a review");
+        console.log("1 Not all reviewers have made a review");
       } else {
         application.app_status = AppStatus.PENDING;
         await application.save();
@@ -666,46 +667,6 @@ const createReviewByApplication = async (
     }
 
     const savedReview = await reviewRepository.save(review);
-
-    if (
-      body.status &&
-      (body.status === ReviewStatus.APPROVED ||
-        body.status === ReviewStatus.DECLINED)
-    ) {
-      // find if every reviewer has made a review, if so check that all
-      // reviewers have made a review with a status
-      const reviews = await reviewRepository.find({
-        where: {
-          application,
-        },
-      });
-
-      if (reviews.length === 0) {
-        throw new InternalError();
-      }
-
-      const reviewers = await UsersApplications.find({
-        where: {
-          application,
-          role: RoleType.REVIEWER,
-        },
-        relations: ["user"],
-      });
-
-      // check if all reviewers have made a review
-      const allReviewersReviewed = reviewers.every((reviewer) => {
-        return reviews.some((review) => {
-          return review.user.id === reviewer.user.id && review.status;
-        });
-      });
-
-      if (!allReviewersReviewed) {
-        console.log("Not all reviewers have made a review");
-      } else {
-        application.app_status = AppStatus.PENDING;
-        await application.save();
-      }
-    }
 
     res.json({
       status: 201,
