@@ -1,4 +1,4 @@
-import { Expose } from "class-transformer";
+import { Exclude, Expose } from "class-transformer";
 import { IsEmail, IsEnum } from "class-validator";
 import { Column, Entity as OrmEntity, Index, OneToMany } from "typeorm";
 
@@ -40,10 +40,18 @@ export default class User extends Entity {
   @Column({ type: "text", nullable: true })
   avatar: string;
 
-  @Expose({ name: "app_connection" })
+  @Expose({ name: "applications" })
+  get applications() {
+    return this.usersApplications?.map((appConnection) => ({
+      ...appConnection.application,
+      application_role: appConnection.role,
+    }));
+  }
+
+  @Exclude()
   @OneToMany(
     () => UsersApplications,
-    (usersApplications) => usersApplications.application
+    (usersApplications) => usersApplications.user
   )
   usersApplications: UsersApplications[];
 

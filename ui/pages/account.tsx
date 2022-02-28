@@ -1,5 +1,5 @@
-import { Login32 } from "@carbon/icons-react";
-import { Button, Dropdown, Form, TextInput } from "carbon-components-react";
+import { Login32, Save32 } from "@carbon/icons-react";
+import { Button, Form, TextInput } from "carbon-components-react";
 import type { NextPage } from "next";
 import React, { useEffect, useState, useContext } from "react";
 import * as api from "../api";
@@ -12,7 +12,6 @@ const AccountPage: NextPage = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [school, setSchool] = useState("");
-  const [role, setRole] = useState("");
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -24,35 +23,24 @@ const AccountPage: NextPage = () => {
       });
       const user: User = res.data;
       if (err_code === 0) {
+        setEmail(user.email ? user.email : "");
         setName(user.name ? user.name : "");
         setBio(user.bio ? user.bio : "");
         setSchool(user.school ? user.school : "");
-        setRole(user.role ? user.role : "");
-
-        const stored_user = await api.getToken();
-        if (stored_user) {
-          setEmail(user.email);
-        }
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  let dropdown_items = [
-    { id: "RESEARCHER", text: "RESEARCHER" },
-    { id: "REVIEWER", text: "REVIEWER" },
-    { id: "COORDINATOR", text: "COORDINATOR" },
-  ];
 
   return (
     <>
       <Form className={styles.form}>
-        <TextInput
-          value={email}
-          id="email"
-          labelText="Email"
-          className={styles.formElements}
-        />
+        <h1
+          style={{
+            marginBottom: "1rem",
+          }}
+        >
+          {email}
+        </h1>
         <TextInput
           className={styles.formElements}
           id="name"
@@ -75,20 +63,6 @@ const AccountPage: NextPage = () => {
           value={school}
           onChange={(e) => setSchool(e.target.value)}
           className={styles.formElements}
-        />
-
-        <Dropdown
-          id="role"
-          titleText="Role Select"
-          helperText="Select your Role"
-          label={role}
-          items={dropdown_items}
-          itemToString={(item) => (item ? item.text : "")}
-          onChange={(e) => {
-            if (e.selectedItem) {
-              setRole(e.selectedItem.id);
-            }
-          }}
         />
 
         <div
@@ -121,7 +95,7 @@ const AccountPage: NextPage = () => {
               nm_ctx.request({
                 method: "PATCH",
                 path: "/users",
-                data: { name: name, bio: bio, school: school, role: role },
+                data: { name: name, bio: bio, school: school },
                 show_progress: true,
               });
             }}

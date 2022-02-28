@@ -16,6 +16,7 @@ import User20 from "@carbon/icons-react/lib/user/20";
 import Home16 from "@carbon/icons-react/lib/home/16";
 import About16 from "@carbon/icons-react/lib/carousel--horizontal/16";
 import { DocumentPdf16, User16 } from "@carbon/icons-react";
+import Link from "next/link";
 
 export default function Head() {
   return (
@@ -41,14 +42,16 @@ export default function Head() {
             <HeaderGlobalAction aria-label="Notifications">
               <Notification20 />
             </HeaderGlobalAction>
-            <a href="/account">
-              <HeaderGlobalAction
-                style={{ marginRight: "1em" }}
-                aria-label="Account"
-              >
-                <User20 />
-              </HeaderGlobalAction>
-            </a>
+            <Link href="/account" passHref>
+              <a>
+                <HeaderGlobalAction
+                  style={{ marginRight: "1em" }}
+                  aria-label="Account"
+                >
+                  <User20 />
+                </HeaderGlobalAction>
+              </a>
+            </Link>
           </HeaderGlobalBar>
           <SideNav
             aria-label="Side navigation"

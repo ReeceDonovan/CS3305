@@ -1,14 +1,13 @@
-import { Loading } from "carbon-components-react";
+import { Button, Loading } from "carbon-components-react";
 import * as api from "../../api";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ApplicationTable from "../ApplicationTable";
-import { NetworkManagerContext } from "../NetworkManager";
+
+import { Add16 } from "@carbon/icons-react";
 
 export default function ReviewerDataTable() {
   const [rowData, setRowdata] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const nm_ctx = useContext(NetworkManagerContext);
 
   useEffect(() => {
     (async () => {
@@ -44,11 +43,16 @@ export default function ReviewerDataTable() {
       {loading == true ? (
         <Loading />
       ) : (
-        <ApplicationTable
-          title={"My Applications"}
-          description={"Applications you've submitted"}
-          rows={rowData}
-        />
+        <>
+          <Button style={{}} renderIcon={Add16}>
+            Create new application
+          </Button>
+          <ApplicationTable
+            title={"My Applications"}
+            description={"Applications you've submitted"}
+            rows={rowData}
+          />
+        </>
       )}
     </>
   );

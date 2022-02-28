@@ -7,8 +7,8 @@ import {
   Tabs,
   TextArea,
   TextInput,
+  Tile,
 } from "carbon-components-react";
-import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 

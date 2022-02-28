@@ -1,3 +1,4 @@
+import { IsEnum } from "class-validator";
 import { Column, Entity as OrmEntity, JoinColumn, ManyToOne } from "typeorm";
 
 import Application from "./application";
@@ -18,7 +19,8 @@ export default class UsersApplications extends Entity {
     Object.assign(this, usersApplications);
   }
 
-  @Column({ type: "enum", enum: RoleType, default: RoleType.SUBMITTER })
+  @Column({ type: "text", enum: RoleType, default: RoleType.SUBMITTER })
+  @IsEnum(RoleType)
   role: RoleType;
 
   @ManyToOne(() => User, (user) => user.usersApplications)

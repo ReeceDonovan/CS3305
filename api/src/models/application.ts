@@ -1,15 +1,17 @@
-import { Expose } from "class-transformer";
+import { Exclude, Expose } from "class-transformer";
+import { IsEnum } from "class-validator";
 import { Column, Entity as OrmEntity, OneToMany } from "typeorm";
 
 import Entity from "./entity";
 import Review, { ReviewStatus } from "./review";
 import UsersApplications from "./usersApplications";
 
-export enum AppStatus{
-  Draft = "DRAFT",
-  Pending = "PENDING",
-  Reviewing = "REVIEWING",
-  Closed = "CLOSED"
+export enum AppStatus {
+  DRAFT = "DRAFT",
+  SUBMITTED = "SUBMITTED",
+  REVIEW = "REVIEW",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
 }
 
 @OrmEntity("applications")
@@ -31,10 +33,18 @@ export default class Application extends Entity {
   @Column({ type: "text", nullable: true })
   field: string;
 
-  @Expose({ name: "user_connection" })
+  @Expose({ name: "users" })
+  get users() {
+    return this.usersApplications?.map((userConnection) => ({
+      ...userConnection.user,
+      application_role: userConnection.role,
+    }));
+  }
+
+  @Exclude()
   @OneToMany(
     () => UsersApplications,
-    (usersApplications) => usersApplications.user,
+    (usersApplications) => usersApplications.application,
     {
       onDelete: "CASCADE",
     }
@@ -46,13 +56,14 @@ export default class Application extends Entity {
   })
   reviews: Review[];
 
-  @Column({type: "bool"})
+  @Column({ type: "bool" })
   hasFile: boolean;
 
   @Column({
-        type: "enum",
-        enum: AppStatus,
-        default: AppStatus.Draft
+    type: "text",
+    default: AppStatus.DRAFT,
+    name: "app_status",
   })
-  app_status: AppStatus;
+  @IsEnum(AppStatus)
+  appStatus: AppStatus;
 }

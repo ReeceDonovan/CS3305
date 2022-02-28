@@ -12,7 +12,7 @@ export const createConn = async () => {
       password: config.get().databaseConfig.password,
       database: config.get().databaseConfig.database,
       synchronize: true,
-      logging: true,
+      logging: false,
       entities: [__dirname + "/../models/*.ts"],
     });
     console.log("Connected to database");

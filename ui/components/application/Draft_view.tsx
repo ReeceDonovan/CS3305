@@ -6,9 +6,7 @@ import {
   TextArea,
   TextInput,
 } from "carbon-components-react";
-import { useContext, useEffect, useState } from "react";
-import { UI_URL } from "../../api";
-import CopyableLink from "../CopyableLink";
+import { useContext, useState } from "react";
 import CustomFileUploader from "../CustomFileUploader";
 import { NetworkManagerContext } from "../NetworkManager";
 
@@ -146,7 +144,12 @@ const Draft_view = (props: { id?: string; init_app?: any | null }) => {
 
   return (
     <>
-      <div>
+      <div
+        style={{
+          width: "80%",
+          margin: "auto",
+        }}
+      >
         <h1
           style={{
             marginTop: "150px",
@@ -162,9 +165,11 @@ const Draft_view = (props: { id?: string; init_app?: any | null }) => {
             maxWidth: "90%",
           }}
         >
-          Ensure that the document you are submitting is in PDF format and
-          <Link href="/about#form"> up to date </Link>. By submitting an
-          application, you agree to the
+          Ensure that the document you are submitting is in PDF format and{" "}
+          <Link href="/about#form">
+            <a> up to date </a>
+          </Link>
+          . By submitting an application, you agree to the {"  "}
           <Link href="/about#terms"> terms and conditions </Link>.
         </p>
 
@@ -177,19 +182,6 @@ const Draft_view = (props: { id?: string; init_app?: any | null }) => {
           Carefully read over your form, ensure all necessary fields are filled.
           Also make sure to include any co-authors and/or supervisors.
         </p>
-        <div style={{ marginBottom: "1em", paddingBottom: "1em" }}>
-          <p
-            style={{
-              float: "right",
-            }}
-          >
-            Link:{" "}
-            <CopyableLink
-              link={`${UI_URL}/application/${app_id ? app_id : ""}`}
-              disabled={app_id ? false : true}
-            />
-          </p>
-        </div>
       </div>
       <Form
         style={{
