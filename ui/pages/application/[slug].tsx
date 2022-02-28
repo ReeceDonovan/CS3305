@@ -15,12 +15,13 @@ import React, { useContext, useEffect, useState } from "react";
 import * as api from "../../api";
 import styles from "../../styles/application.module.css";
 
-import { Review, User } from "../../api/types";
+import { Application, Review, User } from "../../api/types";
 import { Chat16 } from "@carbon/icons-react";
 import Link from "next/link";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 import Draft_view from "../../components/application/Draft_view";
 import StaticApplication from "../../components/application/StaticApplication";
+import ReviewView from "../../components/application/ReviewView";
 
 // const ApplicationPage: NextPage = () => {
 //   const [user, setUser] = useState<User>();
@@ -111,151 +112,6 @@ import StaticApplication from "../../components/application/StaticApplication";
 //         type="container"
 //         scrollIntoView={false}
 //       >
-//         <Tab href="#view" id="view" label="View">
-//           <div>
-//             {application && (
-//               <div className={styles.view}>
-//                 <h2>
-//                   Title: {application.name ? application.name : "No data"}
-//                 </h2>
-//                 <h4>
-//                   Author:{" "}
-//                   {application.submitter?.email
-//                     ? application.submitter.email
-//                     : "No data"}
-//                 </h4>
-//                 <h4>
-//                   Supervisors:{" "}
-//                   {application.supervisors?.length > 0
-//                     ? application.supervisors
-//                         ?.map((supervisor: User) =>
-//                           supervisor.name ? supervisor.name : supervisor.email
-//                         )
-//                         .join(", ")
-//                     : "No data"}
-//                 </h4>
-//                 <h4>
-//                   Coauthors:{" "}
-//                   {application.coauthors
-//                     ? application.coauthors
-//                         ?.map((coauthor: User) =>
-//                           coauthor.name ? coauthor.name : coauthor.email
-//                         )
-//                         .join(", ")
-//                     : "No data"}
-//                 </h4>
-//                 <h4>
-//                   Field of Study:{" "}
-//                   {application.field ? application.field : "No data"}
-//                 </h4>
-//               </div>
-//             )}
-//           </div>
-//           {!pdf && (
-//             <SkeletonPlaceholder
-//               style={{
-//                 width: "100%",
-//                 height: "600px",
-//                 marginBottom: "20px",
-//               }}
-//             />
-//           )}
-//           {pdf && (
-//             <div
-//               style={{
-//                 width: "95%",
-//                 height: "800px",
-//                 resize: "vertical",
-//                 overflow: "auto",
-//                 margin: "auto",
-//               }}
-//             >
-//               <iframe
-//                 src={URL.createObjectURL(
-//                   new Blob([pdf], { type: "application/pdf" })
-//                 )}
-//                 style={{
-//                   width: "92%",
-//                   height: "99%",
-//                   margin: "auto",
-//                   position: "relative",
-//                   left: "7%",
-//                 }}
-//               />
-//             </div>
-//           )}
-//         </Tab>
-
-//         {user?.email == application.submitter?.email && (
-//           <Tab href="#edit" id="edit" label="Edit">
-//             <Form
-//               className={styles.edit}
-//               style={{
-//                 height: "90vh",
-//                 width: "100%",
-//               }}
-//             >
-//               <TextInput
-//                 id="title"
-//                 labelText="Application Title"
-//                 placeholder="Title"
-//                 value={name ? name : ""}
-//                 onChange={(e) => setName(e.target.value)}
-//               />
-
-//               <TextArea
-//                 id="description"
-//                 labelText="Description"
-//                 placeholder="Description"
-//                 value={description ? description : ""}
-//                 onChange={(e) => setDescription(e.target.value)}
-//               />
-
-//               <TextInput
-//                 id="supervisor"
-//                 labelText="Supervisors"
-//                 placeholder="Supervisor"
-//                 value={supervisors ? supervisors : ""}
-//                 onChange={(e) => setSupervisors(e.target.value)}
-//               />
-
-//               <Button
-//                 type="submit"
-//                 disabled={(name === "" || author === "") && supervisors === ""}
-//               >
-//                 Update
-//               </Button>
-//             </Form>
-//           </Tab>
-//         )}
-//         <Tab href="#share" id="share" label="Share">
-//           <span>
-//             <p>Shareable URL (only to co-authors and supervisors):</p>
-//             <br />
-//             <p>
-//               <Link
-//                 href={`/application/${application.id}`}
-//               >{`/application/${application.id}`}</Link>
-//             </p>
-//             <br />
-//             <Button
-//               small
-//               onClick={() => {
-//                 navigator.clipboard
-//                   .writeText(
-//                     `http://localhost:3000/application/${application.id}`
-//                   )
-//                   .then(() => {
-//                     setCopyStatus("Copied to clipboard!");
-//                   });
-//               }}
-//             >
-//               Click to Copy
-//             </Button>
-//             <p>{copyStatus}</p>
-//           </span>
-//         </Tab>
-
 //         {user?.role == "COORDINATOR" ||
 //         user?.email == application.submitter?.email ||
 //         user?.role == "REVIEWER" ? (
@@ -365,30 +221,36 @@ import StaticApplication from "../../components/application/StaticApplication";
 // };
 
 const ApplicationPage = () => {
-  const [application, setApplication] = useState<null | any>(null);
+  const [application, setApplication] = useState<null | Application>(null);
 
   const nm_ctx = useContext(NetworkManagerContext);
 
   const router = useRouter();
   const slug = router.query.slug as string;
 
-  // console.log(slug);
-
   useEffect(() => {
     (async () => {
-      if (slug && slug.length > 0) {
+      if (slug === "new") {
+        setApplication({} as Application);
+      } else if (slug && slug.length > 0) {
         const [res, err_code] = await nm_ctx.request({
           path: `/applications/${slug}`,
           method: "GET",
         });
         if (err_code === 0) {
-          // console.log(res.data);
+          console.log(res.data);
           setApplication(res.data);
         }
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.slug]);
+
+  if (slug === "new") {
+    return (
+      <Draft_view application={application} setApplication={setApplication} />
+    );
+  }
 
   if (!application) return <Loading />;
 
@@ -397,6 +259,14 @@ const ApplicationPage = () => {
 
   if (application.app_status === "PENDING")
     return <StaticApplication application={application} />;
+
+  if (application.app_status === "REVIEWING")
+    return (
+      <>
+        <StaticApplication application={application} />
+        <ReviewView application={application} />
+      </>
+    );
 };
 
 export default ApplicationPage;

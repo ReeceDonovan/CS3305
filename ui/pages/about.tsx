@@ -94,10 +94,10 @@ export default function About(props: { content: string }) {
 export async function getServerSideProps() {
   const data = await axios.get(`${api.API_URL}/about`);
   console.log("Fetched about page");
-  console.log(data.data)
+  console.log(data.data);
   return {
     props: {
       content: data.data,
-    }
+    },
   };
 }

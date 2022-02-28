@@ -18,6 +18,13 @@ export interface User extends BaseEntity {
   reviews?: Review[];
 }
 
+export enum AppStatus{
+  DRAFT = "DRAFT",
+  PENDING = "PENDING",
+  REVIEWING = "REVIEWING",
+  CLOSED = "CLOSED"
+}
+
 export interface Application extends BaseEntity {
   name: string;
   description?: string;
@@ -50,13 +57,6 @@ export interface Review extends BaseEntity {
 export interface FileRef {
   name: string;
   status: FileStatus;
-}
-
-export enum AppStatus {
-  Draft,
-  Review,
-  Approval,
-  Rejection,
 }
 
 export interface configInterface {

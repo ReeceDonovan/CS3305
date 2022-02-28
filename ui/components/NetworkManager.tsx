@@ -122,7 +122,12 @@ export const NetworkManager = (props: any) => {
 
         setReq_state(loc_req_state);
         const err_code = 2;
-        return [e.response.data as StandardResponse, err_code];
+        return [
+          e.response?.data
+            ? (e.response.data as StandardResponse)
+            : ({} as StandardResponse),
+          err_code,
+        ];
       }
     },
     fetchFile: async (params: NiceParams) => {
@@ -173,7 +178,12 @@ export const NetworkManager = (props: any) => {
 
         setReq_state(loc_req_state);
         const err_code = 2;
-        return [e.response.data as StandardResponse, err_code];
+        return [
+          e.response?.data
+            ? (e.response.data as StandardResponse)
+            : ({} as StandardResponse),
+          err_code,
+        ];
       }
     },
   };

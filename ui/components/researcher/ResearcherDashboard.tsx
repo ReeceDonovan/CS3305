@@ -11,25 +11,25 @@ export default function ReviewerDataTable() {
 
   useEffect(() => {
     (async () => {
-      const resp = await api.request({
+      const [res, err_code] = await nm_ctx.request({
         method: "GET",
         path: "/applications",
       });
-      console.log(resp);
-      if (resp?.data != null) {
-        console.log(resp.data);
-        for (let i = 0; i < resp.data.length; i++) {
-          resp.data[i].submitter = resp.data[i].submitter?.email;
-          resp.data[i].updatedAt = new Date(
-            resp.data[i].updatedAt
+      console.log(res);
+      if (err_code === 0) {
+        console.log(res.data);
+        for (let i = 0; i < res.data.length; i++) {
+          res.data[i].submitter = res.data[i].submitter?.email;
+          res.data[i].updatedAt = new Date(
+            res.data[i].updatedAt
           ).toLocaleDateString();
-          resp.data[i].createdAt = new Date(
-            resp.data[i].createdAt
+          res.data[i].createdAt = new Date(
+            res.data[i].createdAt
           ).toLocaleDateString();
-          console.log(resp.data[i]);
+          console.log(res.data[i]);
         }
 
-        setRowdata(resp.data);
+        setRowdata(res.data);
         setLoading(false);
       } else {
         setRowdata([]);

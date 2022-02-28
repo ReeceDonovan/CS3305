@@ -6,22 +6,18 @@ import {
   TextArea,
   TextInput,
 } from "carbon-components-react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { UI_URL } from "../../api";
+import { Application } from "../../api/types";
+import CopyableLink from "../CopyableLink";
 import CustomFileUploader from "../CustomFileUploader";
 import { NetworkManagerContext } from "../NetworkManager";
 
-const Draft_view = (props: { id?: string; init_app?: any | null }) => {
-  const init_app = props.init_app ? props.init_app : {};
-  const [name, setName] = useState<string>(init_app?.name ? init_app.name : "");
-  const [description, setDescription] = useState<string>(
-    init_app?.description ? init_app.description : ""
-  );
-  const [field, setField] = useState<string>(
-    init_app?.field ? init_app.field : ""
-  );
-  const [coauthors, setCoauthor] = useState<string[]>([]);
-  const [supervisors, setSupervisors] = useState<string[]>([]);
-
+const Draft_view = (props: {
+  application: Application;
+  setApplication: any;
+}) => {
+  const app = props.application;
   const [sync_timeout, setSync_timeout] = useState<null | NodeJS.Timeout>(null);
 
   const [prev_app, setPrev_app] = useState<{
@@ -48,7 +44,14 @@ const Draft_view = (props: { id?: string; init_app?: any | null }) => {
 
   const nm_ctx = useContext(NetworkManagerContext);
 
-  const sync_application = () => {
+  const [getting_id, setGetting_id] = useState(false);
+
+  const sync_application = async () => {
+    if (getting_id === true) {
+      setSync_timeout(setTimeout(sync_application, 2000));
+      return;
+    }
+
     setSync_timeout(null);
 
     //create diff application
@@ -95,21 +98,10 @@ const Draft_view = (props: { id?: string; init_app?: any | null }) => {
       return;
     }
 
-    setPrev_app({ ...prev_app, ...diff_app });
-    nm_ctx.request({
-      method: "PATCH",
-      path: `/applications/${app_id}`,
-      data: diff_app,
-    });
-  };
+    let id = app_id;
 
-  const [getting_id, setGetting_id] = useState(false);
-
-  const debounce_sync = async () => {
-    //if id_get attempt is being attemped
-    if (getting_id === true) return;
     //get id if it doesnt exist
-    if (app_id === null) {
+    if (id === null) {
       // first negotiate a application id
       setGetting_id(true);
       const [res, err_code] = await nm_ctx.request({
@@ -119,9 +111,22 @@ const Draft_view = (props: { id?: string; init_app?: any | null }) => {
       setGetting_id(false);
       if (err_code === 0) {
         window.history.pushState(null, "", `/application/${res.data}`);
+        id = res.data;
         setApp_id(res.data);
       }
     }
+
+    setPrev_app({ ...prev_app, ...diff_app });
+    nm_ctx.request({
+      method: "PATCH",
+      path: `/applications/${id}`,
+      data: diff_app,
+    });
+  };
+
+  const debounce_sync = async () => {
+    //if id_get attempt is being attemped
+    if (getting_id === true) return;
 
     if (sync_timeout == null) {
       setSync_timeout(setTimeout(sync_application, 2000));
@@ -194,7 +199,7 @@ const Draft_view = (props: { id?: string; init_app?: any | null }) => {
           name="name"
           labelText="Name of research project"
           placeholder="Name of research project"
-          value={name}
+          value={app.name}
           style={{
             marginBottom: "1em",
           }}
@@ -253,7 +258,7 @@ const Draft_view = (props: { id?: string; init_app?: any | null }) => {
         />
 
         <div>
-          {coauthors.map((elem, i) => (
+          {app.coauthors.map((elem, i) => (
             <Tag
               key={i}
               onClick={(e) => {

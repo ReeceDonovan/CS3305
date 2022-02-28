@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import AppMetadata from "../../pages/application/AppMetadata";
-import PDFView from "../../pages/application/PDFView";
+import AppMetadata from "./AppMetadata";
+import PDFView from "./PDFView";
 import { NetworkManagerContext } from "../NetworkManager";
 
 const StaticApplication = (props: { application: any }) => {

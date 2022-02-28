@@ -42,6 +42,8 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
     });
     if (err_code === 0) {
       setFile({ name: new_file.name, status: "edit" });
+    } else {
+      setFile(null);
     }
   };
 

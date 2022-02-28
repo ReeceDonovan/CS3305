@@ -10,6 +10,7 @@ export enum AppStatus {
   DRAFT = "DRAFT",
   SUBMITTED = "SUBMITTED",
   REVIEW = "REVIEW",
+  CLOSED = "CLOSED",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
 }
