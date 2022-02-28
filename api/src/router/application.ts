@@ -18,7 +18,7 @@ import {
 import { InternalError } from "../errors/internal-error";
 import { protectedRoute } from "../middleware/protected-route";
 import reqUser from "../middleware/store-user";
-import Application from "../models/application";
+import Application, { AppStatus } from "../models/application";
 import Review from "../models/review";
 import User, { UserType } from "../models/user";
 import UsersApplications, { RoleType } from "../models/usersApplications";
@@ -585,6 +585,10 @@ const assignReviewers = async (
       const savedRelation = await userApplicationRepository.save(relation);
       if (!savedRelation) throw new InternalError();
     });
+
+    application.app_status = AppStatus.REVIEW;
+
+    await application.save();
 
     return res.json({
       status: 200,
