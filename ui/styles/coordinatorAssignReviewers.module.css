@@ -1,10 +1,12 @@
 .container {
+  width: 100%;
   display: block;
 }
 
 .dropdown {
+  width: 30%;
+  margin: auto;
   display: block;
-  margin: 20px;
 }
 
 .listReviewers {
@@ -16,5 +18,10 @@
   display: block;
   margin-top: 20px;
   float: right;
+}
 
+@media screen and (max-width: 800px) {
+  .dropdown {
+    width: 60%;
+  }
 }
