@@ -1,4 +1,5 @@
 import { createConnection } from "typeorm";
+import User, { UserType } from "./user";
 
 import config from "../config/config";
 
@@ -16,6 +17,19 @@ export const createConn = async () => {
       entities: [__dirname + "/../models/*.ts"],
     });
     console.log("Connected to database");
+
+    const coordinatorEmails = config.get().coordinatorEmails;
+    if (coordinatorEmails.length > 0) {
+      coordinatorEmails.forEach(async (email) => {
+        if (email !== "") {
+          const user = await User.create({
+            email,
+            role: UserType.COORDINATOR,
+          });
+          console.log("Created coordinator user: ", user.email);
+        }
+      });
+    }
   } catch (err) {
     console.error(err);
   }

@@ -36,7 +36,7 @@ export interface UsersApplications extends BaseEntity {
   application?: Application;
 }
 
-export interface Review extends BaseEntity{
+export interface Review extends BaseEntity {
   comment?: string;
   status: string;
   application_id?: number;
@@ -45,18 +45,18 @@ export interface Review extends BaseEntity{
   user?: User;
 }
 
-export interface FileRef{
+export interface FileRef {
   name: string;
   status: FileStatus;
 }
 
-export enum AppStatus{
-  Draft,
-  Submitted,
-  Pending,
-  Review,
-  Approval,
-  Rejection
+export enum AppStatus {
+  DRAFT = "DRAFT",
+  SUBMITTED = "SUBMITTED",
+  PENDING = "PENDING",
+  REVIEW = "REVIEW",
+  APPROVAL = "APPROVED",
+  REJECTED = "REJECTED",
 }
 
 export interface configInterface {

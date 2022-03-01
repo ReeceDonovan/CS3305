@@ -178,10 +178,19 @@ const getApplicationForm = async (
 };
 
 // need req otherwise res.locals.user is undefined
-const createApplication = async (_req: Request, res: Response) => {
+const createApplication = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
-  const new_application = await new Application({ hasFile: false }).save();
+  const body: Partial<Application> = req.body;
+
+  const new_application = await new Application({
+    ...body,
+    hasFile: false,
+    app_status: AppStatus.DRAFT,
+    id: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+  }).save();
 
   const userApplicationRepository: Repository<UsersApplications> =
     getRepository(UsersApplications);

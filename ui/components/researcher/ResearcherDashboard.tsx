@@ -1,10 +1,8 @@
-import { Button, Loading } from "carbon-components-react";
+import { Loading } from "carbon-components-react";
 import * as api from "../../api";
 import { useContext, useEffect, useState } from "react";
 import ApplicationTable from "../ApplicationTable";
 import { NetworkManagerContext } from "../NetworkManager";
-import { Add16 } from "@carbon/icons-react";
-
 export default function ReviewerDataTable() {
   const [rowData, setRowdata] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,9 +45,6 @@ export default function ReviewerDataTable() {
         <Loading />
       ) : (
         <>
-          <Button style={{}} renderIcon={Add16}>
-            Create new application
-          </Button>
           <ApplicationTable
             title={"My Applications"}
             description={"Applications you've submitted"}

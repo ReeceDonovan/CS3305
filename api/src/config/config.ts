@@ -46,6 +46,7 @@ const defaultConfig: configInterface = {
     password: "postgres",
     database: "postgres",
   },
+  coordinatorEmails: [""],
 };
 
 export interface configInterface {
@@ -69,6 +70,7 @@ export interface configInterface {
     password: string;
     database: string;
   };
+  coordinatorEmails: string[];
 }
 
 interface emailConfigInterface {

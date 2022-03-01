@@ -9,23 +9,24 @@ import {
   Button,
   Dropdown,
   Form,
-  SkeletonPlaceholder,
   Tab,
   Tabs,
+  Tag,
   TextArea,
   TextInput,
   Tile,
 } from "carbon-components-react";
+import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
-
 import * as api from "../../api";
 import { Application, AppStatus, Review, User } from "../../api/types";
 import CoordinatorAssignReviewers from "../../components/coordinator/CoordinatorAssignReviewers";
+import CustomFileUploader from "../../components/CustomFileUploader";
 import { NetworkManagerContext } from "../../components/NetworkManager";
+import SubmitWarning from "../../components/SubmitWarning";
 import styles from "../../styles/application.module.css";
 
-import type { NextPage } from "next";
 const ApplicationPage: NextPage = () => {
   const router = useRouter();
 
@@ -33,12 +34,7 @@ const ApplicationPage: NextPage = () => {
   const [application, setApplication] = useState<Application | undefined>();
   const [pdf, setPDF] = useState<ArrayBuffer>();
 
-  const [name, setName] = useState<string>("No name");
-  const [description, setDescription] = useState<string>("No data");
-
   const [submitter, setSubmitter] = useState<User | undefined>();
-  const [coauthors, setCoauthors] = useState<User[] | undefined>();
-  const [supervisors, setSupervisors] = useState<User[] | undefined>();
   const [reviewers, setReviewers] = useState<User[]>([]);
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -47,9 +43,18 @@ const ApplicationPage: NextPage = () => {
   const [comment, setComment] = useState<string>("No comment");
   const commentRef = React.useRef<HTMLTextAreaElement>();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [editApp, setEditApp] = useState<Partial<Application>>({
+    name: "No name",
+    description: "No description",
+  } as Partial<Application>);
+  const [supervisors, setSupervisors] = useState<string[]>([]);
+  const [coauthors, setCoauthors] = useState<string[]>([]);
 
   const nm_ctx = useContext(NetworkManagerContext);
+
+  const emailRegexp = new RegExp(
+    "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+  );
 
   useEffect(() => {
     (async () => {
@@ -62,7 +67,8 @@ const ApplicationPage: NextPage = () => {
 
   useEffect(() => {
     (async () => {
-      if (isLoading) {
+      // if (isLoading) {
+      if (router.isReady) {
         const slug = router.query.slug as string;
         if (slug && slug.length > 0) {
           const [res, err_code] = await nm_ctx.request({
@@ -76,25 +82,22 @@ const ApplicationPage: NextPage = () => {
             // make sure application and all other data is not undefined
 
             setApplication(application);
-            setName(application.name);
-            setDescription(
-              application.description
-                ? application.description
-                : "No description"
-            );
+            setEditApp(application);
 
             setSubmitter(
               application.user_connection?.find((u) => u.role === "SUBMITTER")
                 ?.user
             );
+
+            console.log(application.user_connection);
             const coauthors = application.user_connection
               ?.filter((u) => u.role === "COAUTHOR")
-              ?.map((u) => u.user as User);
+              ?.map((u) => (u.user?.email ? u.user.email : ""));
             setCoauthors(coauthors ? coauthors : []);
 
             const supervisors = application.user_connection
               ?.filter((u) => u.role === "SUPERVISOR")
-              ?.map((u) => u.user as User);
+              ?.map((u) => (u.user?.email ? u.user.email : ""));
             setSupervisors(supervisors ? supervisors : []);
 
             const reviewers = application.user_connection
@@ -110,10 +113,14 @@ const ApplicationPage: NextPage = () => {
         api.fetchPDF(slug).then((response) => {
           setPDF(response);
         });
-        setIsLoading(false);
+      } else {
+        console.log("ROUTER IS NOT READY");
+        // }
       }
     })();
-  }, [isLoading, nm_ctx, router.query.slug]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.slug]);
 
   const sendReview = async () => {
     console.log("sending review");
@@ -159,7 +166,7 @@ const ApplicationPage: NextPage = () => {
         {/* View Tab */}
         <Tab href="#view" id="view" label="View">
           <div>
-            {application && (
+            {application !== null && (
               <div className={styles.view}>
                 <h2>
                   Title: {application.name ? application.name : "No name"}
@@ -168,13 +175,13 @@ const ApplicationPage: NextPage = () => {
                 <h4>
                   Supervisors:{" "}
                   {supervisors && supervisors.length > 0
-                    ? supervisors.map((supervisor) => supervisor.email)
+                    ? supervisors
                     : "No supervisors"}
                 </h4>
                 <h4>
                   Coauthors:{" "}
                   {coauthors && coauthors.length > 0
-                    ? coauthors.map((coauthor) => coauthor.email)
+                    ? coauthors
                     : "No coauthors"}
                 </h4>
                 <h4>
@@ -184,15 +191,6 @@ const ApplicationPage: NextPage = () => {
               </div>
             )}
           </div>
-          {!pdf && (
-            <SkeletonPlaceholder
-              style={{
-                width: "100%",
-                height: "600px",
-                marginBottom: "20px",
-              }}
-            />
-          )}
           {pdf && (
             <div
               style={{
@@ -223,7 +221,7 @@ const ApplicationPage: NextPage = () => {
         {user &&
           submitter &&
           user.email == submitter.email &&
-          application.app_status == AppStatus.Draft && (
+          application.app_status == AppStatus.DRAFT && (
             <Tab href="#edit" id="edit" label="Edit">
               <Form
                 className={styles.edit}
@@ -236,45 +234,142 @@ const ApplicationPage: NextPage = () => {
                   id="title"
                   labelText="Application Title"
                   placeholder="Title"
-                  value={name ? name : ""}
-                  onChange={(e) => setName(e.target.value)}
+                  value={editApp?.name ? editApp.name : ""}
+                  onChange={(e) => {
+                    editApp.name = e.target.value;
+                    setEditApp(editApp);
+                  }}
                 />
 
                 <TextArea
                   id="description"
                   labelText="Description"
                   placeholder="Description"
-                  value={description ? description : ""}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-
-                <TextInput
-                  id="supervisor"
-                  labelText="Supervisors"
-                  placeholder="Supervisor"
-                  value={
-                    supervisors
-                      ? supervisors.map((s) => s.email).join(", ")
-                      : ""
-                  }
-                  // FIXME: This is a temp solution
+                  value={editApp?.description ? editApp.description : ""}
                   onChange={(e) => {
-                    setSupervisors(
-                      e.target.value
-                        .split(",")
-                        .map((s) => s.trim())
-                        .map((s) => ({ email: s })) as User[]
-                    );
+                    editApp.description = e.target.value;
+                    setEditApp(editApp);
                   }}
                 />
 
+                <TextInput
+                  id="coauthors"
+                  name="coauthors"
+                  labelText="Co-authors"
+                  placeholder="Co-authors"
+                  style={{
+                    marginBottom: "1em",
+                  }}
+                  onKeyDown={(e) => {
+                    const t = e.target as HTMLInputElement;
+                    if ((e.code === "Enter" || e.code === "Tab") && t.value) {
+                      const t = e.target as HTMLInputElement;
+                      if (t.value && t.value.length > 0) {
+                        if (emailRegexp.test(t.value)) {
+                          setCoauthors([...coauthors, t.value]);
+                          t.value = "";
+                        }
+                      }
+                      e.preventDefault();
+                    }
+                  }}
+                />
+
+                <div
+                  style={{
+                    marginLeft: "1em",
+                  }}
+                >
+                  {coauthors.map((elem, i) => (
+                    <Tag
+                      style={{
+                        margin: "0.4em ",
+                      }}
+                      key={i}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        coauthors.splice(i, 1);
+                        setCoauthors([...coauthors]);
+                      }}
+                    >
+                      {elem}
+                    </Tag>
+                  ))}
+                </div>
+
+                <TextInput
+                  id="supervisors"
+                  name="supervisors"
+                  labelText="Supervisors"
+                  placeholder="Supervisors"
+                  style={{
+                    marginBottom: "1em",
+                  }}
+                  onKeyDown={(e) => {
+                    const t = e.target as HTMLInputElement;
+                    if ((e.code === "Enter" || e.code === "Tab") && t.value) {
+                      if (t && t.value.length > 0) {
+                        if (emailRegexp.test(t.value)) {
+                          setSupervisors([...supervisors, t.value]);
+                          t.value = "";
+                        }
+                      }
+                      e.preventDefault();
+                    }
+                  }}
+                />
+
+                <div>
+                  {supervisors.map((elem, i) => (
+                    <Tag
+                      key={i}
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        supervisors.splice(i, 1);
+                        setSupervisors([...supervisors]);
+                      }}
+                    >
+                      {elem}
+                    </Tag>
+                  ))}
+                </div>
+
+                <CustomFileUploader
+                  init_file={pdf ? "form.pdf" : null}
+                  add_remote_file_url={
+                    application.id
+                      ? `/applications/${application.id}/form`
+                      : null
+                  }
+                  get_add_remote_file_url={async () => {
+                    return `/applications/${application.id}/form`;
+                  }}
+                />
+
+                <SubmitWarning />
+
                 <Button
                   type="submit"
-                  disabled={(name === "" || !submitter) && !supervisors}
+                  onClick={async () => {
+                    await nm_ctx.request({
+                      path: `/applications/${application.id}`,
+                      method: "PATCH",
+                      data: {
+                        ...editApp,
+                        coauthors: coauthors.length > 0 ? coauthors : null,
+                        supervisors:
+                          supervisors.length > 0 ? supervisors : null,
+                      },
+                      show_progress: true,
+                    });
+                  }}
                 >
                   Update
                 </Button>
                 <Button
+                  style={{
+                    marginBottom: "2rem",
+                  }}
                   disabled={application.id ? false : true}
                   onClick={() => {
                     nm_ctx.request({
@@ -424,7 +519,7 @@ const ApplicationPage: NextPage = () => {
         {/* Coordinator Tab */}
         {user?.role == "COORDINATOR" ? (
           <Tab href="#coordinator" id="coordinator" label="Coordinator">
-            {application.app_status == AppStatus.Draft ? (
+            {application.app_status == AppStatus.DRAFT ? (
               <>
                 <h1>This Application is still in draft mode</h1>
                 <p>
@@ -434,14 +529,14 @@ const ApplicationPage: NextPage = () => {
               </>
             ) : null}
 
-            {application.app_status == AppStatus.Submitted ? (
+            {application.app_status == AppStatus.SUBMITTED ? (
               <>
                 <h1>Needs Reviewers Assigned</h1>
                 <p>Please assign reviewers to this application.</p>
               </>
             ) : null}
 
-            {application.app_status == AppStatus.Review ? (
+            {application.app_status == AppStatus.REVIEW ? (
               <>
                 <h1>Being Reviewed</h1>
                 <p>This application is currently under review.</p>
@@ -518,7 +613,7 @@ const ApplicationPage: NextPage = () => {
               </Tile>
             ))}
 
-            {application.app_status == AppStatus.Pending ? (
+            {application.app_status == AppStatus.PENDING ? (
               <>
                 <h1>Pending Outcome</h1>
                 <p>
