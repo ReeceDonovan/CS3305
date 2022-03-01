@@ -128,6 +128,8 @@ const ApplicationPage: NextPage = () => {
         // }
       }
     })();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.slug]);
 
   const sendReview = async () => {
