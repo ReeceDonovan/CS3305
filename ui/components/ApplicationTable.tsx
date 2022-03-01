@@ -1,5 +1,8 @@
+import { Add16, RowInsert16 } from "@carbon/icons-react";
 import {
+  Button,
   DataTable,
+  Modal,
   Table,
   TableBody,
   TableCell,
@@ -9,9 +12,16 @@ import {
   TableRow,
   TableToolbar,
   TableToolbarContent,
+  TextArea,
 } from "carbon-components-react";
 
 import Link from "next/link";
+import React, { useContext } from "react";
+import { TextInput } from 'carbon-components-react';
+
+import styles from '../styles/ApplicationTable.module.css'
+import { Application } from '../api/types';
+import { NetworkManagerContext } from "./NetworkManager";
 
 ApplicationTable.defaultProps = {
   title: "Applications",
@@ -48,6 +58,14 @@ export default function ApplicationTable(props: {
   rows: Array<Object>;
 }) {
   const headerData = props.headers;
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [newApp, setNewApp] = React.useState<Partial<Application> | null>({
+    name: "",
+    description: "",
+  });
+
+  
+  const nm_ctx = useContext(NetworkManagerContext);
 
   return (
     <>
@@ -72,7 +90,13 @@ export default function ApplicationTable(props: {
         }) => (
           <TableContainer title={props.title} description={props.description}>
             <TableToolbarContent>
-              <TableToolbar aria-label="data table toolbar"></TableToolbar>
+              <TableToolbar aria-label="data table toolbar">
+                {props.title === "My Applications" && (
+                  <Button renderIcon={Add16} onClick={() => {setModalOpen(true)}} >
+                    Create new Application
+                  </Button>
+                )}
+              </TableToolbar>
             </TableToolbarContent>
             <Table {...getTableProps()}>
               <TableHead>
@@ -131,6 +155,50 @@ export default function ApplicationTable(props: {
           </TableContainer>
         )}
       </DataTable>
+      <Modal
+        open={modalOpen}
+        onRequestClose={() => {setModalOpen(false)}}
+        onRequestSubmit={async () => {
+          
+          const [res, err] = await nm_ctx.request({
+            path: "/applications",
+            method: "POST",
+            data: newApp,
+          })
+
+          if (err) {
+            console.error(err)
+          } else {
+            setModalOpen(false)
+            props.rows.push(res)
+          }
+
+          console.log("Uh")
+        }}
+
+        preventCloseOnClickOutside={false}
+        title="New Application"
+
+        primaryButtonText="Create"
+        secondaryButtonText="Cancel"
+        >
+          {/* form with title and description of application */}
+          <div className={styles.modal}>
+            <h1>New Application</h1>
+            <TextInput
+              id="name"
+              labelText="Name"
+              placeholder="Name of your application"
+              onChange={(e) => {setNewApp({...newApp, name: e.target.value})}}
+            />
+            <TextArea
+              id="description"
+              labelText="Description"
+              placeholder="Description of your application"
+              onChange={(e) => {setNewApp({...newApp, description: e.target.value})}}
+            />
+          </div>
+        </Modal>
     </>
   );
 }

@@ -47,9 +47,6 @@ export default function ReviewerDataTable() {
         <Loading />
       ) : (
         <>
-          <Button style={{}} renderIcon={Add16}>
-            Create new application
-          </Button>
           <ApplicationTable
             title={"My Applications"}
             description={"Applications you've submitted"}
