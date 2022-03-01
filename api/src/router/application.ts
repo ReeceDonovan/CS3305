@@ -586,7 +586,7 @@ const assignReviewers = async (
       if (!savedRelation) throw new InternalError();
     });
 
-    application.app_status = AppStatus.REVIEW;
+    application.appStatus = AppStatus.REVIEW;
 
     await application.save();
 
@@ -661,7 +661,7 @@ const createReviewByApplication = async (
       if (!allReviewersReviewed) {
         console.log("1 Not all reviewers have made a review");
       } else {
-        application.app_status = AppStatus.PENDING;
+        application.appStatus = AppStatus.PENDING;
         await application.save();
       }
     }

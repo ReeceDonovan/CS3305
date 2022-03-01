@@ -170,6 +170,13 @@ const ApplicationPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.slug]);
 
+  useEffect(()=>{
+    (async () => {const user = await getToken();
+    if (user){
+      setUser(user);
+    }})();
+  },[]);
+
   if (!application) return <Loading />;
 
   if (slug === "new" && application.id === 0) {
@@ -182,7 +189,7 @@ const ApplicationPage = () => {
       />
     );
   } else {
-    console.log(application.appStatus);
+    console.log(application.app_status);
     return (
       <Tabs
         style={{
@@ -191,7 +198,7 @@ const ApplicationPage = () => {
         type="container"
         scrollIntoView={false}
       >
-        {application.appStatus === "DRAFT" && (
+        {application.app_status === "DRAFT" && (
           <Tab href="#edit" id="edit" label="Edit">
             <Draft_view
               application={application}
@@ -201,7 +208,7 @@ const ApplicationPage = () => {
           </Tab>
         )}
 
-        {((application.appStatus === "DRAFT" ||
+        {((application.app_status === "DRAFT" ||
           application.status === "SUBMITTED") && (
           <Tab href="#view" id="view" label="View">
             <StaticApplication application={application} />
