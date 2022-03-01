@@ -12,7 +12,7 @@ interface CustomFileUploaderProps extends FileUploaderDropContainerProps {
   add_remote_file_url: string | null;
   delete_remote_file_url?: string;
   get_add_remote_file_url?: () => Promise<string>;
-  init_file: string | null;
+  init_file?: string;
 }
 
 export default function CustomFileUploader(props: CustomFileUploaderProps) {
