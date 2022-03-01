@@ -14,7 +14,7 @@ export const createConn = async () => {
       database: config.get().databaseConfig.database,
       synchronize: true,
       logging: false,
-      entities: [__dirname + "/../models/*.ts"],
+      entities: [__dirname + "/../models/*"],
     });
     console.log("Connected to database");
 
