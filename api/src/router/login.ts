@@ -19,7 +19,7 @@ loginRouter.get("/", (_req: express.Request, res: express.Response) => {
   res.redirect(
     `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/userinfo.email&client_id=${
       config.get().oauthConfig.oauthClientId
-    }&redirect_uri=http://localhost:8000/login/callback&response_type=code`
+    }&redirect_uri=${config.get().apiURL}/login/callback&response_type=code`
   );
 });
 
