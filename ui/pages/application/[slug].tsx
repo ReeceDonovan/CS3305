@@ -2,7 +2,7 @@ import { Button, Loading, Tab, Tabs } from "carbon-components-react";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
-import { StringExtendedApplication, User } from "../../api/types";
+import { AppStatus, StringExtendedApplication, User } from "../../api/types";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 import Draft_view from "../../components/application/Draft_view";
 import StaticApplication from "../../components/application/StaticApplication";
@@ -119,29 +119,29 @@ const ApplicationPage = () => {
       if (slug && slug === "new") {
         setApplication({
           id: 0,
+          createdAt: "",
+          updatedAt: "",
           name: "",
           description: "",
           field: "",
           hasFile: false,
+          app_status: AppStatus.DRAFT,
           coauthors: [],
           submitter: "",
           supervisors: [],
-          appStatus: "DRAFT",
-          createdAt: "",
-          updatedAt: "",
         } as StringExtendedApplication);
         setPrev_app({
           id: 0,
+          createdAt: "",
+          updatedAt: "",
           name: "",
           description: "",
           field: "",
           hasFile: false,
+          app_status: AppStatus.DRAFT,
           coauthors: [],
           submitter: "",
           supervisors: [],
-          appStatus: "DRAFT",
-          createdAt: "",
-          updatedAt: "",
         } as StringExtendedApplication);
       } else if (slug && slug.length > 0) {
         const [res, err_code] = await nm_ctx.request({
@@ -201,13 +201,12 @@ const ApplicationPage = () => {
           </Tab>
         )}
 
-        {(application.appStatus === "DRAFT" ||
+        {((application.appStatus === "DRAFT" ||
           application.status === "SUBMITTED") && (
           <Tab href="#view" id="view" label="View">
             <StaticApplication application={application} />
             {user?.role != "RESEARCHER" && (
-              <></>
-              // <ReviewView application={application as Application} />
+              <ReviewView application={application as Application} />
             )}
           </Tab>
         )}

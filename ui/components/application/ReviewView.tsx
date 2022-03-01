@@ -1,9 +1,15 @@
-import { Chat16 } from "@carbon/icons-react";
-import { InlineLoading, ModalWrapper, TextArea, Tile } from "carbon-components-react";
+import { Checkmark16, Close16 } from "@carbon/icons-react";
+import {
+  Button,
+  Dropdown,
+  InlineLoading,
+  TextArea,
+} from "carbon-components-react";
+import React from "react";
 import { useContext, useState } from "react";
 import { Application, Review } from "../../api/types";
-import styles from "../../styles/application.module.css"; 
 import { NetworkManagerContext } from "../NetworkManager";
+import ReviewTile from "./ReviewTile";
 
 const ReviewView = (props: { application: Application }) => {
   const application = props.application;
@@ -19,104 +25,154 @@ const ReviewView = (props: { application: Application }) => {
 
   return (
     <>
-      {application?.reviews?.map((review: Review, i: Number) =>
-        review.comment ? (
-          <Tile className={styles.reviewTile}>
-            {i == 0 ? (
-              <div
+      {application.reviews?.map((review: Review) => {
+        <ReviewTile review={review} />;
+      })}
+
+      <TextArea
+        style={{
+          width: "calc(100% - 4rem)",
+          margin: "auto",
+        }}
+        // @ts-expect-error
+        ref={commentRef}
+        rows={12}
+        labelText="Review Comment"
+        helperText="Summary of thoughts that motivated your review choice"
+        onChange={(e) => setComment(e.target.value)}
+      />
+
+      <div
+        style={{
+          marginTop: "3em",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          paddingBottom: "150px",
+        }}
+      >
+        <Dropdown
+          style={{
+            width: "200px",
+            margin: "0px 50px",
+          }}
+          id="review-status"
+          items={[
+            { id: "option-1", text: "APPROVED", icon: Checkmark16 },
+            { id: "option-2", text: "REJECTED", icon: Close16 },
+          ]}
+          itemToString={(item) => (item ? item.text : "")}
+          itemToElement={(item) => (
+            <>
+              {React.createElement(item.icon)}
+              <span
                 style={{
-                  textAlign: "center",
-                  fontSize: "1.5rem",
+                  paddingLeft: "1rem",
+                  paddingBottom: "1rem",
                 }}
               >
-                <h2>Application submitted</h2>
-              </div>
-            ) : (
-              <>
-                <div>{review.comment ? review.comment : ""}</div>
-                <div>
-                  {review.user
-                    ? review.user?.name
-                      ? review.user.name
-                      : review.user.email
-                    : "No data"}
-                </div>
-              </>
-            )}
-          </Tile>
-        ) : (
-          <h3 style={{ textAlign: "center" }}>
-            Added {review.status} status
-          </h3>
-        )
-      )}
-      <div className={styles.reviewControls}>
-        <ModalWrapper
-          shouldSubmitOnEnter={false}
-          handleSubmit={(): boolean => {
-            nm_ctx
-              .request({
-                path: `/reviews/${application.id}`,
-                method: "POST",
-                data: {
-                  comment: comment,
-                },
-              })
-              .then(([res, err_code]) => {
-                if (err_code == 0) {
-                  setComment("");
-                }
-              });
-            return true;
+                {item.text}
+              </span>
+            </>
+          )}
+          // @ts-expect-error
+          renderSelectedItem={(item) => (
+            <>
+              {React.createElement(item.icon)}
+              <span
+                style={{
+                  paddingLeft: "1rem",
+                  paddingBottom: "1rem",
+                }}
+              >
+                {item.text}
+              </span>
+            </>
+          )}
+          label={"Status"}
+          onChange={(e) => {
+            if (e.selectedItem) setReviewStatus(e.selectedItem.text);
           }}
-          onSubmit={async (_e) => {
-            const [res, err_code] = await nm_ctx.request({
-              path: `/review/${application.id}`,
-              method: "POST",
-              data: {
-                comment: comment,
-              },
-            });
-            if (err_code === 0) {
-              setComment("");
-              setReviews([...reviews, res.data]);
-            }
-          }}
-          buttonTriggerText="Add Comment"
-          renderTriggerButtonIcon={Chat16}
-          triggerButtonIconDescription="Add Comment"
-          modalHeading="Add Comment"
-          modalLabel="Add Comment"
-        >
-          <div style={{ maxHeight: "60vh" }}>
-            <TextArea
-              labelText="Add Comment"
-              onChange={(e) => setComment(e.target.value)}
-            />
-          </div>
-        </ModalWrapper>
-        <ModalWrapper
-          shouldSubmitOnEnter={false}
-          handleSubmit={(): boolean => {
-            if (reviewStatus === "") {
-              setstatusErrMsg("Please select a status");
-              return false;
-            }
+        />
 
-            nm_ctx.request({
-              path: `/reviews/${application.id}`,
-              method: "POST",
-              data: {
-                status: reviewStatus,
-              },
-            });
-            return true;
+        <Button
+          style={{
+            margin: "0px 50px",
           }}
         >
-          Submit
+          Submit Review
+        </Button>
+      </div>
+
+      <h1>Coordinator stuff</h1>
+      <h1>Pending Outcome</h1>
+      <p>Please Accept or Reject this application based on the reviews.</p>
+      <div
+        style={{
+          marginTop: "3em",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          paddingBottom: "150px",
+        }}
+      >
+        <Dropdown
+          style={{
+            width: "200px",
+            margin: "0px 50px",
+          }}
+          id="review-status"
+          items={[
+            { id: "option-1", text: "ACCEPT", icon: Checkmark16 },
+            { id: "option-2", text: "REJECT", icon: Close16 },
+          ]}
+          itemToString={(item) => (item ? item.text : "")}
+          itemToElement={(item) => (
+            <>
+              {React.createElement(item.icon)}
+              <span
+                style={{
+                  paddingLeft: "1rem",
+                  paddingBottom: "1rem",
+                }}
+              >
+                {item.text}
+              </span>
+            </>
+          )}
+          // @ts-expect-error
+          renderSelectedItem={(item) => (
+            <>
+              {React.createElement(item.icon)}
+              <span
+                style={{
+                  paddingLeft: "1rem",
+                  paddingBottom: "1rem",
+                }}
+              >
+                {item.text}
+              </span>
+            </>
+          )}
+          label={"Status"}
+          onChange={(e) => {
+            if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+          }}
+        />
+
+        <Button
+          style={{
+            margin: "0px 50px",
+          }}
+          onClick={() => sendReview()}
+        >
+          Submit Review
         </Button>
       </div>
     </>
   );
+};
 
 export default ReviewView;

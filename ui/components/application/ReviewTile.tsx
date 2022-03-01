@@ -1,32 +1,52 @@
+import { Checkmark24, Close24 } from "@carbon/icons-react";
 import { Tile } from "carbon-components-react";
 import { Review } from "../../api/types";
-import styles from "../../styles/application.module.css";
 
 const ReviewTile = (props: { review: Review }) => {
   const review = props.review;
   return (
-    <Tile className={styles.reviewTile}>
-      {i == 0 ? (
+    <Tile
+      style={{
+        padding: "2rem",
+        margin: "2rem",
+      }}
+      key={review.id}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <div
           style={{
-            textAlign: "center",
-            fontSize: "1.5rem",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "1rem",
           }}
         >
-          <h2>Application submitted</h2>
+          <span
+            style={{
+              color: "#fffa",
+            }}
+          >
+            {review.user?.name ? review.user.name : review.user?.email}
+          </span>
+          <span>
+            {review.status === "APPROVED" ? (
+              <Checkmark24 />
+            ) : review.status === "REJECTED" ? (
+              <Close24 />
+            ) : (
+              <></>
+            )}
+          </span>
         </div>
-      ) : (
-        <>
-          <div>{review.comment ? review.comment : ""}</div>
-          <div>
-            {review.reviewer
-              ? review.reviewer?.name
-                ? review.reviewer.name
-                : review.reviewer.email
-              : "No data"}
-          </div>
-        </>
-      )}
+
+        <p style={{ whiteSpace: "pre-wrap" }}>{review.comment}</p>
+      </div>
     </Tile>
   );
 };

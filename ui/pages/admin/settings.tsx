@@ -8,8 +8,8 @@ import {
   Tag,
 } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
-import { configInterface, emailConfig } from "../api/types";
-import { NetworkManagerContext } from "../components/NetworkManager";
+import { configInterface, emailConfig } from "../../api/types";
+import { NetworkManagerContext } from "../../components/NetworkManager";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);

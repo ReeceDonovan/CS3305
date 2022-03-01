@@ -4,7 +4,7 @@
 import express from "express";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 
-import { NotAuthorizedError, NotFoundError } from "../errors";
+import { BadRequestError, NotAuthorizedError, NotFoundError } from "../errors";
 import { protectedRoute } from "../middleware/protected-route";
 import reqUser from "../middleware/store-user";
 import User, { UserType } from "../models/user";
@@ -63,7 +63,6 @@ const updateUser = async (
   const user = res.locals.user;
   const body: QueryDeepPartialEntity<User> = req.body;
 
-  // TODO: Make a type for the body
   try {
     const updatedUser = await User.update(user.id, body);
     res.json({
@@ -91,59 +90,47 @@ const getReviewers = async (
       where: {
         role: UserType.REVIEWER,
       },
+      relations: ["usersApplications", "usersApplications.application"],
     });
 
     if (!reviewers) throw new NotFoundError();
 
     switch (target) {
       case "suggest": {
-        // FIXME: Do it better
-        const dumpReviewers = await User.find({
-          relations: ["usersApplications"],
-          order: {
-            createdAt: "ASC",
-          },
-          where: {
-            role: UserType.REVIEWER,
-            usersApplications: {
-              role: RoleType.REVIEWER,
-              orderBy: {
-                createdAt: "DESC",
-              },
-              take: 2,
-            },
-          },
-        });
+        const sortedReviewers = reviewers.sort((a, b) => {
+          if (!a.usersApplications && !b.usersApplications) return 0;
+          if (!a.usersApplications) return -1;
+          if (!b.usersApplications) return 1;
 
-        if (!dumpReviewers) throw new NotFoundError();
-
-        const unassignedReviewers = dumpReviewers.filter(
-          (reviewer) => reviewer.usersApplications.length === 0
-        );
-
-        if (unassignedReviewers.length > 0) {
-          res.json({
-            status: 200,
-            message: "Successfully fetched reviewers",
-            data: unassignedReviewers[0],
-          });
-        } else {
-          const oldestReviewers = dumpReviewers.filter(
-            (reviewer) => reviewer.usersApplications.length > 0
+          const aApplications = a.usersApplications.filter(
+            (ua) => ua.role === RoleType.REVIEWER
+          );
+          const bApplications = b.usersApplications.filter(
+            (ua) => ua.role === RoleType.REVIEWER
           );
 
-          const oldestReviewer = oldestReviewers.sort(
-            (a, b) =>
-              a.usersApplications[0].createdAt.getTime() -
-              b.usersApplications[0].createdAt.getTime()
-          )[0];
+          if (!aApplications && !bApplications) return 0;
+          if (!aApplications) return -1;
+          if (!bApplications) return 1;
 
-          res.json({
-            status: 200,
-            message: "Successfully fetched reviewers",
-            data: oldestReviewer,
-          });
-        }
+          if (
+            aApplications[aApplications.length - 1].createdAt <
+            bApplications[bApplications.length - 1].createdAt
+          )
+            return -1;
+          if (
+            aApplications[aApplications.length - 1].createdAt >
+            bApplications[bApplications.length - 1].createdAt
+          )
+            return 1;
+          return 0;
+        });
+
+        res.json({
+          status: 200,
+          message: "Successfully fetched reviewers",
+          data: sortedReviewers.slice(0, 3),
+        });
 
         break;
       }
@@ -159,12 +146,67 @@ const getReviewers = async (
   }
 };
 
+const getUsersPermissions = async (
+  _: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  try {
+    const users = await User.find();
+    res.json({
+      status: 200,
+      message: "Successfully fetched users",
+      data: users,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const changeUserPermission = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  const user = res.locals.user;
+
+  interface PermissionRequest {
+    id: number;
+    role: UserType;
+  }
+
+  try {
+    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
+
+    const { id, role } = req.body as PermissionRequest;
+
+    if (!id || !role) throw new BadRequestError("Missing fields in request");
+
+    const userToChange = await User.findOne(id);
+
+    if (!userToChange) throw new NotFoundError();
+
+    userToChange.role = role;
+
+    await userToChange.save();
+
+    res.json({
+      status: 200,
+      message: "Successfully changed user permission",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const userRouter = express.Router();
 userRouter.use(protectedRoute);
 
+userRouter.get("/permissions", reqUser, getUsersPermissions);
+userRouter.patch("/permissions", reqUser, changeUserPermission);
+userRouter.get("/reviewers", reqUser, getReviewers);
 userRouter.get("/:id", reqUser, getUser);
 userRouter.get("/", reqUser, getCurrentUser);
 userRouter.patch("/", reqUser, updateUser);
-userRouter.get("/reviewers", reqUser, getReviewers);
 
 export default userRouter;

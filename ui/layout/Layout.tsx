@@ -6,7 +6,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       <Head />
       <main
-        id="main"
+        // id="main"
         style={{
           maxWidth: "100vw",
           margin: "50px 0 0 50px",

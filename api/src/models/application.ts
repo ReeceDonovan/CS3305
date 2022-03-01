@@ -13,6 +13,7 @@ export enum AppStatus {
   CLOSED = "CLOSED",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
+  PENDING = "PENDING",
 }
 
 @OrmEntity("applications")

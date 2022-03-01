@@ -13,19 +13,8 @@ export interface User extends BaseEntity {
   bio?: string;
   school?: string;
   avatar?: string;
-  applications?: Application[];
+  app_connection?: UsersApplications[];
   reviews?: Review[];
-}
-
-export interface LinkedUser extends User{
-  applicationRole: string;
-}
-
-export enum AppStatus{
-  DRAFT = "DRAFT",
-  PENDING = "PENDING",
-  REVIEWING = "REVIEWING",
-  CLOSED = "CLOSED"
 }
 
 export interface Application extends BaseEntity {
@@ -33,11 +22,10 @@ export interface Application extends BaseEntity {
   description?: string;
   status?: string;
   field?: string;
-  hasFile?: boolean;
-  appStatus: AppStatus;
-  users?: LinkedUser[];
-  applicationRole?: string;
+  user_connection?: UsersApplications[];
   reviews?: Review[];
+  hasFile?: boolean;
+  app_status?: AppStatus;
 }
 
 export interface StringExtendedApplication extends Application {
@@ -54,7 +42,7 @@ export interface UsersApplications extends BaseEntity {
   application?: Application;
 }
 
-export interface Review extends BaseEntity {
+export interface Review extends BaseEntity{
   comment?: string;
   status: string;
   application_id?: number;
@@ -63,9 +51,19 @@ export interface Review extends BaseEntity {
   user?: User;
 }
 
-export interface FileRef {
+export interface FileRef{
   name: string;
   status: FileStatus;
+}
+
+export enum AppStatus{
+  DRAFT = "DRAFT",
+  SUBMITTED = "SUBMITTED",
+  REVIEW = "REVIEW",
+  CLOSED = "CLOSED",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+  PENDING = "PENDING",
 }
 
 export interface configInterface {

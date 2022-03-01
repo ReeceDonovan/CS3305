@@ -17,7 +17,7 @@ const reviewer_routes = [
   "/reviews/:id",
 ];
 
-const coordinator_routes = ["/admin", "/settings", "/admin/settings", "/users/reviewers"];
+const coordinator_routes = ["/admin", "/settings", "/permissions", "/admin/settings", "/users/permissions", "/users/reviewers"];
 
 export const protectedRoute = (
   req: Request,
@@ -37,6 +37,5 @@ export const protectedRoute = (
   } else if (reviewer_routes.includes(route) && permissions > 2) {
     throw new NotAuthorizedError();
   }
-
   next();
 };
