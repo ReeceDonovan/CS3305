@@ -1,4 +1,4 @@
-import { Add16, RowInsert16 } from "@carbon/icons-react";
+import { Add16 } from "@carbon/icons-react";
 import {
   Button,
   DataTable,
