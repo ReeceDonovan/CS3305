@@ -646,10 +646,6 @@ const createReviewByApplication = async (
         relations: ["user"],
       });
 
-      if (reviews.length === 0) {
-        throw new InternalError();
-      }
-
       const reviewers = await UsersApplications.find({
         where: {
           application,

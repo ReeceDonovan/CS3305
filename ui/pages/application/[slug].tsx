@@ -35,7 +35,7 @@ const ApplicationPage: NextPage = () => {
   const [pdf, setPDF] = useState<ArrayBuffer>();
 
   const [submitter, setSubmitter] = useState<User | undefined>();
-  const [reviewers, setReviewers] = useState<User[]>([]);
+  const [reviewers, setReviewers] = useState<string[]>([]);
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewStatus, setReviewStatus] = useState<string>("No status");
@@ -102,7 +102,7 @@ const ApplicationPage: NextPage = () => {
 
             const reviewers = application.user_connection
               ?.filter((u) => u.role === "REVIEWER")
-              ?.map((u) => u.user as User);
+              ?.map((u) => (u.user?.email ? u.user.email : ""));
 
             setReviewers(reviewers ? reviewers : []);
 
@@ -335,7 +335,7 @@ const ApplicationPage: NextPage = () => {
                 </div>
 
                 <CustomFileUploader
-                  init_file={pdf ? "form.pdf" : null}
+                  init_file={pdf ? "form.pdf" : undefined}
                   add_remote_file_url={
                     application.id
                       ? `/applications/${application.id}/form`
@@ -387,7 +387,9 @@ const ApplicationPage: NextPage = () => {
           )}
 
         {/* Reviewer Tab */}
-        {user?.role == "REVIEWER" && reviewers && reviewers.includes(user) ? (
+        {user?.role == "REVIEWER" &&
+        reviewers &&
+        reviewers.includes(user.email) ? (
           <Tab href="#review" id="review" label="Review">
             {reviews?.map((review: Review) => (
               <Tile

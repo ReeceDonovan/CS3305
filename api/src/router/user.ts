@@ -110,8 +110,8 @@ const getReviewers = async (
           );
 
           if (!aApplications && !bApplications) return 0;
-          if (!aApplications) return -1;
-          if (!bApplications) return 1;
+          if (!aApplications || aApplications.length == 0) return -1;
+          if (!bApplications || bApplications.length == 0) return 1;
 
           if (
             aApplications[aApplications.length - 1].createdAt <
