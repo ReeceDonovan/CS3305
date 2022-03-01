@@ -170,12 +170,14 @@ const ApplicationPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.slug]);
 
-  useEffect(()=>{
-    (async () => {const user = await getToken();
-    if (user){
-      setUser(user);
-    }})();
-  },[]);
+  useEffect(() => {
+    (async () => {
+      const user = await getToken();
+      if (user) {
+        setUser(user);
+      }
+    })();
+  }, []);
 
   if (!application) return <Loading />;
 
@@ -208,7 +210,7 @@ const ApplicationPage = () => {
           </Tab>
         )}
 
-        {((application.app_status === "DRAFT" ||
+        {(application.app_status === "DRAFT" ||
           application.status === "SUBMITTED") && (
           <Tab href="#view" id="view" label="View">
             <StaticApplication application={application} />
