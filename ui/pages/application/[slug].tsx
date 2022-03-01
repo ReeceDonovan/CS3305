@@ -34,9 +34,6 @@ const ApplicationPage: NextPage = () => {
   const [application, setApplication] = useState<Application | undefined>();
   const [pdf, setPDF] = useState<ArrayBuffer>();
 
-  const [name, setName] = useState<string>("No name");
-  const [description, setDescription] = useState<string>("No description");
-
   const [submitter, setSubmitter] = useState<User | undefined>();
   const [reviewers, setReviewers] = useState<User[]>([]);
 
@@ -46,11 +43,12 @@ const ApplicationPage: NextPage = () => {
   const [comment, setComment] = useState<string>("No comment");
   const commentRef = React.useRef<HTMLTextAreaElement>();
 
-  const [editApp, setEditApp] = useState<Partial<Application>>();
+  const [editApp, setEditApp] = useState<Partial<Application>>({
+    name: "No name",
+    description: "No description",
+  } as Partial<Application>);
   const [supervisors, setSupervisors] = useState<string[]>([]);
   const [coauthors, setCoauthors] = useState<string[]>([]);
-
-  const [isLoading, setIsLoading] = useState(true);
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -85,12 +83,6 @@ const ApplicationPage: NextPage = () => {
 
             setApplication(application);
             setEditApp(application);
-            setName(application.name);
-            setDescription(
-              application.description
-                ? application.description
-                : "No description"
-            );
 
             setSubmitter(
               application.user_connection?.find((u) => u.role === "SUBMITTER")
@@ -121,7 +113,6 @@ const ApplicationPage: NextPage = () => {
         api.fetchPDF(slug).then((response) => {
           setPDF(response);
         });
-        setIsLoading(false);
       } else {
         console.log("ROUTER IS NOT READY");
         // }
@@ -244,7 +235,10 @@ const ApplicationPage: NextPage = () => {
                   labelText="Application Title"
                   placeholder="Title"
                   value={editApp?.name ? editApp.name : ""}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    editApp.name = e.target.value;
+                    setEditApp(editApp);
+                  }}
                 />
 
                 <TextArea
@@ -252,7 +246,10 @@ const ApplicationPage: NextPage = () => {
                   labelText="Description"
                   placeholder="Description"
                   value={editApp?.description ? editApp.description : ""}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) => {
+                    editApp.description = e.target.value;
+                    setEditApp(editApp);
+                  }}
                 />
 
                 <TextInput
