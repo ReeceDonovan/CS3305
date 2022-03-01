@@ -39,6 +39,7 @@ const ApplicationPage: NextPage = () => {
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewStatus, setReviewStatus] = useState<string>("No status");
+  const [outcome, setOutcome] = useState<string>("No outcome");
 
   const [comment, setComment] = useState<string>("No comment");
   const commentRef = React.useRef<HTMLTextAreaElement>();
@@ -153,6 +154,18 @@ const ApplicationPage: NextPage = () => {
   if (!application || !user || !submitter) {
     return <div>Loading...</div>;
   }
+
+  const sendOutcome = async () => {
+    console.log("sending outcome");
+    if (outcome && outcome !== "" && comment && comment !== "") {
+        nm_ctx.request({
+          method: "PATCH",
+          path: `/applications/${application.id}`,
+          data: { app_status: outcome },
+          show_progress: true,
+        });
+    }
+  };
 
   return (
     <>
@@ -521,6 +534,11 @@ const ApplicationPage: NextPage = () => {
         {/* Coordinator Tab */}
         {user?.role == "COORDINATOR" ? (
           <Tab href="#coordinator" id="coordinator" label="Coordinator">
+            {application.app_status == AppStatus.APPROVAL ? (
+              <>
+              <h1>This Application has been Approved</h1>
+              </>
+            ) : null}
             {application.app_status == AppStatus.DRAFT ? (
               <>
                 <h1>This Application is still in draft mode</h1>
@@ -545,7 +563,7 @@ const ApplicationPage: NextPage = () => {
               </>
             ) : null}
 
-            {!reviewers || reviewers.length < 2 ? (
+            {!reviewers || reviewers.length < 2 && application.app_status != AppStatus.APPROVAL  ? (
               <>
                 <h2 style={{ marginTop: "2rem" }}>
                   Currently Assigned Reviewers:{" "}
@@ -567,6 +585,177 @@ const ApplicationPage: NextPage = () => {
               </>
             ) : null}
 
+            {reviews.length > 0 ? (
+              <div
+                style={{
+                  padding: "2rem",
+                  margin: "2rem",
+                }}
+              >
+              <h2>Reviews</h2>
+              {reviews?.map((review: Review) => (
+                <Tile
+                  style={{
+                    padding: "2rem",
+                    marginTop: "2rem",
+                  }}
+                  key={review.id}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#fffa",
+                        }}
+                      >
+                        {review.user?.name
+                          ? review.user.name
+                          : review.user?.email}
+                      </span>
+                      <span>
+                        {review.status === "APPROVED" ? (
+                          <Checkmark24 />
+                        ) : review.status === "REJECTED" ? (
+                          <Close24 />
+                        ) : (
+                          <></>
+                        )}
+                      </span>
+                    </div>
+
+                    <p style={{ whiteSpace: "pre-wrap" }}>{review.comment}</p>
+                  </div>
+                </Tile>
+              ))}
+              </div>
+            ):null}
+
+            {application.app_status == AppStatus.PENDING ? (
+              <>
+                <h1>Pending Outcome</h1>
+                <p>
+                  Please Accept or Reject this application based on the reviews and provide feedback to the user.
+                </p>
+
+                <div
+                  style={{
+                    marginTop: "1em",
+                    width: "calc(80% - 4rem)",
+                    margin: "auto",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                <TextArea
+              style={{
+                width: "calc(100% - 4rem)",
+                margin: "auto",
+              }}
+              // @ts-expect-error
+              ref={commentRef}
+              rows={12}
+              labelText="Final Feedback"
+              helperText="Provide some final feedback for the user"
+              onChange={(e) => setComment(e.target.value)}
+            />
+            </div>
+                <div
+                  style={{
+                    marginTop: "3em",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingBottom: "150px",
+                  }}
+                >
+
+                  <Dropdown
+                    style={{
+                      width: "200px",
+                      margin: "0px 50px",
+                    }}
+                    id="review-status"
+                    items={[
+                      { id: "option-1", text: "ACCEPT", icon: Checkmark16 },
+                      { id: "option-2", text: "REJECT", icon: Close16 },
+                    ]}
+                    itemToString={(item) => (item ? item.text : "")}
+                    itemToElement={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    
+                    // @ts-expect-error
+                    renderSelectedItem={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    label={"Status"}
+                    onChange={(e) => {
+                      if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                      if (e.selectedItem){
+                        if(e.selectedItem.id == "option-1"){
+                          setOutcome("APPROVED");
+                        }else{
+                          setOutcome("DRAFT");
+                        }
+                      }
+                    }}
+                  />
+
+                  <Button
+                    style={{
+                      margin: "0px 50px",
+                    }}
+                    onClick={() =>{
+                        sendReview();
+                        sendOutcome();
+                      }}
+                    >
+                    Submit Review
+                  </Button>
+                </div>
+              </>
+            ) : null}
+          </Tab>
+        ) : null}
+        {/* Feedback Tab */}
+        {application.app_status == AppStatus.APPROVAL ? (
+          <Tab href="#feedback" id="feedback" label="Feedback">
             {reviews?.map((review: Review) => (
               <Tile
                 style={{
@@ -614,78 +803,6 @@ const ApplicationPage: NextPage = () => {
                 </div>
               </Tile>
             ))}
-
-            {application.app_status == AppStatus.PENDING ? (
-              <>
-                <h1>Pending Outcome</h1>
-                <p>
-                  Please Accept or Reject this application based on the reviews.
-                </p>
-                <div
-                  style={{
-                    marginTop: "3em",
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingBottom: "150px",
-                  }}
-                >
-                  <Dropdown
-                    style={{
-                      width: "200px",
-                      margin: "0px 50px",
-                    }}
-                    id="review-status"
-                    items={[
-                      { id: "option-1", text: "ACCEPT", icon: Checkmark16 },
-                      { id: "option-2", text: "REJECT", icon: Close16 },
-                    ]}
-                    itemToString={(item) => (item ? item.text : "")}
-                    itemToElement={(item) => (
-                      <>
-                        {React.createElement(item.icon)}
-                        <span
-                          style={{
-                            paddingLeft: "1rem",
-                            paddingBottom: "1rem",
-                          }}
-                        >
-                          {item.text}
-                        </span>
-                      </>
-                    )}
-                    // @ts-expect-error
-                    renderSelectedItem={(item) => (
-                      <>
-                        {React.createElement(item.icon)}
-                        <span
-                          style={{
-                            paddingLeft: "1rem",
-                            paddingBottom: "1rem",
-                          }}
-                        >
-                          {item.text}
-                        </span>
-                      </>
-                    )}
-                    label={"Status"}
-                    onChange={(e) => {
-                      if (e.selectedItem) setReviewStatus(e.selectedItem.text);
-                    }}
-                  />
-
-                  <Button
-                    style={{
-                      margin: "0px 50px",
-                    }}
-                    onClick={() => sendReview()}
-                  >
-                    Submit Review
-                  </Button>
-                </div>
-              </>
-            ) : null}
           </Tab>
         ) : null}
       </Tabs>

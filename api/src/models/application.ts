@@ -34,6 +34,9 @@ export default class Application extends Entity {
   @Column({ type: "text", nullable: true })
   field: string;
 
+  @Column({ type: "text", nullable: true })
+  feedback: string;
+
   @Expose({ name: "user_connection" })
   @OneToMany(
     () => UsersApplications,
