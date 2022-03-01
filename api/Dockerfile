@@ -18,9 +18,9 @@ COPY . .
 
 # COPY --from=build /usr/api/dist ./src
 
-RUN yarn global add ts-node
+# RUN yarn global add ts-node
 
-RUN yarn install --production --ignore-scripts --prefer-offline
+RUN yarn install
 
 EXPOSE 8000
 
