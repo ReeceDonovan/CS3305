@@ -1,11 +1,9 @@
 import axios, { Method } from "axios";
 import { User } from "./types";
 
-export const API_URL: string =
-  process.env.API_URL !== undefined ? process.env.API_URL : "/api";
+export const API_URL: string = "https://srec.netsoc.cloud/api";
 
-export const UI_URL: string =
-  process.env.UI_URL !== undefined ? process.env.UI_URL : "/";
+export const UI_URL: string = "/";
 
 console.log(process.env.API_URL);
 

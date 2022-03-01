@@ -16,7 +16,12 @@ import Notification20 from "@carbon/icons-react/lib/notification/20";
 import User20 from "@carbon/icons-react/lib/user/20";
 import Home16 from "@carbon/icons-react/lib/home/16";
 import About16 from "@carbon/icons-react/lib/carousel--horizontal/16";
-import { DocumentPdf16, User16, UserRole16, CloudServiceManagement16 } from "@carbon/icons-react";
+import {
+  DocumentPdf16,
+  User16,
+  UserRole16,
+  CloudServiceManagement16,
+} from "@carbon/icons-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { User } from "../api/types";
@@ -33,7 +38,7 @@ export default function Head() {
       }
     })();
   }, []);
-  
+
   return (
     <HeaderContainer
       render={({ isSideNavExpanded, onClickSideNavExpand }) => (
@@ -84,16 +89,6 @@ export default function Head() {
               </SideNavItem>
               <SideNavItem>
                 <SideNavItems>
-                  <SideNavMenuItem
-                    className={styles.sideNav}
-                    href="/application/new"
-                  >
-                    <DocumentPdf16 /> &nbsp; <span>Submit Application</span>
-                  </SideNavMenuItem>
-                </SideNavItems>
-              </SideNavItem>
-              <SideNavItem>
-                <SideNavItems>
                   <SideNavMenuItem className={styles.sideNav} href="/about">
                     <About16 /> &nbsp; <span>About</span>
                   </SideNavMenuItem>
@@ -106,25 +101,32 @@ export default function Head() {
                   </SideNavMenuItem>
                 </SideNavItems>
               </SideNavItem>
-              {user?.role === "COORDINATOR" ? 
-              <div>
-                <SideNavDivider />
-                <SideNavItem>
-                  <SideNavItems>
-                    <SideNavMenuItem className={styles.sideNav} href="/admin/permissions">
-                      <UserRole16 /> &nbsp; <span>User Permissions</span>
-                    </SideNavMenuItem>
-                  </SideNavItems>
-                </SideNavItem> 
-                <SideNavItem>
-                  <SideNavItems>
-                    <SideNavMenuItem className={styles.sideNav} href="/admin/settings">
-                      <CloudServiceManagement16 /> &nbsp; <span>Server Settings</span>
-                    </SideNavMenuItem>
-                  </SideNavItems>
-                </SideNavItem> 
-              </div>
-              : null}
+              {user?.role === "COORDINATOR" ? (
+                <div>
+                  <SideNavDivider />
+                  <SideNavItem>
+                    <SideNavItems>
+                      <SideNavMenuItem
+                        className={styles.sideNav}
+                        href="/admin/permissions"
+                      >
+                        <UserRole16 /> &nbsp; <span>User Permissions</span>
+                      </SideNavMenuItem>
+                    </SideNavItems>
+                  </SideNavItem>
+                  <SideNavItem>
+                    <SideNavItems>
+                      <SideNavMenuItem
+                        className={styles.sideNav}
+                        href="/admin/settings"
+                      >
+                        <CloudServiceManagement16 /> &nbsp;{" "}
+                        <span>Server Settings</span>
+                      </SideNavMenuItem>
+                    </SideNavItems>
+                  </SideNavItem>
+                </div>
+              ) : null}
             </SideNavItems>
           </SideNav>
         </Header>

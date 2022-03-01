@@ -5,6 +5,7 @@ import CoordinatorDashboard from "../components/coordinator/CoordinatorDashboard
 import ResearcherDashboard from "../components/researcher/ResearcherDashboard";
 import ReviewerDashboard from "../components/reviewer/ReviewerDashboard";
 import style from "../styles/index.module.css";
+import About from "./about";
 
 export default function Index() {
   const [user, setUser] = useState<User>();
@@ -20,7 +21,7 @@ export default function Index() {
 
   return (
     <>
-    {user?.role == "COORDINATOR" && (
+      {user?.role == "COORDINATOR" && (
         <div className={style.panel}>
           <CoordinatorDashboard />
         </div>
@@ -30,9 +31,12 @@ export default function Index() {
           <ReviewerDashboard />
         </div>
       )}
+      {user?.role && (
         <div className={style.panel}>
           <ResearcherDashboard />
         </div>
+      )}
+      <About content="" />
     </>
   );
 }
