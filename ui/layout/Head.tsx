@@ -1,31 +1,30 @@
 import {
-  Header,
-  HeaderName,
-  HeaderContainer,
-  HeaderMenuButton,
-  HeaderGlobalBar,
-  HeaderGlobalAction,
-  SideNav,
-  SideNavItems,
-  SideNavItem,
-  SideNavMenuItem,
-  SideNavDivider,
-} from "carbon-components-react/lib/components/UIShell";
-import styles from "../styles/Head.module.css";
-import Notification20 from "@carbon/icons-react/lib/notification/20";
-import User20 from "@carbon/icons-react/lib/user/20";
-import Home16 from "@carbon/icons-react/lib/home/16";
-import About16 from "@carbon/icons-react/lib/carousel--horizontal/16";
-import {
-  DocumentPdf16,
+  CloudServiceManagement16,
   User16,
   UserRole16,
-  CloudServiceManagement16,
 } from "@carbon/icons-react";
+import About16 from "@carbon/icons-react/lib/carousel--horizontal/16";
+import Home16 from "@carbon/icons-react/lib/home/16";
+import Notification20 from "@carbon/icons-react/lib/notification/20";
+import User20 from "@carbon/icons-react/lib/user/20";
+import {
+  Header,
+  HeaderContainer,
+  HeaderGlobalAction,
+  HeaderGlobalBar,
+  HeaderMenuButton,
+  HeaderName,
+  SideNav,
+  SideNavDivider,
+  SideNavItem,
+  SideNavItems,
+  SideNavMenuItem,
+} from "carbon-components-react/lib/components/UIShell";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { User } from "../api/types";
+import { useEffect, useState } from "react";
 import * as api from "../api";
+import { User } from "../api/types";
+import styles from "../styles/Head.module.css";
 
 export default function Head() {
   const [user, setUser] = useState<User>();
