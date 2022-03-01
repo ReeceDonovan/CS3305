@@ -31,12 +31,13 @@ export default function Index() {
           <ReviewerDashboard />
         </div>
       )}
-      {user?.role && (
+      {user?.role ? (
         <div className={style.panel}>
           <ResearcherDashboard />
         </div>
+      ) : (
+        <About content="" />
       )}
-      <About content="" />
     </>
   );
 }
