@@ -9,7 +9,6 @@ import {
   Button,
   Dropdown,
   Form,
-  SkeletonPlaceholder,
   Tab,
   Tabs,
   Tag,
@@ -354,7 +353,7 @@ const ApplicationPage: NextPage = () => {
 
                 <Button
                   type="submit"
-                  onClick={async (e) => {
+                  onClick={async () => {
                     await nm_ctx.request({
                       path: `/applications/${application.id}`,
                       method: "PATCH",
