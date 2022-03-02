@@ -1,11 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
-import { Button, ComboBox, InlineLoading, Tag } from "carbon-components-react";
+import {
+  Button,
+  ComboBox,
+  InlineLoading,
+  Modal,
+  MultiSelect,
+  Tag,
+} from "carbon-components-react";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
 import { User } from "../../api/types";
 import { NetworkManagerContext } from "../../components/NetworkManager";
-import styles from "../../styles/coordinatorAssignReviewers.module.css";
 
 export default function CoordinatorAssignReviewers() {
   const router = useRouter();
@@ -13,8 +19,11 @@ export default function CoordinatorAssignReviewers() {
 
   const [loading, setLoading] = useState<boolean>(true);
 
-  const [comboReviewers, setComboReviewers] = useState<any[]>([]);
-  const [tagReviewers, setTagReviewers] = useState<any[]>([]);
+  const [tempReviewers, setTempReviewers] = useState<Array<User>>([]);
+  const [reviewers, setReviewers] = useState<Array<User>>([]);
+  const [suggestedReviewers, setSuggestedReviewers] = useState<Array<User>>([]);
+
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   const [reviewerIds, setReviewerIds] = useState<any[]>([]);
 
@@ -23,12 +32,22 @@ export default function CoordinatorAssignReviewers() {
       if (loading) {
         const [res] = await nm_ctx.request({
           method: "GET",
-          path: `/users/reviewers?t=suggest`,
+          path: `/users/reviewers`,
         });
         if (res.data) {
           const reviewers = res.data as User[];
-          setComboReviewers(reviewers);
+         
+          setTempReviewers(reviewers);
         }
+
+        const [res2] = await nm_ctx.request({
+          method: "GET",
+          path: `/users/reviewers?t=suggested`,
+        });
+        if (res2.data) {
+          setSuggestedReviewers(res2.data as User[]);
+        }
+
         setLoading(false);
       }
     })();
@@ -37,12 +56,75 @@ export default function CoordinatorAssignReviewers() {
   return (
     <>
       {!loading ? (
-        <div className={styles.container}>
-          <div className={styles.dropdown}>
-            <ComboBox
+        <div style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-evenly",
+        }}>
+          <Button
+            onClick={() => {
+              setModalOpen(true)
+            }}
+          >
+            Manually assign reviewers</Button>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                height: "auto"
+              }}
+            >
+          <Button
+            disabled={suggestedReviewers.length < 1}
+            onClick={() => {
+              nm_ctx.request({
+                method: "PUT",
+                path: `/applications/${router.query.id}/reviewers`,
+                data: suggestedReviewers as User[],
+                show_progress: true,
+              });
+            }}
+          >Automatically assign reviewers</Button>
+          {suggestedReviewers.length < 1 && (
+            <small>Not enough suggested reviewers to automatically assign reviewers</small>
+          )}
+          </div>
+          <Modal
+            open={modalOpen}
+            onRequestClose={() => {
+              setModalOpen(false)
+            }}
+
+            title="Manually assign reviewers"
+            primaryButtonText="Assign"
+            secondaryButtonText="Cancel"
+            preventCloseOnClickOutside={false}
+
+            onRequestSubmit={async () => {
+              const [_, err] = await nm_ctx.request({
+                
+                path: `/applications/${router.query.slug}/reviewers`,
+                method: "PUT",
+                data: reviewers as User[],
+                show_progress: true,
+              });
+            }}
+          >
+            <div
+              style={{
+                height: "400px",
+              }}
+            >
+            <h1>Assign Reviewers</h1>
+            <MultiSelect
               id={""}
-              placeholder={"Assign Reviewer"}
-              items={comboReviewers}
+              label={"Assign Reviewers"}
+              light
+              items={tempReviewers}
+              itemToString={(item) => item?.email}
+              translateWithId={(id) => id}
               itemToElement={(item) => (
                 <span
                   style={{
@@ -51,43 +133,27 @@ export default function CoordinatorAssignReviewers() {
                   }}
                 >
                   <img
-                    alt={item.email + "'s avatar"}
+                    alt={item?.email + "'s avatar"}
                     src={item?.avatar}
                     width="20px"
                     height="20px"
                     style={{ borderRadius: "50%", marginRight: "1rem" }}
                   />
-                  <p>{item.email}</p>
+                  <p>{item?.email}</p>
                 </span>
               )}
               onChange={(e) => {
-                if (e.selectedItem) {
-                  comboReviewers.splice(
-                    comboReviewers.indexOf(e.selectedItem.email),
-                    1
-                  );
-                  setComboReviewers([...comboReviewers]);
-                  setTagReviewers([...tagReviewers, e.selectedItem.email]);
-                  setReviewerIds([...reviewerIds, { id: e.selectedItem.id }]);
+                if (e.selectedItems) {
+                  console.log(e.selectedItems);
+                  setReviewers(e.selectedItems);
                 }
               }}
             />
-          </div>
-          <div className={styles.listReviewers}>
-            {tagReviewers.map((elem, i) => (
-              <Tag
-                key={i}
-                onClick={(e) => {
-                  e.preventDefault();
-                  const t = tagReviewers.splice(i, 1);
-                  setTagReviewers([...tagReviewers]);
-                  setComboReviewers([...comboReviewers, t[0]]);
-                  setReviewerIds([...reviewerIds.splice(i, 1)]);
-                }}
-              >
-                {elem}
-              </Tag>
-            ))}
+            </div>
+          </Modal>
+          {/* <div className={styles.dropdown}>
+
+            
           </div>
           <div className={styles.assignBtn}>
             <Button
@@ -101,7 +167,7 @@ export default function CoordinatorAssignReviewers() {
             >
               Assign
             </Button>
-          </div>
+          </div> */}
         </div>
       ) : (
         <InlineLoading />

@@ -7,8 +7,10 @@ import {
 } from "@carbon/icons-react";
 import {
   Button,
+  Checkbox,
   Dropdown,
   Form,
+  Modal,
   Tab,
   Tabs,
   Tag,
@@ -26,6 +28,8 @@ import CustomFileUploader from "../../components/CustomFileUploader";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 import SubmitWarning from "../../components/SubmitWarning";
 import styles from "../../styles/application.module.css";
+
+import tableStyles from "../../styles/permissions.module.css";
 
 const ApplicationPage: NextPage = () => {
   const router = useRouter();
@@ -49,6 +53,9 @@ const ApplicationPage: NextPage = () => {
   } as Partial<Application>);
   const [supervisors, setSupervisors] = useState<string[]>([]);
   const [coauthors, setCoauthors] = useState<string[]>([]);
+
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<boolean>(false);
 
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -122,7 +129,37 @@ const ApplicationPage: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.slug]);
 
-  const sendReview = async () => {
+  const renderStatusSwitch = () => {
+    switch (application?.app_status) {
+      case "PENDING":
+        return (
+          <p>
+            Pending &rarr; Your application has passed the review process, and
+            is awaiting feedback from an SREC coordinator
+          </p>
+        );
+      case AppStatus.DRAFT:
+        return (
+          <p>
+            Draft &rarr; Your application has not been submitted yet, and you
+            can make changes before submitting
+          </p>
+        );
+      case AppStatus.SUBMITTED:
+        return (
+          <p>
+            Submitted &rarr; Your application has been submitted and is awaiting
+            review.
+          </p>
+        );
+      case AppStatus.REVIEW:
+        return (
+          <p>Review &rarr; Your application is currently being reviewed.</p>
+        );
+    }
+  };
+
+  const sendReview = async (): Promise<any> => {
     console.log("sending review");
     if (reviewStatus && reviewStatus !== "" && comment && comment !== "") {
       try {
@@ -144,10 +181,13 @@ const ApplicationPage: NextPage = () => {
             commentRef.current.value = "";
           }
         }
+
+        return true;
       } catch (e) {
         console.error(e);
       }
     }
+    return false;
   };
 
   if (!application || !user || !submitter) {
@@ -167,31 +207,82 @@ const ApplicationPage: NextPage = () => {
         <Tab href="#view" id="view" label="View">
           <div>
             {application !== null && (
-              <div className={styles.view}>
-                <h2>
-                  Title: {application.name ? application.name : "No name"}
-                </h2>
-                <h4>Author: {submitter?.email}</h4>
-                <h4>
-                  Supervisors:{" "}
-                  {supervisors && supervisors.length > 0
-                    ? supervisors
-                    : "No supervisors"}
-                </h4>
-                <h4>
-                  Coauthors:{" "}
-                  {coauthors && coauthors.length > 0
-                    ? coauthors
-                    : "No coauthors"}
-                </h4>
-                <h4>
-                  Field of Study:{" "}
-                  {application.field ? application.field : "No data"}
-                </h4>
-              </div>
+              <table className={tableStyles.descriptiontable}>
+                <tbody>
+                  <tr>
+                    <td>
+                      <strong>Outcome</strong>
+                    </td>
+                    <td>
+                      <p>
+                        {application.status
+                          ? application.status
+                          : "Not reviewed"}
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Status</strong>
+                    </td>
+                    <td>{renderStatusSwitch()}</td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <strong>Name</strong>
+                    </td>
+                    <td>
+                      <p>{application.name ? application.name : "No name"}</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Description</strong>
+                    </td>
+                    <td>
+                      <p
+                        style={{
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {application.description
+                          ? application.description
+                          : "No description"}
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Supervisors</strong>
+                    </td>
+                    <td>
+                      {/* paragraph for each supervisor */}
+                      {supervisors && supervisors.length > 0 ? (
+                        supervisors.map((s) => <p key={s}>{s}</p>)
+                      ) : (
+                        <p>No supervisors</p>
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Coauthors</strong>
+                    </td>
+                    <td>
+                      {/* paragraph for each coauthor */}
+                      {coauthors && coauthors.length > 0 ? (
+                        coauthors.map((c) => <p key={c}>{c}</p>)
+                      ) : (
+                        <p>No coauthors</p>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             )}
           </div>
-          {pdf && (
+          {pdf ? (
             <div
               style={{
                 width: "95%",
@@ -214,6 +305,10 @@ const ApplicationPage: NextPage = () => {
                 }}
               />
             </div>
+          ) : (
+            <div>
+              <h2>No PDF</h2>
+            </div>
           )}
         </Tab>
 
@@ -223,166 +318,215 @@ const ApplicationPage: NextPage = () => {
           user.email == submitter.email &&
           application.app_status == AppStatus.DRAFT && (
             <Tab href="#edit" id="edit" label="Edit">
-              <Form
-                className={styles.edit}
-                style={{
-                  height: "90vh",
-                  width: "100%",
-                }}
-              >
-                <TextInput
-                  id="title"
-                  labelText="Application Title"
-                  placeholder="Title"
-                  value={editApp?.name ? editApp.name : ""}
-                  onChange={(e) => {
-                    editApp.name = e.target.value;
-                    setEditApp(editApp);
-                  }}
-                />
-
-                <TextArea
-                  id="description"
-                  labelText="Description"
-                  placeholder="Description"
-                  value={editApp?.description ? editApp.description : ""}
-                  onChange={(e) => {
-                    editApp.description = e.target.value;
-                    setEditApp(editApp);
-                  }}
-                />
-
-                <TextInput
-                  id="coauthors"
-                  name="coauthors"
-                  labelText="Co-authors"
-                  placeholder="Co-authors"
+              <>
+                <Form
+                  className={styles.edit}
                   style={{
-                    marginBottom: "1em",
+                    height: "90vh",
+                    width: "100%",
                   }}
-                  onKeyDown={(e) => {
-                    const t = e.target as HTMLInputElement;
-                    if ((e.code === "Enter" || e.code === "Tab") && t.value) {
+                >
+                  <TextInput
+                    id="name"
+                    labelText="Application Name"
+                    placeholder="Name of your application"
+                    defaultValue={application.name}
+                    onChange={(e) => {
+                      const updatedApp = { ...editApp };
+                      updatedApp.name = e.target.value;
+                      setEditApp(updatedApp);
+                    }}
+                  />
+
+                  <TextArea
+                    id="description"
+                    labelText="Description"
+                    placeholder="Description"
+                    defaultValue={application.description}
+                    onChange={(e) => {
+                      const updatedApp = { ...editApp };
+                      updatedApp.description = e.target.value;
+                      setEditApp(updatedApp);
+                    }}
+                  />
+
+                  <TextInput
+                    id="coauthors"
+                    name="coauthors"
+                    labelText="Co-authors"
+                    placeholder="Co-authors"
+                    style={{
+                      marginBottom: "1em",
+                    }}
+                    onKeyDown={(e) => {
                       const t = e.target as HTMLInputElement;
-                      if (t.value && t.value.length > 0) {
-                        if (emailRegexp.test(t.value)) {
-                          setCoauthors([...coauthors, t.value]);
-                          t.value = "";
+                      if ((e.code === "Enter" || e.code === "Tab") && t.value) {
+                        const t = e.target as HTMLInputElement;
+                        if (t.value && t.value.length > 0) {
+                          if (emailRegexp.test(t.value)) {
+                            setCoauthors([...coauthors, t.value]);
+                            t.value = "";
+                          }
                         }
-                      }
-                      e.preventDefault();
-                    }
-                  }}
-                />
-
-                <div
-                  style={{
-                    marginLeft: "1em",
-                  }}
-                >
-                  {coauthors.map((elem, i) => (
-                    <Tag
-                      style={{
-                        margin: "0.4em ",
-                      }}
-                      key={i}
-                      onClick={(e) => {
                         e.preventDefault();
-                        coauthors.splice(i, 1);
-                        setCoauthors([...coauthors]);
-                      }}
-                    >
-                      {elem}
-                    </Tag>
-                  ))}
-                </div>
+                      }
+                    }}
+                  />
 
-                <TextInput
-                  id="supervisors"
-                  name="supervisors"
-                  labelText="Supervisors"
-                  placeholder="Supervisors"
-                  style={{
-                    marginBottom: "1em",
-                  }}
-                  onKeyDown={(e) => {
-                    const t = e.target as HTMLInputElement;
-                    if ((e.code === "Enter" || e.code === "Tab") && t.value) {
-                      if (t && t.value.length > 0) {
-                        if (emailRegexp.test(t.value)) {
-                          setSupervisors([...supervisors, t.value]);
-                          t.value = "";
+                  <div
+                    style={{
+                      marginLeft: "1em",
+                    }}
+                  >
+                    {coauthors.map((elem, i) => (
+                      <Tag
+                        style={{
+                          margin: "0.4em ",
+                        }}
+                        key={i}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          coauthors.splice(i, 1);
+                          setCoauthors([...coauthors]);
+                        }}
+                      >
+                        {elem}
+                      </Tag>
+                    ))}
+                  </div>
+
+                  <TextInput
+                    id="supervisors"
+                    name="supervisors"
+                    labelText="Supervisors"
+                    placeholder="Supervisors"
+                    style={{
+                      marginBottom: "1em",
+                    }}
+                    onKeyDown={(e) => {
+                      const t = e.target as HTMLInputElement;
+                      if ((e.code === "Enter" || e.code === "Tab") && t.value) {
+                        if (t && t.value.length > 0) {
+                          if (emailRegexp.test(t.value)) {
+                            setSupervisors([...supervisors, t.value]);
+                            t.value = "";
+                          }
                         }
-                      }
-                      e.preventDefault();
-                    }
-                  }}
-                />
-
-                <div>
-                  {supervisors.map((elem, i) => (
-                    <Tag
-                      key={i}
-                      onClick={async (e) => {
                         e.preventDefault();
-                        supervisors.splice(i, 1);
-                        setSupervisors([...supervisors]);
-                      }}
-                    >
-                      {elem}
-                    </Tag>
-                  ))}
-                </div>
+                      }
+                    }}
+                  />
 
-                <CustomFileUploader
-                  init_file={pdf ? "form.pdf" : undefined}
-                  add_remote_file_url={
-                    application.id
-                      ? `/applications/${application.id}/form`
-                      : null
-                  }
-                  get_add_remote_file_url={async () => {
-                    return `/applications/${application.id}/form`;
+                  <div>
+                    {supervisors.map((elem, i) => (
+                      <Tag
+                        key={i}
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          supervisors.splice(i, 1);
+                          setSupervisors([...supervisors]);
+                        }}
+                      >
+                        {elem}
+                      </Tag>
+                    ))}
+                  </div>
+
+                  <CustomFileUploader
+                    init_file={pdf ? "form.pdf" : undefined}
+                    add_remote_file_url={
+                      application.id
+                        ? `/applications/${application.id}/form`
+                        : null
+                    }
+                    get_add_remote_file_url={async () => {
+                      return `/applications/${application.id}/form`;
+                    }}
+                  />
+
+                  <SubmitWarning />
+
+                  <Button
+                    kind="danger--tertiary"
+                    onClick={() => {
+                      setEditModalOpen(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+
+                  <Button
+                    kind="tertiary"
+                    type="submit"
+                    onClick={async () => {
+                      await nm_ctx.request({
+                        path: `/applications/${application.id}`,
+                        method: "PATCH",
+                        data: {
+                          ...editApp,
+                          coauthors: coauthors.length > 0 ? coauthors : null,
+                          supervisors:
+                            supervisors.length > 0 ? supervisors : null,
+                        },
+                        show_progress: true,
+                      });
+                    }}
+                  >
+                    Update
+                  </Button>
+                  <Button
+                    style={{
+                      marginBottom: "2rem",
+                    }}
+                    disabled={application.id ? false : true}
+                    onClick={async () => {
+                      const [_, err] = await nm_ctx.request({
+                        method: "PATCH",
+                        path: `/applications/${application.id}`,
+                        data: { app_status: "SUBMITTED" },
+                        show_progress: true,
+                      });
+                      if (!err) {
+                        window.location.href = "/";
+                      }
+                    }}
+                  >
+                    Submit Your Application
+                  </Button>
+                </Form>
+
+                <Modal
+                  open={editModalOpen}
+                  primaryButtonDisabled={!deleteConfirm}
+                  primaryButtonText="Delete"
+                  secondaryButtonText="Cancel"
+                  danger
+                  preventCloseOnClickOutside={false}
+                  onRequestClose={() => {
+                    setEditModalOpen(false);
                   }}
-                />
-
-                <SubmitWarning />
-
-                <Button
-                  type="submit"
-                  onClick={async () => {
+                  onRequestSubmit={async () => {
                     await nm_ctx.request({
+                      method: "DELETE",
                       path: `/applications/${application.id}`,
-                      method: "PATCH",
-                      data: {
-                        ...editApp,
-                        coauthors: coauthors.length > 0 ? coauthors : null,
-                        supervisors:
-                          supervisors.length > 0 ? supervisors : null,
-                      },
                       show_progress: true,
                     });
                   }}
                 >
-                  Update
-                </Button>
-                <Button
-                  style={{
-                    marginBottom: "2rem",
-                  }}
-                  disabled={application.id ? false : true}
-                  onClick={() => {
-                    nm_ctx.request({
-                      method: "PATCH",
-                      path: `/applications/${application.id}`,
-                      data: { app_status: "SUBMITTED" },
-                      show_progress: true,
-                    });
-                  }}
-                >
-                  Submit Your Application
-                </Button>
-              </Form>
+                  <h1>Delete Application</h1>
+                  <p style={{ margin: "2em 0" }}>
+                    By continuing, your application will be lost, including any
+                    uploaded form(s).
+                  </p>
+                  <Checkbox
+                    id={"delete-checkbox"}
+                    onChange={() => {
+                      setDeleteConfirm(!deleteConfirm);
+                    }}
+                    labelText={"I understand"}
+                  />
+                </Modal>
+              </>
             </Tab>
           )}
 
@@ -545,7 +689,7 @@ const ApplicationPage: NextPage = () => {
               </>
             ) : null}
 
-            {!reviewers || reviewers.length < 2 ? (
+            {application.app_status == AppStatus.SUBMITTED ? (
               <>
                 <h2 style={{ marginTop: "2rem" }}>
                   Currently Assigned Reviewers:{" "}
@@ -621,65 +765,82 @@ const ApplicationPage: NextPage = () => {
                 <p>
                   Please Accept or Reject this application based on the reviews.
                 </p>
+                <Dropdown
+                  style={{
+                    width: "200px",
+                    margin: "50px 0px 20px 0px",
+                  }}
+                  id="review-status"
+                  items={[
+                    { id: "option-1", text: AppStatus.APPROVED, icon: Checkmark16 },
+                    { id: "option-2", text: AppStatus.REJECTED, icon: Close16 },
+                  ]}
+                  itemToString={(item) => (item ? item.text : "")}
+                  itemToElement={(item) => (
+                    <>
+                      {React.createElement(item.icon)}
+                      <span
+                        style={{
+                          paddingLeft: "1rem",
+                          paddingBottom: "1rem",
+                        }}
+                      >
+                        {item.text}
+                      </span>
+                    </>
+                  )}
+                  // @ts-expect-error
+                  renderSelectedItem={(item) => (
+                    <>
+                      {React.createElement(item.icon)}
+                      <span
+                        style={{
+                          paddingLeft: "1rem",
+                          paddingBottom: "1rem",
+                        }}
+                      >
+                        {item.text}
+                      </span>
+                    </>
+                  )}
+                  label={"Status"}
+                  onChange={(e) => {
+                    if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                  }}
+                />
                 <div
                   style={{
-                    marginTop: "3em",
                     display: "flex",
-                    flexDirection: "row",
+                    flexDirection: "column",
                     justifyContent: "center",
-                    alignItems: "center",
                     paddingBottom: "150px",
+                    width: "100%",
                   }}
                 >
-                  <Dropdown
+                  <TextArea
                     style={{
-                      width: "200px",
-                      margin: "0px 50px",
+                      width: "70vw",
                     }}
-                    id="review-status"
-                    items={[
-                      { id: "option-1", text: "ACCEPT", icon: Checkmark16 },
-                      { id: "option-2", text: "REJECT", icon: Close16 },
-                    ]}
-                    itemToString={(item) => (item ? item.text : "")}
-                    itemToElement={(item) => (
-                      <>
-                        {React.createElement(item.icon)}
-                        <span
-                          style={{
-                            paddingLeft: "1rem",
-                            paddingBottom: "1rem",
-                          }}
-                        >
-                          {item.text}
-                        </span>
-                      </>
-                    )}
-                    // @ts-expect-error
-                    renderSelectedItem={(item) => (
-                      <>
-                        {React.createElement(item.icon)}
-                        <span
-                          style={{
-                            paddingLeft: "1rem",
-                            paddingBottom: "1rem",
-                          }}
-                        >
-                          {item.text}
-                        </span>
-                      </>
-                    )}
-                    label={"Status"}
-                    onChange={(e) => {
-                      if (e.selectedItem) setReviewStatus(e.selectedItem.text);
-                    }}
+                    placeholder="Feedback"
+                    rows={10}
+                    cols={70}
+                    onChange={(e) => setComment(e.target.value)}
+                    labelText={"Feedback to send to researcher(s)"}
                   />
 
                   <Button
                     style={{
-                      margin: "0px 50px",
+                      margin: "50px 0px",
                     }}
-                    onClick={() => sendReview()}
+                    onClick={async () => {
+                      if (await sendReview()) {
+                        await nm_ctx.request({
+                          method: "PATCH",
+                          path: `/applications/${application.id}`,
+                          data: {app_stats: "DRAFT", status: "APPROVED"},
+                        })
+                      };
+                    }}
                   >
                     Submit Review
                   </Button>
