@@ -5,6 +5,8 @@ WORKDIR /app
 COPY package.json ./
 RUN yarn install
 
+CMD ["yarn", "dev"]
+
 FROM node:alpine AS build
 
 WORKDIR /app
