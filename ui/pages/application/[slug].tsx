@@ -837,7 +837,7 @@ const ApplicationPage: NextPage = () => {
                         await nm_ctx.request({
                           method: "PATCH",
                           path: `/applications/${application.id}`,
-                          data: {app_stats: "DRAFT", status: "APPROVED"},
+                          data: {app_status: "DRAFT", status: "APPROVED"},
                         })
                       };
                     }}

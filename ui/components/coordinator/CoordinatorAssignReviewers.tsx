@@ -1,11 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import {
   Button,
-  ComboBox,
   InlineLoading,
   Modal,
-  MultiSelect,
-  Tag,
+  MultiSelect
 } from "carbon-components-react";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
@@ -24,8 +22,6 @@ export default function CoordinatorAssignReviewers() {
   const [suggestedReviewers, setSuggestedReviewers] = useState<Array<User>>([]);
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-
-  const [reviewerIds, setReviewerIds] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -103,8 +99,7 @@ export default function CoordinatorAssignReviewers() {
             preventCloseOnClickOutside={false}
 
             onRequestSubmit={async () => {
-              const [_, err] = await nm_ctx.request({
-                
+              await nm_ctx.request({
                 path: `/applications/${router.query.slug}/reviewers`,
                 method: "PUT",
                 data: reviewers as User[],
