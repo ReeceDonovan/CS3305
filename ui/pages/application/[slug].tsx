@@ -388,7 +388,7 @@ const ApplicationPage: NextPage = () => {
                     nm_ctx.request({
                       method: "PATCH",
                       path: `/applications/${application.id}`,
-                      data: { app_status: "SUBMITTED" },
+                      data: { app_status: AppStatus.SUBMITTED },
                       show_progress: true,
                     });
                   }}
@@ -437,9 +437,9 @@ const ApplicationPage: NextPage = () => {
                         : review.user?.email}
                     </span>
                     <span>
-                      {review.status === "APPROVED" ? (
+                      {review.status === AppStatus.APPROVAL ? (
                         <Checkmark24 />
-                      ) : review.status === "REJECTED" ? (
+                      ) : review.status === AppStatus.REJECTED ? (
                         <Close24 />
                       ) : (
                         <></>
@@ -482,8 +482,8 @@ const ApplicationPage: NextPage = () => {
                 }}
                 id="review-status"
                 items={[
-                  { id: "option-1", text: "APPROVED", icon: Checkmark16 },
-                  { id: "option-2", text: "REJECTED", icon: Close16 },
+                  { id: "option-1", text: AppStatus.APPROVAL, icon: Checkmark16 },
+                  { id: "option-2", text: AppStatus.REJECTED, icon: Close16 },
                 ]}
                 itemToString={(item) => (item ? item.text : "")}
                 itemToElement={(item) => (
@@ -626,9 +626,9 @@ const ApplicationPage: NextPage = () => {
                           : review.user?.email}
                       </span>
                       <span>
-                        {review.status === "APPROVED" ? (
+                        {review.status === AppStatus.APPROVAL ? (
                           <Checkmark24 />
-                        ) : review.status === "REJECTED" ? (
+                        ) : review.status === AppStatus.REJECTED ? (
                           <Close24 />
                         ) : (
                           <></>
@@ -729,9 +729,9 @@ const ApplicationPage: NextPage = () => {
                       if (e.selectedItem) setReviewStatus(e.selectedItem.text);
                       if (e.selectedItem){
                         if(e.selectedItem.id == "option-1"){
-                          setOutcome("APPROVED");
+                          setOutcome(AppStatus.APPROVAL);
                         }else{
-                          setOutcome("DRAFT");
+                          setOutcome(AppStatus.DRAFT);
                         }
                       }
                     }}
@@ -789,9 +789,9 @@ const ApplicationPage: NextPage = () => {
                         : review.user?.email}
                     </span>
                     <span>
-                      {review.status === "APPROVED" ? (
+                      {review.status === AppStatus.APPROVAL ? (
                         <Checkmark24 />
-                      ) : review.status === "REJECTED" ? (
+                      ) : review.status === AppStatus.REJECTED ? (
                         <Close24 />
                       ) : (
                         <></>
