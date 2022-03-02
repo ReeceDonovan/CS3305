@@ -8,7 +8,7 @@ import { IsEnum } from "class-validator";
 export enum ReviewStatus {
   APPROVED = "APPROVED",
   PENDING = "PENDING",
-  DECLINED = "REJECTED",
+  REJECTED = "REJECTED",
 }
 
 @OrmEntity("reviews")
@@ -28,6 +28,9 @@ export default class Review extends Entity {
   @ManyToOne(() => Application, (application) => application.reviews)
   @JoinColumn({ name: "application_id" })
   application: Application;
+
+  @Column({type: "boolean", default: false})
+  is_feedback: boolean;
 
   @ManyToOne(() => User, (user) => user.reviews)
   @JoinColumn({ name: "user_id" })

@@ -570,7 +570,7 @@ const assignReviewers = async (
     body.map(async (reviewer) => {
       const reviewerUser = await User.findOne(reviewer.id);
       if (!reviewerUser) throw new NotFoundError();
-
+      
       const existing = await userApplicationRepository.findOne({
         where: {
           user: reviewerUser,
@@ -630,12 +630,13 @@ const createReviewByApplication = async (
     const review = new Review({
       ...body,
       application,
+      is_feedback: req.user?.role === UserType.COORDINATOR,
       user,
     });
     if (
       body.status &&
       (body.status === ReviewStatus.APPROVED ||
-        body.status === ReviewStatus.DECLINED)
+        body.status === ReviewStatus.REJECTED)
     ) {
       // find if every reviewer has made a review, if so check that all
       // reviewers have made a review with a status
@@ -664,7 +665,7 @@ const createReviewByApplication = async (
       );
 
       if (!allReviewersReviewed) {
-        console.log("1 Not all reviewers have made a review");
+        console.log("Not all reviewers have made a review");
       } else {
         application.app_status = AppStatus.PENDING;
         await application.save();
