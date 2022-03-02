@@ -22,11 +22,17 @@ export const createConn = async () => {
     if (coordinatorEmails.length > 0) {
       coordinatorEmails.forEach(async (email) => {
         if (email !== "") {
-          const user = await User.create({
-            email,
-            role: UserType.COORDINATOR,
-          });
-          console.log("Created coordinator user: ", user.email);
+          
+          const user = await User.findOne({ email });
+          if (!user) {
+            const user = new User({
+              email,
+            });
+            user.role = UserType.COORDINATOR;
+            await user.save();
+
+          console.log("Created coordinator user: ", user);
+          }
         }
       });
     }
