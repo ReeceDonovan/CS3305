@@ -10,6 +10,29 @@ import reqUser from "../middleware/store-user";
 import User, { UserType } from "../models/user";
 import { RoleType } from "../models/usersApplications";
 
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get user provided by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *           required: true
+ *
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       200:
+ *         description: Successfully fetched user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ */
 const getUser = async (
   req: express.Request,
   res: express.Response,
@@ -39,6 +62,24 @@ const getUser = async (
   }
 };
 
+/**
+ *
+ * @openapi
+ * /api/users:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get current logged-in user
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       200:
+ *         description: Successfully fetched user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ */
+
 const getCurrentUser = (
   _: express.Request,
   res: express.Response,
@@ -55,6 +96,36 @@ const getCurrentUser = (
   }
 };
 
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   patch:
+ *     tags: [Users]
+ *     summary: Update user by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *           required: true
+ *       - in: body
+ *         name: body
+ *         schema:
+ *           type: object
+ *           required: true
+ *           $ref: '#/components/schemas/User'
+ *
+ *
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       200:
+ *         description: Successfully updated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ */
 const updateUser = async (
   req: express.Request,
   res: express.Response,
@@ -75,6 +146,27 @@ const updateUser = async (
   }
 };
 
+/**
+ * @swagger
+ * /api/users/reviewers:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get reviewers
+ *
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *        description: Forbidden from accessing resource
+ *       200:
+ *         description: Successfully fetched reviewers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ */
 const getReviewers = async (
   req: express.Request,
   res: express.Response,
@@ -146,6 +238,25 @@ const getReviewers = async (
   }
 };
 
+/**
+ * @swagger
+ * /api/users/permissions:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get users
+ *
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden from accessing resource
+ *       200:
+ *         description: Successfully fetched users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ */
 const getUsersPermissions = async (
   _: express.Request,
   res: express.Response,
@@ -163,6 +274,29 @@ const getUsersPermissions = async (
   }
 };
 
+/**
+ * @swagger
+ * /api/users/permissions:
+ *   patch:
+ *     tags: [Users]
+ *     summary: Get user provided by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *           required: true
+ *
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       200:
+ *         description: Successfully fetched user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserPermission'
+ */
 const changeUserPermission = async (
   req: express.Request,
   res: express.Response,

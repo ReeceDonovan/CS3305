@@ -9,6 +9,20 @@ import config from "../config/config";
 
 const aboutRouter = express.Router();
 
+/**
+ * @swagger
+ * /api/about:
+ *   get:
+ *     tags: [Other]
+ *     summary: Get about page content
+ *     responses:
+ *       200:
+ *         description: Successfully assigned reviewers
+ *         content:
+ *           text/html:
+ *             schema:
+ *              type: string
+ */
 aboutRouter.get("/", (_req, res) => {
   const converter = new showdown.Converter();
   res.set("Content-Type", "text/html");
