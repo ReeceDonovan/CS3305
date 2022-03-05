@@ -7,7 +7,6 @@ import reqUser from "../middleware/store-user";
 import config from "../config/config";
 import { getRepository, Repository } from "typeorm";
 import User, { UserType } from "src/models/user";
-import { RoleType } from '../models/usersApplications';
 import { NotAuthorizedError } from '../errors/not-authorized-error';
 import { BadRequestError } from '../errors/bad-request-error';
 
@@ -16,10 +15,9 @@ import path from 'path'
 import { InternalError } from '../errors/internal-error';
 const aboutRouter = express.Router();
 
-
 const upload = multer({ storage: multer.memoryStorage() });
 
-aboutRouter.get("/", (_req, res) => {
+aboutRouter.get("/", async (_req, res) => {
   const converter = new showdown.Converter();
   res.set("Content-Type", "text/html");
   res.send(DOMPurify.sanitize(converter.makeHtml(config.get().landingPageMD)));

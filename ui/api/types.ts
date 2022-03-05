@@ -60,22 +60,36 @@ export enum AppStatus {
 }
 
 export interface configInterface {
-  emailProvider: string;
-  emailUser: string;
-  emailToken: string;
-  emailConfigs: Array<emailConfig>;
-  oauthConfig: oauthConfig;
+  uiURL: string;
+  apiURL: string;
   signingKey: string;
   landingPageMD: string;
-  databaseConfig: databaseConfig;
-}
-
-export interface emailConfig {
-  host: string;
-  port: number;
-  secure?: boolean;
-  tls?: {
-    ciphers?: string;
+  companyLogo: string;
+  emailConfig: {
+    provider: string;
+    lessSecure?: boolean;
+    user: string;
+    clientId?: string;
+    token: string;
+    refreshToken?: string;
+    host?: string;
+    port?: number;
+    secure?: boolean;
+    tls?: {
+      ciphers: string;
+    };
+  };
+  oauthConfig: {
+    oauthClientId: string;
+    oauthClientSecret: string;
+    allowedDomains: string[];
+  };
+  databaseConfig: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    database: string;
   };
 }
 
