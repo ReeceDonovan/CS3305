@@ -1,17 +1,37 @@
 import { Button } from "carbon-components-react";
 import styles from "../styles/about.module.css";
-import axios from "axios";
 import Link from "next/link";
 
 import * as api from "../api";
+import { useContext, useEffect, useState } from "react";
+import { NetworkManagerContext } from "../components/NetworkManager";
 
-export default function About(props: { content: string }) {
+export default function About() {
+  const nm_ctx = useContext(NetworkManagerContext);
+
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      if (loading) {
+        const [res] = await nm_ctx.request({
+          path: "/about",
+          method: "GET",
+        });
+
+        setContent(res as unknown as string);
+        setLoading(false);
+      }
+    })();
+  });
+
   return (
     <>
-      {props.content.length > 0 ? (
+      {!loading && content?.length !== 0 ? (
         <>
           <div className={styles.info}>
-            <div dangerouslySetInnerHTML={{ __html: props.content }} />
+            <div dangerouslySetInnerHTML={{ __html: content }} />
             <Button href="/login">Log in with UCC Email</Button>
           </div>
         </>
@@ -43,7 +63,7 @@ export default function About(props: { content: string }) {
               are unsure which University ethics committee you should apply to,
               please
               <Link href="https://www.ucc.ie/en/research/support/ethics/">
-                <a>click here</a>
+                <a> click here</a>
               </Link>
               . UCC academic staff and postgraduate research students can apply
               to SREC when undertaking social research where the methodology is
@@ -83,27 +103,29 @@ export default function About(props: { content: string }) {
               student researchers. We are open to all types of research in the
               social research domain.
             </p>
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "unset"
-            }}>
-              <Button style={{display: 'inline'}} href={`${api.API_URL}/login`}>Log in with UCC Email</Button>
-              <p style={{display: 'inline', margin: "0 20px"}}>By logging in, you agree to have 
-              read and agree to the <Link href="https://srecdocs.netsoc.cloud/privacy-policy"><a>Privacy Policy</a></Link></p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "unset",
+              }}
+            >
+              <Button
+                style={{ display: "inline" }}
+                href={`${api.API_URL}/login`}
+              >
+                Log in with UCC Email
+              </Button>
+              <p style={{ display: "inline", margin: "0 20px" }}>
+                By logging in, you agree to have read and agree to the{" "}
+                <Link href="https://srecdocs.netsoc.cloud/privacy-policy">
+                  <a>Privacy Policy</a>
+                </Link>
+              </p>
             </div>
           </div>
         </div>
       )}
     </>
   );
-}
-
-export async function getServerSideProps() {
-  const data = await axios.get(`${api.API_URL}/about`);
-  console.log("Fetched about page");
-  console.log(data.data);
-  return {
-    props: {
-      content: data.data,
-    },
-  };
 }

@@ -36,7 +36,7 @@ export default function Index() {
           <ResearcherDashboard />
         </div>
       ) : (
-        <About content="" />
+        <About />
       )}
     </>
   );

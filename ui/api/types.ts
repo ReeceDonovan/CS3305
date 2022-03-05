@@ -75,9 +75,6 @@ export interface configInterface {
     host?: string;
     port?: number;
     secure?: boolean;
-    tls?: {
-      ciphers: string;
-    };
   };
   oauthConfig: {
     oauthClientId: string;
@@ -91,6 +88,7 @@ export interface configInterface {
     password: string;
     database: string;
   };
+  coordinatorEmails: string[];
 }
 
 export interface oauthConfig {

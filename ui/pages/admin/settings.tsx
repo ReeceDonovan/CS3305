@@ -6,7 +6,7 @@ import {
   TextInput,
   TextArea,
   Tag,
-  Checkbox
+  Checkbox,
 } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -32,7 +32,6 @@ const Settings = () => {
   const [emailPort, setEmailPort] = useState<number>(0);
   const [emailHost, setEmailHost] = useState<string>("");
   const [emailSecure, setEmailSecure] = useState<boolean>(false);
-  const [emailCiphers, setCiphers] = useState<string>("");
   // oAuth
   const [oauthClientID, setOAuthClientID] = useState<string>("");
   const [oauthClientSecret, setOAuthClientSecret] = useState<string>("");
@@ -44,6 +43,8 @@ const Settings = () => {
   const [dbPort, setDBPort] = useState<number>(0);
   const [dbName, setDBName] = useState<string>("");
 
+  const [coordinatorEmails, setCoordinatorEmails] = useState<string[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User>();
 
@@ -52,9 +53,9 @@ const Settings = () => {
   useEffect(() => {
     (async () => {
       if (loading) {
-        const [res, _] = await nm_ctx.request({ 
-          path: "/admin/settings", 
-          method: "GET" 
+        const [res, _] = await nm_ctx.request({
+          path: "/admin/settings",
+          method: "GET",
         });
 
         if (res.status == 200) {
@@ -73,8 +74,7 @@ const Settings = () => {
           setEmailHost(res.data.emailConfig.host);
           setEmailPort(res.data.emailConfig.port);
           setEmailSecure(res.data.emailConfig.emailSecure);
-          setCiphers(res.data.emailConfig.tls.ciphers);
-          
+
           setOAuthClientID(res.data.oauthConfig.oauthClientId);
           setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
           setAllowedDomains(res.data.oauthConfig.allowedDomains);
@@ -84,6 +84,8 @@ const Settings = () => {
           setDBHost(res.data.databaseConfig.host);
           setDBPort(res.data.databaseConfig.port);
           setDBName(res.data.databaseConfig.database);
+
+          setCoordinatorEmails(res.data.coordinatorEmails);
         }
 
         const user = await api.getToken();
@@ -105,6 +107,7 @@ const Settings = () => {
       signingKey,
       landingPageMD,
       companyLogo,
+      coordinatorEmails,
       emailConfig: {
         provider: emailProvider,
         lessSecure: emailLessSecure,
@@ -115,9 +118,6 @@ const Settings = () => {
         host: emailHost,
         port: emailPort,
         secure: emailSecure,
-        tls: {
-          ciphers: emailCiphers
-        }
       },
       oauthConfig: {
         oauthClientId: oauthClientID,
@@ -144,7 +144,9 @@ const Settings = () => {
 
   return (
     <>
-      {user?.role !== "COORDINATOR" && !loading ? window.location.href="/" : null}
+      {user?.role !== "COORDINATOR" && !loading
+        ? (window.location.href = "/")
+        : null}
       <Form
         className="bx--grid bx--grid--narrow"
         style={{
@@ -210,31 +212,46 @@ const Settings = () => {
                 return <SelectItem value={e.toLowerCase()} text={e} key={i} />;
               })}
             </Select>
-            {emailProvider == "gmail" ? <Checkbox id="lessSecure" labelText="Less Secure" defaultChecked={emailLessSecure} onChange={(_e: any) => {setEmailLessSecure(!emailLessSecure)}} /> : null }
+            {emailProvider == "gmail" ? (
+              <Checkbox
+                id="lessSecure"
+                labelText="Less Secure"
+                defaultChecked={emailLessSecure}
+                onChange={(_e: any) => {
+                  setEmailLessSecure(!emailLessSecure);
+                }}
+              />
+            ) : null}
           </div>
         </div>
-        {emailProvider == "custom" ? <div style={{ marginBottom: "2rem" }} className="bx--row">
-          <div className="bx--col">
-            <TextInput
-              id="emailHost"
-              name="emailHost"
-              labelText={"Host"}
-              placeholder="Host"
-              defaultValue={emailHost}
-              onChange={(e) => { setEmailHost(e.target.value) }}
-            />
+        {emailProvider == "custom" ? (
+          <div style={{ marginBottom: "2rem" }} className="bx--row">
+            <div className="bx--col">
+              <TextInput
+                id="emailHost"
+                name="emailHost"
+                labelText={"Host"}
+                placeholder="Host"
+                defaultValue={emailHost}
+                onChange={(e) => {
+                  setEmailHost(e.target.value);
+                }}
+              />
+            </div>
+            <div className="bx--col">
+              <TextInput
+                id="emailPort"
+                name="emailPort"
+                labelText={"Port"}
+                placeholder="Port"
+                defaultValue={emailPort}
+                onChange={(e) => {
+                  setEmailPort(Number(e.target.value));
+                }}
+              />
+            </div>
           </div>
-          <div className="bx--col">
-            <TextInput
-              id="emailPort"
-              name="emailPort"
-              labelText={"Port"}
-              placeholder="Port"
-              defaultValue={emailPort}
-              onChange={(e) => { setEmailPort(Number(e.target.value)) }}
-            />
-          </div>
-        </div> : null}
+        ) : null}
         <div style={{ marginBottom: "2rem" }} className="bx--row">
           <div className="bx--col">
             <TextInput
@@ -261,28 +278,34 @@ const Settings = () => {
             />
           </div>
         </div>
-        {(!emailLessSecure && emailProvider === "gmail") ? <div style={{ marginBottom: "2rem" }} className="bx--row">
-          <div className="bx--col">
-            <TextInput.PasswordInput
-              id="emailClientID"
-              name="emailClientID"
-              labelText={"Email Client ID"}
-              placeholder="Email Client ID"
-              defaultValue={emailClientID}
-              onChange={(e) => { setEmailClientID(e.target.value) }}
-            />
+        {!emailLessSecure && emailProvider === "gmail" ? (
+          <div style={{ marginBottom: "2rem" }} className="bx--row">
+            <div className="bx--col">
+              <TextInput.PasswordInput
+                id="emailClientID"
+                name="emailClientID"
+                labelText={"Email Client ID"}
+                placeholder="Email Client ID"
+                defaultValue={emailClientID}
+                onChange={(e) => {
+                  setEmailClientID(e.target.value);
+                }}
+              />
+            </div>
+            <div className="bx--col">
+              <TextInput.PasswordInput
+                id="emailRefreshToken"
+                name="emailRefreshToken"
+                labelText={"Email Refresh Token"}
+                placeholder="Email Refresh Token"
+                defaultValue={emailRefreshToken}
+                onChange={(e) => {
+                  setEmailRefreshToken(e.target.value);
+                }}
+              />
+            </div>
           </div>
-          <div className="bx--col">
-            <TextInput.PasswordInput
-              id="emailRefreshToken"
-              name="emailRefreshToken"
-              labelText={"Email Refresh Token"}
-              placeholder="Email Refresh Token"
-              defaultValue={emailRefreshToken}
-              onChange={(e) => { setEmailRefreshToken(e.target.value) }}
-            />
-          </div>
-        </div> : null}
+        ) : null}
         <h3 className="bx--row"> oauth Settings </h3>
         <div style={{ marginBottom: "2rem" }} className="bx--row">
           <div className="bx--col">
@@ -352,7 +375,7 @@ const Settings = () => {
               ))}
             </div>
           </div>
-        </div>  
+        </div>
         <h3 className="bx--row"> About Page Customization </h3>
         <div style={{ marginBottom: "2rem" }} className="bx--row">
           <div className="bx--col-lg-6">
@@ -374,7 +397,7 @@ const Settings = () => {
               placeholder="# Write your first markdown"
               rows={4}
               defaultValue={landingPageMD}
-              style={{maxHeight: "40rem"}}
+              style={{ maxHeight: "40rem" }}
               onChange={(e) => {
                 setLandingPageMD(e.target.value);
               }}
@@ -382,7 +405,10 @@ const Settings = () => {
           </div>
           <div className="bx--col-lg-6">
             <label className="bx--label">Preview</label>
-            <div className="bx--text-area:disabled bx--text-area" style={{maxHeight: "40rem", marginBottom: "2rem"}}>
+            <div
+              className="bx--text-area:disabled bx--text-area"
+              style={{ maxHeight: "40rem", marginBottom: "2rem" }}
+            >
               <ReactMarkdown>{landingPageMD}</ReactMarkdown>
             </div>
           </div>
