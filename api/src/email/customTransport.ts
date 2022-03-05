@@ -13,7 +13,6 @@ export class ExtendedTransporter {
   transporter: Transporter;
   constructor(transporter: Transporter) {
     this.transporter = transporter;
-    
   }
 
   // Move this out cause it was causing a build failure
@@ -25,7 +24,7 @@ export class ExtendedTransporter {
       from: config.get().emailConfig.user,
       to: mailOptions.to,
       subject: mailOptions.subject,
-      text: `${mailOptions.text}\n\nThis is an automated email, please do not reply back to this. If an issue arises contact your local system administrator, or co-ordinator.`,
+      text: `${options.title}\n${mailOptions.text}\n\nThis is an automated email, please do not reply back to this. If an issue arises contact your coordinator.`,
       html: `
       <table style="background-color;background-color: #f0f0f0;font-family: monospace;">
         <tbody style="display: flex;width: 70%;margin: 0 auto 0 auto;">
@@ -41,7 +40,7 @@ export class ExtendedTransporter {
             <td>
               <span style="display:flex;flex-direction: column;align-items: center;"> 
                 <img src="${config.get().companyLogo}" style="margin: 1rem auto 2rem auto;max-width: 200;"> 
-                <p style="width: 90%;">This is an automated email, please do not reply back to this. If an issue arises contact your local system administrator, or co-ordinator.</p>
+                <p style="width: 90%;">This is an automated email, please do not reply back to this. If an issue arises contact your coordinator @ srec@ucc.ie.</p>
               </span>
             </td>
           </tr>
@@ -50,7 +49,12 @@ export class ExtendedTransporter {
     }, callback);
   }
 
-  public updateNotification(mailOptions: Mail.Options, callback: (err: Error | null, info: any) => void) {
-    this.boilerplateMessage({...mailOptions, text: "One of your applications had an update! Please check at the link below to get full information on this", html: "<p>One of your applications had an update! Please check at the link below to get full information on this</p>"}, callback, {title: "We have an update!"});
+  public updateNotification(mailOptions: Mail.Options, callback: (err: Error | null, info: any) => void, updateString: string) {
+    this.boilerplateMessage({
+      ...mailOptions, 
+      text: `Your applications is now ${updateString}! Please check at the link below to get full information on this`, 
+      html: `<p>Your applications is now ${updateString}! Please check at the link below to get full information on this</p>`}, 
+      callback, 
+      {title: "We have an update!"});
   }
 }
