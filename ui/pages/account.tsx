@@ -1,4 +1,4 @@
-import { Login32, Save32 } from "@carbon/icons-react";
+import { DocumentDownload16, Login32, Save32 } from "@carbon/icons-react";
 import { Button, Form, TextInput } from "carbon-components-react";
 import type { NextPage } from "next";
 import React, { useEffect, useState, useContext } from "react";
@@ -91,6 +91,37 @@ const AccountPage: NextPage = () => {
             renderIcon={Login32}
           >
             Logout
+          </Button>
+
+          <Button
+            kind="secondary"
+            type="submit"
+            onClick={async (e) => {
+              e.preventDefault();
+              const [res, err_code] = await nm_ctx.request({
+                show_progress: true,
+                method: "GET",
+                path: "/users/",
+              });
+              if (err_code === 0) {
+                const str = JSON.stringify(res.data);
+                const bytes = new TextEncoder().encode(str);
+                const blob = new Blob([bytes], {
+                  type: "application/json;charset=utf-8",
+                });
+
+                // Stolen from https://github.com/eligrey/FileSaver.js/
+                const a = document.createElement("a");
+                const name = "your_data.txt";
+                a.download = name;
+                a.rel = "noopener"; // tabnabbing
+                a.href = URL.createObjectURL(blob);
+                a.click();
+              }
+            }}
+            renderIcon={DocumentDownload16}
+          >
+            Request GDPR Data
           </Button>
 
           <Button

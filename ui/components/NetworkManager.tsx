@@ -89,7 +89,6 @@ export const NetworkManager = (props: any) => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        console.log(res);
         if (params.show_progress === true) {
           loc_req_state = [3, params.succ_msg ? params.succ_msg : "", null];
         }
