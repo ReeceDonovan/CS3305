@@ -1,8 +1,11 @@
 import axios, { Method } from "axios";
 import { User } from "./types";
 
-export const API_URL: string = process.env.API_URL || "http://localhost:8000";
-export const UI_URL: string = process.env.UI_URL || "http://localhost:3000";
+export const API_URL: string = "https://srec.netsoc.cloud/api";
+
+export const UI_URL: string = "/";
+
+console.log(process.env.API_URL);
 
 export interface RequestParams {
   path: string;
@@ -25,10 +28,8 @@ const exampleResponse: StandardResponse = {
 export const getToken = async (): Promise<User | null> => {
   const jwt = await localStorage.getItem("token");
   if (jwt) {
-    console.log(jwt);
     const claims = jwt.split(".")[1];
     const parsedClaims: User = JSON.parse(atob(claims))?.user;
-    console.log(parsedClaims);
     return parsedClaims;
   }
   return null;

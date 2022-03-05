@@ -16,12 +16,12 @@
   margin-top: 50px;
 }
 
-.edit input {
-  margin-bottom: 20px;
+.edit > * {
+  margin: 1em;
 }
 
 .edit button {
-  width: 0px;
+  margin: 2em;
 }
 
 .reviewTile {

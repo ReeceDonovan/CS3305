@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   FileUploaderDropContainer,
   FileUploaderDropContainerProps,
@@ -12,6 +12,7 @@ interface CustomFileUploaderProps extends FileUploaderDropContainerProps {
   add_remote_file_url: string | null;
   delete_remote_file_url?: string;
   get_add_remote_file_url?: () => Promise<string>;
+  init_file?: string;
 }
 
 export default function CustomFileUploader(props: CustomFileUploaderProps) {
@@ -19,7 +20,16 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
   const [invalid_flag, setInvalid_flag] = useState<boolean>(false);
   const nm_ctx = useContext(NetworkManagerContext);
 
-  const onAddFiles = async (evt: { stopPropagation: () => void; }, { addedFiles }: any) => {
+  useEffect(() => {
+    if (props.init_file) {
+      setFile({ name: props.init_file, status: "edit" });
+    }
+  }, [props.init_file]);
+
+  const onAddFiles = async (
+    evt: { stopPropagation: () => void },
+    { addedFiles }: any
+  ) => {
     let url = "";
     if (props.add_remote_file_url === null) {
       if (props.get_add_remote_file_url) {
@@ -30,19 +40,27 @@ export default function CustomFileUploader(props: CustomFileUploaderProps) {
     } else {
       url = props.add_remote_file_url;
     }
+
     setInvalid_flag(false);
     evt.stopPropagation();
+
     const new_file: File = addedFiles[0];
     setFile({ name: new_file.name, status: "uploading" } as FileRef);
+
     const form_data = new FormData();
     form_data.append("pdf_form", new_file);
+
     const [_res, err_code] = await nm_ctx.request({
       method: "POST",
       path: url,
       data: form_data,
     });
+
     if (err_code === 0) {
       setFile({ name: new_file.name, status: "edit" });
+    } else {
+      setFile(null);
+      setInvalid_flag(true);
     }
   };
 

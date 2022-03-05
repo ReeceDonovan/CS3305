@@ -16,7 +16,7 @@ export default function About(props: { content: string }) {
           </div>
         </>
       ) : (
-        <>
+        <div style={{ paddingBottom: "2rem" }}>
           <h1
             style={{
               marginTop: "150px",
@@ -85,7 +85,7 @@ export default function About(props: { content: string }) {
             </p>
             <Button href={`${api.API_URL}/login`}>Log in with UCC Email</Button>
           </div>
-        </>
+        </div>
       )}
     </>
   );
@@ -94,10 +94,10 @@ export default function About(props: { content: string }) {
 export async function getServerSideProps() {
   const data = await axios.get(`${api.API_URL}/about`);
   console.log("Fetched about page");
-  console.log(data.data)
+  console.log(data.data);
   return {
     props: {
       content: data.data,
-    }
+    },
   };
 }

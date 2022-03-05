@@ -13,7 +13,7 @@ export interface User extends BaseEntity {
   bio?: string;
   school?: string;
   avatar?: string;
-  appConnection?: UsersApplications[];
+  app_connection?: UsersApplications[];
   reviews?: Review[];
 }
 
@@ -22,10 +22,10 @@ export interface Application extends BaseEntity {
   description?: string;
   status?: string;
   field?: string;
-  userConnection?: UsersApplications[];
+  user_connection?: UsersApplications[];
   reviews?: Review[];
   hasFile?: boolean;
-  appStatus: AppStatus;
+  app_status: AppStatus;
 }
 
 export interface UsersApplications extends BaseEntity {
@@ -36,7 +36,7 @@ export interface UsersApplications extends BaseEntity {
   application?: Application;
 }
 
-export interface Review extends BaseEntity{
+export interface Review extends BaseEntity {
   comment?: string;
   status: string;
   application_id?: number;
@@ -45,16 +45,18 @@ export interface Review extends BaseEntity{
   user?: User;
 }
 
-export interface FileRef{
+export interface FileRef {
   name: string;
   status: FileStatus;
 }
 
-export enum AppStatus{
-  Draft,
-  Review,
-  Approval,
-  Rejection
+export enum AppStatus {
+  DRAFT = "DRAFT",
+  SUBMITTED = "SUBMITTED",
+  PENDING = "PENDING",
+  REVIEW = "REVIEW",
+  APPROVAL = "APPROVED",
+  REJECTED = "REJECTED",
 }
 
 export interface configInterface {
