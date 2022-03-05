@@ -83,7 +83,13 @@ export default function About(props: { content: string }) {
               student researchers. We are open to all types of research in the
               social research domain.
             </p>
-            <Button href={`${api.API_URL}/login`}>Log in with UCC Email</Button>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "unset"
+            }}>
+              <Button style={{display: 'inline'}} href={`${api.API_URL}/login`}>Log in with UCC Email</Button>
+              <p style={{display: 'inline', margin: "0 20px"}}>By logging in, you agree to have 
+              read and agree to the <Link href="https://srecdocs.netsoc.cloud/privacy-policy"><a>Privacy Policy</a></Link></p>
+            </div>
           </div>
         </div>
       )}

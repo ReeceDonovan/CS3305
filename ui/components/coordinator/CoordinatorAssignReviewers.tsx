@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { UserAvatar32 } from "@carbon/icons-react";
 import {
   Button,
   InlineLoading,
@@ -127,13 +128,18 @@ export default function CoordinatorAssignReviewers() {
                     alignItems: "center",
                   }}
                 >
-                  <img
-                    alt={item?.email + "'s avatar"}
-                    src={item?.avatar}
-                    width="20px"
-                    height="20px"
-                    style={{ borderRadius: "50%", marginRight: "1rem" }}
-                  />
+                  {item.avatar ? (
+                    <img
+                      src={item.avatar}
+                      alt={item.name}
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        marginRight: "8px",
+                      }}
+                      />
+                  ) : <UserAvatar32 style={{marginRight: "8px"}} />}
                   <p>{item?.email}</p>
                 </span>
               )}
@@ -146,23 +152,6 @@ export default function CoordinatorAssignReviewers() {
             />
             </div>
           </Modal>
-          {/* <div className={styles.dropdown}>
-
-            
-          </div>
-          <div className={styles.assignBtn}>
-            <Button
-              onClick={() => {
-                nm_ctx.request({
-                  method: "PUT",
-                  path: `/applications/${router.query.slug}/reviewers`,
-                  data: [...reviewerIds],
-                });
-              }}
-            >
-              Assign
-            </Button>
-          </div> */}
         </div>
       ) : (
         <InlineLoading />
