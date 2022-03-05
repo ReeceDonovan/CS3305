@@ -7,24 +7,15 @@ import path from "path";
 const defaultConfig: configInterface = {
   apiURL: "http://localhost:8000",
   uiURL: "http://localhost:3000",
-  emailProvider: "gmail",
-  emailUser: "",
-  emailToken: "",
-  emailConfigs: [
-    {
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-    },
-    {
-      host: "smtp-mail.outlook.com",
-      secure: false,
-      port: 587,
-      tls: {
-        ciphers: "SSLv3",
-      },
-    },
-  ],
+    signingKey: "",
+  landingPageMD:
+    "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))",
+  companyLogo: "",
+  emailConfig: {
+    provider: "gmail",
+    user: "",
+    token: "",
+  },
   oauthConfig: {
     oauthClientId: "",
     oauthClientSecret: "",
@@ -36,11 +27,8 @@ const defaultConfig: configInterface = {
       "hse.ie",
     ],
   },
-  signingKey: "",
-  landingPageMD:
-    "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))",
   databaseConfig: {
-    host: "pgres",
+    host: "localhost",
     port: 5432,
     username: "postgres",
     password: "postgres",
@@ -52,17 +40,28 @@ const defaultConfig: configInterface = {
 export interface configInterface {
   uiURL: string;
   apiURL: string;
-  emailProvider: string;
-  emailUser: string;
-  emailToken: string;
-  emailConfigs: emailConfigInterface[];
+  signingKey: string;
+  landingPageMD: string;
+  companyLogo: string;
+  emailConfig: {
+    provider: string;
+    lessSecure?: boolean;
+    user: string;
+    clientId?: string;
+    token: string;
+    refreshToken?: string;
+    host?: string;
+    port?: number;
+    secure?: boolean;
+    tls?: {
+      ciphers: string;
+    };
+  };
   oauthConfig: {
     oauthClientId: string;
     oauthClientSecret: string;
     allowedDomains: string[];
   };
-  signingKey: string;
-  landingPageMD: string;
   databaseConfig: {
     host: string;
     port: number;
@@ -71,15 +70,6 @@ export interface configInterface {
     database: string;
   };
   coordinatorEmails: string[];
-}
-
-interface emailConfigInterface {
-  host: string;
-  port: number;
-  secure?: boolean;
-  tls?: {
-    ciphers: string;
-  };
 }
 
 class Config {
