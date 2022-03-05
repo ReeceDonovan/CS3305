@@ -2,16 +2,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import express from "express";
-import Application from "src/models/application";
-import Review from "src/models/review";
-import { getRepository } from "typeorm";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 
 import { BadRequestError, NotAuthorizedError, NotFoundError } from "../errors";
 import { protectedRoute } from "../middleware/protected-route";
 import reqUser from "../middleware/store-user";
 import User, { UserType } from "../models/user";
-import UsersApplications, { RoleType } from "../models/usersApplications";
+import { RoleType } from "../models/usersApplications";
 
 const getUser = async (
   req: express.Request,
@@ -42,63 +39,27 @@ const getUser = async (
   }
 };
 
-
-
-const getCurrentUser = (
+const getCurrentUser = async (
   _: express.Request,
   res: express.Response,
   next: express.NextFunction
 ) => {
-  try {
-    res.json({
-      status: 200,
-      message: "Successfully fetched users",
-      data: res.locals.user,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-const getUserAll = async (
-  _req: express.Request,
-  res: express.Response, 
-  next: express.NextFunction) => {
-
   const user = res.locals.user;
 
-  const out : { user: User, applications?: Application[], reviews?: Review[] } = {user: user};
-
   try{
-    const userApplications = await getRepository(UsersApplications).find({
-      where: {
-        user,
-      },
+    const user_big = await User.findOne({
+      where: { id: user.id}, 
       relations: [
-        "application",
-      ],
+        "reviews", 
+        "usersApplications", 
+        "usersApplications.application"]
+      });
+  
+    res.json({
+      status: 200,
+      message: "Successfully fetched user",
+      data: user_big,
     });
-    const applications = userApplications.map((u) => u.application);
-    if (applications){
-    out.applications = applications;
-    }
-
-    const reviews = await getRepository(Review).find({
-      where: {
-        user,
-      }
-    });
-
-    if (reviews){
-      out.reviews = reviews;
-    }
-
-    res.json( {
-        status: 200,
-        message: "Successfully retrieved all applications",
-        data: out,
-    });
-      
   } catch (err) {
     next(err);
   }
@@ -256,7 +217,6 @@ userRouter.patch("/permissions", reqUser, changeUserPermission);
 userRouter.get("/reviewers", reqUser, getReviewers);
 userRouter.get("/:id", reqUser, getUser);
 userRouter.get("/", reqUser, getCurrentUser);
-userRouter.get("/all", reqUser, )
 userRouter.patch("/", reqUser, updateUser);
 
 export default userRouter;
