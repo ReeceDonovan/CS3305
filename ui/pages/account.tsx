@@ -19,12 +19,12 @@ const AccountPage: NextPage = () => {
   useEffect(() => {
     (async () => {
       if (loading) {
-        const [res] = await nm_ctx.request({
+        const [res, err_code] = await nm_ctx.request({
           path: "/users",
           method: "GET",
         });
 
-        if (res.status == 200) {
+        if (err_code == 0) {
           const user = res.data as User;
 
           setEmail(user.email || "");
