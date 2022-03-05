@@ -1,6 +1,6 @@
 export default {
-  repository: 'https://github.com/reecedonovan/cs3305', // project repo
-  docsRepository: 'https://github.com/ReeceDonovan/CS3305/tree/main/docs', // docs repo
+  repository: 'https://github.com/ReeceDonovan/cs3305', // project repo
+  docsRepository: 'https://github.com/ReeceDonovan/CS3305', // docs repo
   branch: 'master', // branch of docs
   path: '/', // path of docs
   titleSuffix: ' - SREC Docs',
@@ -11,7 +11,7 @@ export default {
 //   darkMode: true,
   footer: true,
   footerText: `MIT ${new Date().getFullYear()} © Team 1 CS3305`,
-  footerEditOnGitHubLink: false,
+  footerEditOnGitHubLink: true,
   logo: <>
     <svg>...</svg>
     <span>SREC Website Documentation</span>

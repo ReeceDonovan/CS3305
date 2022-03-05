@@ -18,6 +18,9 @@ Deployment-method agnostic requirements are as follows:
   - Add the URI that is your domain with `/api/callback` appended (e.g. `https://srec.example.com/api/callback`).
   - Click `Create`
   - On the page that appears, make a copy the client ID and secret, these will be needed later.
+  - If these instructions are no longer relevant, check 
+  [here](https://developers.google.com/adwords/api/docs/guides/authentication#create_a_client_id_and_client_secret)
+  for more up to date instructions.
 
 There are two deployment methods for this website:
 
@@ -60,6 +63,7 @@ This method is harder to replicate, and may end with a lot of effort to get it t
 - [Git](https://git-scm.com/)
 - [NodeJS](https://nodejs.org/)
 - [Yarn](https://yarnpkg.com/)
+- [Nginx](https://www.nginx.com/) (or other reverse-proxy webserver)
 - [PostgreSQL](https://www.postgresql.org/)
 
 On the linux server, perform the following steps:
@@ -70,8 +74,18 @@ On the linux server, perform the following steps:
   - `cd api && yarn && cd ..`
   - `cd ui && yarn && cd ..`
   - `cd docs && yarn && cd ..`
-- Deploy a PostgreSQL database
+- Deploy a PostgreSQL database, and get a user for the backend to use. 
+Copy the credentials to the appropriate location in `api/config.json`.
 
-/_
-TODO: finish this
-_/
+- Update the URL paths in the UI to match the domain name.
+  - Change API_URL constant in `ui/api/index.ts` to the url for the api (e.g. `https://srec.example.com/api`)
+
+- Build the frontend
+  - `cd ui && yarn build`
+
+- Run each service
+  - `cd api && yarn start && cd ..`
+  - `cd ui && yarn start && cd ..`
+  - `cd docs && yarn start && cd ..`
+
+- Proxy each service through Nginx or other reverse proxy web server.

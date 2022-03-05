@@ -1,6 +1,9 @@
 {
   "index": "Introduction",
-  "getting-started": "Getting Started",
+  "researcher-guide": "Guide for Researchers",
+  "reviewer-guide": "Guide for Reviewers",
+  "coordinator-guide": "Guide for Coordinators",
+  "deployment": "Deployment Guide",
   "api-reference": "API",
   "privacy-policy": "Privacy Policy",
   "license": "License"
