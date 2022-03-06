@@ -6,7 +6,6 @@ import {
   Modal,
   MultiSelect,
 } from "carbon-components-react";
-import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
 import { User } from "../../api/types";
@@ -17,7 +16,6 @@ export default function CoordinatorAssignReviewers({
 }: {
   applicationId: string;
 }) {
-  const router = useRouter();
   const nm_ctx = useContext(NetworkManagerContext);
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -52,6 +50,7 @@ export default function CoordinatorAssignReviewers({
         setLoading(false);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
   return (
