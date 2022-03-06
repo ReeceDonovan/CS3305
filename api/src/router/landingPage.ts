@@ -26,7 +26,6 @@ const aboutPage = (_req: express.Request, res: express.Response) => {
 };
 
 const uploadForm = async (req: express.Request, res: express.Response) => {
-  console.log("jeramus");
   const file = req.file;
   const user = req.user;
   if (user) {
@@ -80,8 +79,14 @@ const deleteForm = async (req: express.Request, res: express.Response) => {
       if (!dbUser || dbUser.role !== UserType.COORDINATOR)
         throw new NotAuthorizedError();
 
-      fs.unlinkSync(path.join(__dirname, "../../../data/form.pdf"));
-      return res.status(200).send("File deleted");
+      const files = fs.readdirSync(path.join(__dirname, "../../../data"));
+
+      if (files.includes("form.pdf")) {
+        fs.unlinkSync(path.join(__dirname, "../../../data/form.pdf"));
+        return res.status(200).send("File deleted");
+      } else {
+        return res.status(404).send("File not found");
+      }
     }
   } catch (e) {
     throw new InternalError("Error deleting file");
@@ -94,8 +99,13 @@ aboutRouter.post("/form", reqUser, upload.single("pdf_form"), uploadForm);
 aboutRouter.delete("/form", reqUser, deleteForm);
 
 aboutRouter.get("/form", (_req: express.Request, res: express.Response) => {
-  const file = `${__dirname}../../../../data/form.pdf`;
-  res.download(file);
+  const files = fs.readdirSync(path.join(__dirname, "../../../data"));
+
+  if (files.includes("form.pdf")) {
+    res.download(path.join(__dirname, "../../../data/form.pdf"));
+  } else {
+    res.status(404).send("File not found");
+  }
 });
 
 export default aboutRouter;

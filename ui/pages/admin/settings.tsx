@@ -51,8 +51,10 @@ const Settings = () => {
 
   const nm_ctx = useContext(NetworkManagerContext);
 
-  const [form, setForm] = useState<ArrayBuffer>();
-  const [formError, setFormError] = useState();
+  // const [form, setForm] = useState<ArrayBuffer>();
+  const [formError, setFormError] = useState(false);
+
+  useEffect(() => {}, [formError]);
 
   useEffect(() => {
     (async () => {
@@ -93,9 +95,15 @@ const Settings = () => {
           setCoordinatorEmails(res.data.coordinatorEmails);
         }
 
-        const [res1] = await api.fetchPDF("/about/form");
-
-        setForm(res1);
+        const resp = await api.fetchPDF("/about/form");
+        if (resp && resp.length) {
+          if (resp[1]) {
+            console.log("FORM MISSING");
+            await setFormError(true);
+            console.log("something");
+            console.log("FORM ERROR WOOOOOO ", formError);
+          }
+        }
 
         const user = await api.getToken();
         if (user) {
@@ -105,7 +113,8 @@ const Settings = () => {
         setLoading(false);
       }
     })();
-  }, [loading, nm_ctx]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   const onSubmit = (event: any) => {
     setSubmitting(true);
@@ -508,9 +517,8 @@ const Settings = () => {
           <div className="bx-col">
             <h3>Application form template</h3>
             <CustomFileUploader
-              // init_file={formError == 2 ? undefined : "form.pdf"}
+              init_file={"form.pdf"}
               add_remote_file_url={"/about/form"}
-              delete_remote_file_url={"/about/form"}
             />
           </div>
         </div>

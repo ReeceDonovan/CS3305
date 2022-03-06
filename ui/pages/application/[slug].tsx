@@ -120,8 +120,10 @@ const ApplicationPage: NextPage = () => {
             setReviews(reviews ? reviews : []);
           }
         }
-        api.fetchPDF(slug).then((response) => {
-          setPDF(response);
+        api.fetchPDF(`/application/${slug}/form`).then((response) => {
+          if (response && response.length) {
+            setPDF(response[0]);
+          }
         });
       } else {
         console.log("ROUTER IS NOT READY");
