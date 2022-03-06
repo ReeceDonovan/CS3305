@@ -13,6 +13,7 @@ import ReactMarkdown from "react-markdown";
 import { configInterface, User } from "../../api/types";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 import * as api from "../../api";
+import CustomFileUploader from "../../components/CustomFileUploader";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
@@ -50,12 +51,16 @@ const Settings = () => {
 
   const nm_ctx = useContext(NetworkManagerContext);
 
+  const [form, setForm] = useState<ArrayBuffer>();
+  const [formError, setFormError] = useState();
+
   useEffect(() => {
     (async () => {
       if (loading) {
         const [res, _] = await nm_ctx.request({
           path: "/admin/settings",
           method: "GET",
+          // show_progress: true,
         });
 
         if (res.status == 200) {
@@ -87,6 +92,10 @@ const Settings = () => {
 
           setCoordinatorEmails(res.data.coordinatorEmails);
         }
+
+        const [res1] = await api.fetchPDF("/about/form");
+
+        setForm(res1);
 
         const user = await api.getToken();
         if (user) {
@@ -153,6 +162,7 @@ const Settings = () => {
           height: "100vh",
           width: "90%",
           margin: "0 auto 0 auto",
+          marginBottom: "2rem",
         }}
       >
         <h3 className="bx--row"> General Settings </h3>
@@ -493,7 +503,19 @@ const Settings = () => {
             />
           </div>
         </div>
-        <div style={{ marginBottom: "2rem" }} className="bx--row">
+
+        <div className="bx--row">
+          <div className="bx-col">
+            <h3>Application form template</h3>
+            <CustomFileUploader
+              // init_file={formError == 2 ? undefined : "form.pdf"}
+              add_remote_file_url={"/about/form"}
+              delete_remote_file_url={"/about/form"}
+            />
+          </div>
+        </div>
+
+        <div style={{ paddingBottom: "2rem" }} className="bx--row">
           <div className="bx--col">
             <Button type="submit" onClick={onSubmit} disabled={isSubmitting}>
               Update

@@ -26,48 +26,75 @@ const aboutPage = (_req: express.Request, res: express.Response) => {
 };
 
 const uploadForm = async (req: express.Request, res: express.Response) => {
+  console.log("jeramus");
   const file = req.file;
   const user = req.user;
   if (user) {
     const userRepository: Repository<User> = getRepository(User);
 
     const dbUser = await userRepository.findOne(user.id);
-    if (!dbUser) throw new NotAuthorizedError();
-    if (dbUser.role !== UserType.COORDINATOR) {
-      return res.status(403).send("You are not authorized to upload this file");
-    } else {
-      if (!file) throw new BadRequestError("No file uploaded");
-
-      file.originalname.replace(" ", "%20");
-      if (fs.existsSync(path.join(__dirname, "../../../data"))) {
-        fs.writeFile(
-          path.join(__dirname, `../../../data/${file.originalname}`),
-          file.buffer,
-          (err) => {
-            if (err) throw new InternalError("Error uploading file");
-          }
-        );
+    try {
+      if (!dbUser) throw new NotAuthorizedError();
+      if (dbUser.role !== UserType.COORDINATOR) {
+        return res
+          .status(403)
+          .send("You are not authorized to upload this file");
       } else {
-        fs.mkdirSync(path.join(__dirname, "../../../data"));
-        fs.writeFile(
-          path.join(__dirname, `../../../data/${file.originalname}`),
-          file.buffer,
-          (err) => {
-            if (err) throw new InternalError("Error uploading file");
-          }
-        );
+        if (!file) throw new BadRequestError("No file uploaded");
+
+        file.originalname.replace(" ", "%20");
+        if (fs.existsSync(path.join(__dirname, "../../../data"))) {
+          fs.writeFile(
+            path.join(__dirname, "../../../data/form.pdf"),
+            file.buffer,
+            (err) => {
+              if (err) throw new InternalError("Error uploading file");
+            }
+          );
+        } else {
+          fs.mkdirSync(path.join(__dirname, "../../../data"));
+          fs.writeFile(
+            path.join(__dirname, "../../../data/form.pdf"),
+            file.buffer,
+            (err) => {
+              if (err) throw new InternalError("Error uploading file");
+            }
+          );
+        }
+        return res.status(200).send("File uploaded");
       }
-      return res.status(200).send("File uploaded");
+    } catch (e) {
+      throw new InternalError("Error uploading file");
     }
   }
   return res.status(403).send("You are not authorized to upload this file");
 };
 
+const deleteForm = async (req: express.Request, res: express.Response) => {
+  const user = req.user;
+  if (!user) throw new NotAuthorizedError();
+  try {
+    if (user) {
+      const userRepository: Repository<User> = getRepository(User);
+      const dbUser = await userRepository.findOne(user.id);
+      if (!dbUser || dbUser.role !== UserType.COORDINATOR)
+        throw new NotAuthorizedError();
+
+      fs.unlinkSync(path.join(__dirname, "../../../data/form.pdf"));
+      return res.status(200).send("File deleted");
+    }
+  } catch (e) {
+    throw new InternalError("Error deleting file");
+  }
+  return res.status(403).send("You are not authorized to delete this file");
+};
+
 aboutRouter.get("/", aboutPage);
-aboutRouter.post("/form", reqUser, upload.single("form"), uploadForm);
+aboutRouter.post("/form", reqUser, upload.single("pdf_form"), uploadForm);
+aboutRouter.delete("/form", reqUser, deleteForm);
 
 aboutRouter.get("/form", (_req: express.Request, res: express.Response) => {
-  const file = `${__dirname}../../../data/form.pdf}`;
+  const file = `${__dirname}../../../../data/form.pdf`;
   res.download(file);
 });
 
