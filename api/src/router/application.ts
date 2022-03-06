@@ -645,6 +645,8 @@ const createReviewByApplication = async (
       is_feedback: req.user?.role === UserType.COORDINATOR,
       user,
     });
+
+    const savedReview = await reviewRepository.save(review);
     if (
       body.status &&
       (body.status === ReviewStatus.APPROVED ||
@@ -683,8 +685,6 @@ const createReviewByApplication = async (
         await application.save();
       }
     }
-
-    const savedReview = await reviewRepository.save(review);
 
     res.json({
       status: 201,
