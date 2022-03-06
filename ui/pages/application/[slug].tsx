@@ -31,7 +31,6 @@ import { Application, AppStatus, Review, User } from "../../api/types";
 import CoordinatorAssignReviewers from "../../components/coordinator/CoordinatorAssignReviewers";
 import CustomFileUploader from "../../components/CustomFileUploader";
 import { NetworkManagerContext } from "../../components/NetworkManager";
-import SubmitWarning from "../../components/SubmitWarning";
 import styles from "../../styles/application.module.css";
 
 import tableStyles from "../../styles/permissions.module.css";
@@ -472,19 +471,50 @@ const ApplicationPage: NextPage = () => {
                     ))}
                   </div>
 
-                  <CustomFileUploader
-                    init_file={pdf ? "form.pdf" : undefined}
-                    add_remote_file_url={
-                      application.id
-                        ? `/applications/${application.id}/form`
-                        : null
-                    }
-                    get_add_remote_file_url={async () => {
-                      return `/applications/${application.id}/form`;
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
                     }}
-                  />
+                  >
+                    <CustomFileUploader
+                      style={{ minWidth: "30vw" }}
+                      init_file={pdf ? "form.pdf" : undefined}
+                      add_remote_file_url={
+                        application.id
+                          ? `/applications/${application.id}/form`
+                          : null
+                      }
+                      get_add_remote_file_url={async () => {
+                        return `/applications/${application.id}/form`;
+                      }}
+                    />
+                    <p
+                      style={{
+                        width: "20vw",
+                        marginLeft: "2em",
+                      }}
+                    >
+                      Ensure that the document you are submitting is in PDF
+                      format and up to date. The template for the form can be
+                      found{" "}
+                      <Link href="/api/about/form" target="_blank">
+                        <a>here</a>
+                      </Link>
+                      .
+                    </p>
+                  </div>
 
-                  <SubmitWarning />
+                  <p
+                    style={{
+                      margin: "1.2em auto  3.6em auto",
+                      padding: "0 2rem",
+                    }}
+                  >
+                    Carefully read over your form, ensure all necessary fields
+                    are filled. Also make sure to include any co-authors and/or
+                    supervisors.
+                  </p>
 
                   <Button
                     kind="danger--tertiary"
@@ -796,11 +826,6 @@ const ApplicationPage: NextPage = () => {
 
             {application.app_status == AppStatus.SUBMITTED ? (
               <>
-                <h2 style={{ marginTop: "2rem" }}>
-                  Currently Assigned Reviewers:{" "}
-                  {reviewers ? reviewers.length : 0}
-                </h2>
-                <p>Please assign at least two reviewers to this application.</p>
                 <div
                   style={{
                     marginTop: "3em",
@@ -815,6 +840,102 @@ const ApplicationPage: NextPage = () => {
                     applicationId={application.id.toString()}
                   />
                 </div>
+                <h2>Alternatively, give preliminary outcome</h2>
+                <>
+                  <Dropdown
+                    style={{
+                      width: "200px",
+                      margin: "50px 0px 20px 0px",
+                    }}
+                    id="review-status"
+                    items={[
+                      {
+                        id: "option-1",
+                        text: AppStatus.APPROVED,
+                        icon: Checkmark16,
+                      },
+                      {
+                        id: "option-2",
+                        text: AppStatus.REJECTED,
+                        icon: Close16,
+                      },
+                      {
+                        id: "option-3",
+                        text: AppStatus.PENDING,
+                        icon: Alarm16,
+                      },
+                    ]}
+                    itemToString={(item) => (item ? item.text : "")}
+                    itemToElement={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    // @ts-expect-error
+                    renderSelectedItem={(item) => (
+                      <>
+                        {React.createElement(item.icon)}
+                        <span
+                          style={{
+                            paddingLeft: "1rem",
+                            paddingBottom: "1rem",
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      </>
+                    )}
+                    label={"Status"}
+                    onChange={(e) => {
+                      if (e.selectedItem) setReviewStatus(e.selectedItem.text);
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      paddingBottom: "150px",
+                      width: "100%",
+                    }}
+                  >
+                    <TextArea
+                      style={{
+                        width: "70vw",
+                      }}
+                      placeholder="Feedback"
+                      rows={10}
+                      cols={70}
+                      onChange={(e) => setComment(e.target.value)}
+                      labelText={"Feedback to send to researcher(s)"}
+                    />
+
+                    <Button
+                      style={{
+                        margin: "50px 0px",
+                      }}
+                      onClick={async () => {
+                        if (await sendReview()) {
+                          await nm_ctx.request({
+                            method: "PATCH",
+                            path: `/applications/${application.id}`,
+                            data: { app_status: "DRAFT", status: "APPROVED" },
+                          });
+                        }
+                      }}
+                    >
+                      Submit Review
+                    </Button>
+                  </div>
+                </>
               </>
             ) : null}
 
