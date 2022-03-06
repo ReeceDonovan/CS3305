@@ -345,7 +345,7 @@ const ApplicationPage: NextPage = () => {
               </div>
             ) : (
               <div>
-                <h2>No PDF</h2>
+                <h2>No PDF uploaded, go to the Edit tab to upload one.</h2>
               </div>
             )}
           </div>
@@ -361,7 +361,6 @@ const ApplicationPage: NextPage = () => {
                 <Form
                   className={styles.edit}
                   style={{
-                    height: "90vh",
                     width: "100%",
                   }}
                 >
@@ -507,13 +506,13 @@ const ApplicationPage: NextPage = () => {
 
                   <p
                     style={{
-                      margin: "1.2em auto  3.6em auto",
+                      margin: "1.2em auto 2em auto",
                       padding: "0 2rem",
                     }}
                   >
-                    Carefully read over your form, ensure all necessary fields
-                    are filled. Also make sure to include any co-authors and/or
-                    supervisors.
+                    Before submitting, carefully read over your form, ensure all
+                    necessary fields are filled. Also make sure to include any
+                    co-authors and/or supervisors.
                   </p>
 
                   <Button
