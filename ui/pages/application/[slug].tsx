@@ -123,7 +123,7 @@ const ApplicationPage: NextPage = () => {
             setReviews(reviews ? reviews : []);
           }
         }
-        api.fetchPDF(`/application/${slug}/form`).then((response) => {
+        api.fetchPDF(`/applications/${slug}/form`).then((response) => {
           if (response && response.length) {
             setPDF(response[0]);
           }
@@ -484,9 +484,6 @@ const ApplicationPage: NextPage = () => {
                           ? `/applications/${application.id}/form`
                           : null
                       }
-                      get_add_remote_file_url={async () => {
-                        return `/applications/${application.id}/form`;
-                      }}
                     />
                     <p
                       style={{
