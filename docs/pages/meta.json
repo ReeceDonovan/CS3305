@@ -4,7 +4,8 @@
   "reviewer-guide": "Guide for Reviewers",
   "coordinator-guide": "Guide for Coordinators",
   "deployment": "Deployment Guide",
-  "api-reference": "API",
+  "developer-guide": "Developer Guide",
+  "reference": "API Reference",
   "privacy-policy": "Privacy Policy",
   "license": "License"
 }
