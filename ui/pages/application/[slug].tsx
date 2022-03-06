@@ -17,6 +17,7 @@ import {
   TextArea,
   TextInput,
   Tile,
+  ToastNotification,
 } from "carbon-components-react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -43,6 +44,8 @@ const ApplicationPage: NextPage = () => {
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewStatus, setReviewStatus] = useState<string>("No status");
+
+  const [coord_rev, setCoord_review] = useState<Review | null>(null);
 
   const [comment, setComment] = useState<string>("No comment");
   const commentRef = React.useRef<HTMLTextAreaElement>();
@@ -117,8 +120,10 @@ const ApplicationPage: NextPage = () => {
             setReviews(reviews ? reviews : []);
           }
         }
-        api.fetchPDF(slug).then((response) => {
-          setPDF(response);
+        api.fetchPDF(`/application/${slug}/form`).then((response) => {
+          if (response && response.length) {
+            setPDF(response[0]);
+          }
         });
       } else {
         console.log("ROUTER IS NOT READY");
@@ -128,36 +133,6 @@ const ApplicationPage: NextPage = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.slug]);
-
-  const renderStatusSwitch = () => {
-    switch (application?.app_status) {
-      case "PENDING":
-        return (
-          <p>
-            Pending &rarr; Your application has passed the review process, and
-            is awaiting feedback from an SREC coordinator
-          </p>
-        );
-      case AppStatus.DRAFT:
-        return (
-          <p>
-            Draft &rarr; Your application has not been submitted yet, and you
-            can make changes before submitting
-          </p>
-        );
-      case AppStatus.SUBMITTED:
-        return (
-          <p>
-            Submitted &rarr; Your application has been submitted and is awaiting
-            review.
-          </p>
-        );
-      case AppStatus.REVIEW:
-        return (
-          <p>Review &rarr; Your application is currently being reviewed.</p>
-        );
-    }
-  };
 
   const sendReview = async (): Promise<any> => {
     console.log("sending review");
@@ -190,6 +165,24 @@ const ApplicationPage: NextPage = () => {
     return false;
   };
 
+  useEffect(() => {
+    let curr_coord_rev: Review | null = null;
+    for (let poss_review of reviews) {
+      if (poss_review.is_feedback) {
+        if (curr_coord_rev === null) {
+          curr_coord_rev = poss_review;
+        } else {
+          if (poss_review.updatedAt > curr_coord_rev.updatedAt) {
+            curr_coord_rev = poss_review;
+          }
+        }
+      }
+    }
+    if (curr_coord_rev != null) {
+      setCoord_review(curr_coord_rev);
+    }
+  }, [reviews]);
+
   if (!application || !user || !submitter) {
     return <div>Loading...</div>;
   }
@@ -205,111 +198,118 @@ const ApplicationPage: NextPage = () => {
       >
         {/* View Tab */}
         <Tab href="#view" id="view" label="View">
-          <div>
+          <div style={{ maxWidth: "1300px", margin: "auto 0" }}>
             {application !== null && (
-              <table className={tableStyles.descriptiontable}>
-                <tbody>
-                  <tr>
-                    <td>
-                      <strong>Outcome</strong>
-                    </td>
-                    <td>
-                      <p>
-                        {application.status
-                          ? application.status
-                          : "Not reviewed"}
-                      </p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Status</strong>
-                    </td>
-                    <td>{renderStatusSwitch()}</td>
-                  </tr>
+              <div
+                style={{
+                  width: "100%",
+                  margin: "auto 0",
+                  height: "100%",
+                }}
+              >
+                {coord_rev && (
+                  <ToastNotification
+                    title={
+                      coord_rev.status === "APPROVED"
+                        ? "This application has been approved!"
+                        : coord_rev.status === "PENDING"
+                        ? "Please read feedback and update this application accordingly"
+                        : "This application has been rejected"
+                    }
+                    style={{ width: "calc(100% - 2em)", margin: "1em" }}
+                    hideCloseButton={true}
+                    lowContrast={true}
+                    subtitle={coord_rev.comment}
+                    kind={
+                      coord_rev.status === "APPROVED"
+                        ? "success"
+                        : coord_rev.status === "PENDING"
+                        ? "warning"
+                        : "error"
+                    }
+                  />
+                )}
 
-                  <tr>
-                    <td>
-                      <strong>Name</strong>
-                    </td>
-                    <td>
-                      <p>{application.name ? application.name : "No name"}</p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Description</strong>
-                    </td>
-                    <td>
-                      <p
-                        style={{
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        {application.description
-                          ? application.description
-                          : "No description"}
-                      </p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Supervisors</strong>
-                    </td>
-                    <td>
-                      {/* paragraph for each supervisor */}
-                      {supervisors && supervisors.length > 0 ? (
-                        supervisors.map((s) => <p key={s}>{s}</p>)
-                      ) : (
-                        <p>No supervisors</p>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Coauthors</strong>
-                    </td>
-                    <td>
-                      {/* paragraph for each coauthor */}
-                      {coauthors && coauthors.length > 0 ? (
-                        coauthors.map((c) => <p key={c}>{c}</p>)
-                      ) : (
-                        <p>No coauthors</p>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                <table
+                  className={tableStyles.descriptiontable}
+                  style={{ width: "calc(100% - 2em)" }}
+                >
+                  <tbody>
+                    <tr>
+                      <td>
+                        <strong>Name</strong>
+                      </td>
+                      <td>
+                        <p>{application.name ? application.name : "No name"}</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong>Description</strong>
+                      </td>
+                      <td>
+                        <p
+                          style={{
+                            whiteSpace: "pre-wrap",
+                          }}
+                        >
+                          {application.description
+                            ? application.description
+                            : "No description"}
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong>Supervisors</strong>
+                      </td>
+                      <td>
+                        {/* paragraph for each supervisor */}
+                        {supervisors && supervisors.length > 0 ? (
+                          supervisors.map((s) => <p key={s}>{s}</p>)
+                        ) : (
+                          <p>No supervisors</p>
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <strong>Coauthors</strong>
+                      </td>
+                      <td>
+                        {/* paragraph for each coauthor */}
+                        {coauthors && coauthors.length > 0 ? (
+                          coauthors.map((c) => <p key={c}>{c}</p>)
+                        ) : (
+                          <p>No coauthors</p>
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {pdf ? (
+              <div style={{}}>
+                <iframe
+                  src={URL.createObjectURL(
+                    new Blob([pdf], { type: "application/pdf" })
+                  )}
+                  style={{
+                    width: "calc(100% - 2em)",
+                    height: "800px",
+                    resize: "vertical",
+                    overflow: "auto",
+                    margin: "1em",
+                  }}
+                />
+              </div>
+            ) : (
+              <div>
+                <h2>No PDF</h2>
+              </div>
             )}
           </div>
-          {pdf ? (
-            <div
-              style={{
-                width: "95%",
-                height: "800px",
-                resize: "vertical",
-                overflow: "auto",
-                margin: "auto",
-              }}
-            >
-              <iframe
-                src={URL.createObjectURL(
-                  new Blob([pdf], { type: "application/pdf" })
-                )}
-                style={{
-                  width: "92%",
-                  height: "99%",
-                  margin: "auto",
-                  position: "relative",
-                  left: "7%",
-                }}
-              />
-            </div>
-          ) : (
-            <div>
-              <h2>No PDF</h2>
-            </div>
-          )}
         </Tab>
 
         {/* Edit Tab */}
@@ -772,7 +772,11 @@ const ApplicationPage: NextPage = () => {
                   }}
                   id="review-status"
                   items={[
-                    { id: "option-1", text: AppStatus.APPROVED, icon: Checkmark16 },
+                    {
+                      id: "option-1",
+                      text: AppStatus.APPROVED,
+                      icon: Checkmark16,
+                    },
                     { id: "option-2", text: AppStatus.REJECTED, icon: Close16 },
                   ]}
                   itemToString={(item) => (item ? item.text : "")}
@@ -837,9 +841,9 @@ const ApplicationPage: NextPage = () => {
                         await nm_ctx.request({
                           method: "PATCH",
                           path: `/applications/${application.id}`,
-                          data: {app_status: "DRAFT", status: "APPROVED"},
-                        })
-                      };
+                          data: { app_status: "DRAFT", status: "APPROVED" },
+                        });
+                      }
                     }}
                   >
                     Submit Review

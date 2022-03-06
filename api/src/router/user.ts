@@ -79,17 +79,26 @@ const getUser = async (
  *             schema:
  *               $ref: '#/components/schemas/User'
  */
-
-const getCurrentUser = (
+const getCurrentUser = async (
   _: express.Request,
   res: express.Response,
   next: express.NextFunction
 ) => {
-  try {
+  const user = res.locals.user;
+
+  try{
+    const user_big = await User.findOne({
+      where: { id: user.id}, 
+      relations: [
+        "reviews", 
+        "usersApplications", 
+        "usersApplications.application"]
+      });
+  
     res.json({
       status: 200,
-      message: "Successfully fetched users",
-      data: res.locals.user,
+      message: "Successfully fetched user",
+      data: user_big,
     });
   } catch (err) {
     next(err);

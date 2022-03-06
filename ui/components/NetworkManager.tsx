@@ -89,7 +89,6 @@ export const NetworkManager = (props: any) => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        console.log(res);
         if (params.show_progress === true) {
           loc_req_state = [3, params.succ_msg ? params.succ_msg : "", null];
         }
@@ -118,7 +117,7 @@ export const NetworkManager = (props: any) => {
 
         setReq_state(loc_req_state);
         const err_code = 2;
-        return [e.response.data as StandardResponse, err_code];
+        return [e?.response?.data as StandardResponse, err_code];
       }
     },
   };

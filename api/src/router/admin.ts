@@ -1,6 +1,4 @@
 import express from "express";
-import { NotAuthorizedError } from "../errors";
-import { UserType } from "../models/user";
 
 import config, { configInterface } from "../config/config";
 import { protectedRoute } from "../middleware/protected-route";
@@ -11,9 +9,7 @@ const getSettings = async (
   res: express.Response,
   next: express.NextFunction
 ) => {
-  const user = res.locals.user;
   try {
-    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
     res.json({
       status: 200,
       message: "Success",
@@ -30,9 +26,7 @@ const updateSettings = async (
   next: express.NextFunction
 ) => {
   const config_data: configInterface = req.body;
-  const user = res.locals.user;
   try {
-    if (user.role !== UserType.COORDINATOR) throw new NotAuthorizedError();
     config.set(config_data);
     res.json({
       status: 200,

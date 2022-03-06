@@ -6,75 +6,142 @@ import {
   TextInput,
   TextArea,
   Tag,
+  Checkbox,
 } from "carbon-components-react";
 import React, { useContext, useEffect, useState } from "react";
-import { configInterface, emailConfig } from "../../api/types";
+import ReactMarkdown from "react-markdown";
+import { configInterface, User } from "../../api/types";
 import { NetworkManagerContext } from "../../components/NetworkManager";
+import * as api from "../../api";
+import CustomFileUploader from "../../components/CustomFileUploader";
 
 const Settings = () => {
   const [isSubmitting, setSubmitting] = useState(false);
-  const [emailProvider, setEmailProvider] = useState<string>("");
+  // Misc Settings
+  const [uiURL, setUiURL] = useState<string>("");
+  const [apiURL, setApiURL] = useState<string>("");
+  const [signingKey, setSigningKey] = useState<string>("");
+  const [landingPageMD, setLandingPageMD] = useState<string>("");
+  const [companyLogo, setCompanyLogo] = useState<string>("");
+  // Email
+  const [emailProvider, setEmailProvider] = useState<string>("gmail");
+  const [emailLessSecure, setEmailLessSecure] = useState<boolean>(false);
   const [emailUser, setEmailUser] = useState<string>("");
+  const [emailClientID, setEmailClientID] = useState<string>("");
   const [emailToken, setEmailToken] = useState<string>("");
-  const [emailConfigs, setEmailConfigs] = useState<emailConfig[]>([]);
+  const [emailRefreshToken, setEmailRefreshToken] = useState<string>("");
+  const [emailPort, setEmailPort] = useState<number>(0);
+  const [emailHost, setEmailHost] = useState<string>("");
+  const [emailSecure, setEmailSecure] = useState<boolean>(false);
+  // oAuth
   const [oauthClientID, setOAuthClientID] = useState<string>("");
   const [oauthClientSecret, setOAuthClientSecret] = useState<string>("");
   const [allowedDomains, setAllowedDomains] = useState<string[]>([]);
-  const [landingPageMD, setLandingPageMD] = useState<string>("");
-  const [signingKey, setSigningKey] = useState<string>("");
+  // Database
   const [dbUsername, setDBUsername] = useState<string>("");
   const [dbPassword, setDBPassword] = useState<string>("");
   const [dbHost, setDBHost] = useState<string>("");
   const [dbPort, setDBPort] = useState<number>(0);
   const [dbName, setDBName] = useState<string>("");
 
-  const [isLoading, setLoading] = useState(true);
+  const [coordinatorEmails, setCoordinatorEmails] = useState<string[]>([]);
+
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User>();
 
   const nm_ctx = useContext(NetworkManagerContext);
 
+  // const [form, setForm] = useState<ArrayBuffer>();
+  const [formError, setFormError] = useState(false);
+
+  useEffect(() => {}, [formError]);
+
   useEffect(() => {
-    async () => {
-      if (isLoading) {
-        nm_ctx
-          .request({ path: "/admin/settings", method: "GET" })
-          .then(([res, err_code]) => {
-            if (err_code === 0) {
-              setEmailProvider(res.data.emailProvider);
-              setEmailUser(res.data.emailUser);
-              setEmailToken(res.data.emailToken);
-              setEmailConfigs(res.data.emailConfigs);
-              setOAuthClientID(res.data.oauthConfig.oauthClientId);
-              setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
-              setAllowedDomains(res.data.oauthConfig.allowedDomains);
-              setLandingPageMD(res.data.landingPageMD);
-              setSigningKey(res.data.signingKey);
-              setDBUsername(res.data.databaseConfig.username);
-              setDBPassword(res.data.databaseConfig.password);
-              setDBHost(res.data.databaseConfig.host);
-              setDBPort(res.data.databaseConfig.port);
-              setDBName(res.data.databaseConfig.database);
-            }
-          });
+    (async () => {
+      if (loading) {
+        const [res, _] = await nm_ctx.request({
+          path: "/admin/settings",
+          method: "GET",
+          // show_progress: true,
+        });
+
+        if (res.status == 200) {
+          setUiURL(res.data.uiURL);
+          setApiURL(res.data.apiURL);
+          setSigningKey(res.data.signingKey);
+          setLandingPageMD(res.data.landingPageMD);
+          setCompanyLogo(res.data.companyLogo);
+
+          setEmailProvider(res.data.emailConfig.provider);
+          setEmailLessSecure(res.data.emailConfig.lessSecure);
+          setEmailUser(res.data.emailConfig.user);
+          setEmailClientID(res.data.emailConfig.clientId);
+          setEmailToken(res.data.emailConfig.token);
+          setEmailRefreshToken(res.data.emailConfig.refreshToken);
+          setEmailHost(res.data.emailConfig.host);
+          setEmailPort(res.data.emailConfig.port);
+          setEmailSecure(res.data.emailConfig.emailSecure);
+
+          setOAuthClientID(res.data.oauthConfig.oauthClientId);
+          setOAuthClientSecret(res.data.oauthConfig.oauthClientSecret);
+          setAllowedDomains(res.data.oauthConfig.allowedDomains);
+
+          setDBUsername(res.data.databaseConfig.username);
+          setDBPassword(res.data.databaseConfig.password);
+          setDBHost(res.data.databaseConfig.host);
+          setDBPort(res.data.databaseConfig.port);
+          setDBName(res.data.databaseConfig.database);
+
+          setCoordinatorEmails(res.data.coordinatorEmails);
+        }
+
+        const resp = await api.fetchPDF("/about/form");
+        if (resp && resp.length) {
+          if (resp[1]) {
+            console.log("FORM MISSING");
+            await setFormError(true);
+            console.log("something");
+            console.log("FORM ERROR WOOOOOO ", formError);
+          }
+        }
+
+        const user = await api.getToken();
+        if (user) {
+          setUser(user);
+        }
+
+        setLoading(false);
       }
-      setLoading(false);
-    };
-  }, [isLoading, nm_ctx]);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   const onSubmit = (event: any) => {
     setSubmitting(true);
     event.preventDefault();
     const newConfig: configInterface = {
-      emailProvider,
-      emailUser,
-      emailToken,
-      emailConfigs,
+      uiURL,
+      apiURL,
+      signingKey,
+      landingPageMD,
+      companyLogo,
+      coordinatorEmails,
+      emailConfig: {
+        provider: emailProvider,
+        lessSecure: emailLessSecure,
+        user: emailUser,
+        clientId: emailClientID,
+        token: emailToken,
+        refreshToken: emailRefreshToken,
+        host: emailHost,
+        port: emailPort,
+        secure: emailSecure,
+      },
       oauthConfig: {
         oauthClientId: oauthClientID,
         oauthClientSecret: oauthClientSecret,
         allowedDomains: allowedDomains,
       },
-      signingKey,
-      landingPageMD,
       databaseConfig: {
         host: dbHost,
         port: dbPort,
@@ -85,24 +152,69 @@ const Settings = () => {
     };
     nm_ctx
       .request({ path: "/admin/settings", method: "POST", data: newConfig })
-      .then((_res) => {
+      .then((_) => {
         setSubmitting(false);
       })
-      .catch((_err) => {
+      .catch((_) => {
         setSubmitting(false);
       });
   };
 
   return (
     <>
+      {user?.role !== "COORDINATOR" && !loading
+        ? (window.location.href = "/")
+        : null}
       <Form
         className="bx--grid bx--grid--narrow"
         style={{
           height: "100vh",
           width: "90%",
           margin: "0 auto 0 auto",
+          marginBottom: "2rem",
         }}
       >
+        <h3 className="bx--row"> General Settings </h3>
+        <div style={{ marginBottom: "2rem" }} className="bx--row">
+          <div className="bx--col">
+            <TextInput
+              id="uiURL"
+              name="uiURL"
+              labelText={"Webpage URL"}
+              placeholder="Webpage URL"
+              defaultValue={uiURL}
+              onChange={(e) => {
+                setUiURL(e.target.value);
+              }}
+            />
+          </div>
+          <div className="bx--col">
+            <TextInput
+              id="apiURL"
+              name="apiURL"
+              labelText={"API URL"}
+              placeholder="API URL"
+              defaultValue={apiURL}
+              onChange={(e) => {
+                setApiURL(e.target.value);
+              }}
+            />
+          </div>
+        </div>
+        <div style={{ marginBottom: "2rem" }} className="bx--row">
+          <div className="bx--col">
+            <TextInput
+              id="companyLogo"
+              name="companyLogo"
+              labelText={"Company Logo Link"}
+              placeholder="Company Logo Link"
+              defaultValue={companyLogo}
+              onChange={(e) => {
+                setCompanyLogo(e.target.value);
+              }}
+            />
+          </div>
+        </div>
         <h3 className="bx--row"> Email Settings </h3>
         <div style={{ marginBottom: "2rem" }} className="bx--row">
           <div className="bx--col-lg">
@@ -115,12 +227,50 @@ const Settings = () => {
                 setEmailProvider(e.target.value);
               }}
             >
-              {["Gmail", "Outlook"].map((e, i) => {
+              {["Gmail", "Outlook", "Zoho", "Custom"].map((e, i) => {
                 return <SelectItem value={e.toLowerCase()} text={e} key={i} />;
               })}
             </Select>
+            {emailProvider == "gmail" ? (
+              <Checkbox
+                id="lessSecure"
+                labelText="Less Secure"
+                defaultChecked={emailLessSecure}
+                onChange={(_e: any) => {
+                  setEmailLessSecure(!emailLessSecure);
+                }}
+              />
+            ) : null}
           </div>
         </div>
+        {emailProvider == "custom" ? (
+          <div style={{ marginBottom: "2rem" }} className="bx--row">
+            <div className="bx--col">
+              <TextInput
+                id="emailHost"
+                name="emailHost"
+                labelText={"Host"}
+                placeholder="Host"
+                defaultValue={emailHost}
+                onChange={(e) => {
+                  setEmailHost(e.target.value);
+                }}
+              />
+            </div>
+            <div className="bx--col">
+              <TextInput
+                id="emailPort"
+                name="emailPort"
+                labelText={"Port"}
+                placeholder="Port"
+                defaultValue={emailPort}
+                onChange={(e) => {
+                  setEmailPort(Number(e.target.value));
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
         <div style={{ marginBottom: "2rem" }} className="bx--row">
           <div className="bx--col">
             <TextInput
@@ -143,6 +293,61 @@ const Settings = () => {
               defaultValue={emailToken}
               onChange={(e) => {
                 setEmailToken(e.target.value);
+              }}
+            />
+          </div>
+        </div>
+        {!emailLessSecure && emailProvider === "gmail" ? (
+          <div style={{ marginBottom: "2rem" }} className="bx--row">
+            <div className="bx--col">
+              <TextInput.PasswordInput
+                id="emailClientID"
+                name="emailClientID"
+                labelText={"Email Client ID"}
+                placeholder="Email Client ID"
+                defaultValue={emailClientID}
+                onChange={(e) => {
+                  setEmailClientID(e.target.value);
+                }}
+              />
+            </div>
+            <div className="bx--col">
+              <TextInput.PasswordInput
+                id="emailRefreshToken"
+                name="emailRefreshToken"
+                labelText={"Email Refresh Token"}
+                placeholder="Email Refresh Token"
+                defaultValue={emailRefreshToken}
+                onChange={(e) => {
+                  setEmailRefreshToken(e.target.value);
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
+        <h3 className="bx--row"> oauth Settings </h3>
+        <div style={{ marginBottom: "2rem" }} className="bx--row">
+          <div className="bx--col">
+            <TextInput
+              id="oauthClientID"
+              name="oauthClientID"
+              labelText={"OAuth Client ID"}
+              placeholder="OAuth Client ID"
+              defaultValue={oauthClientID}
+              onChange={(e) => {
+                setOAuthClientID(e.target.value);
+              }}
+            />
+          </div>
+          <div className="bx--col">
+            <TextInput.PasswordInput
+              id="oauthClientSecret"
+              name="oauthClientSecret"
+              labelText={"OAuth Secret"}
+              placeholder="OAuth Secret"
+              defaultValue={oauthClientSecret}
+              onChange={(e) => {
+                setOAuthClientSecret(e.target.value);
               }}
             />
           </div>
@@ -190,33 +395,6 @@ const Settings = () => {
             </div>
           </div>
         </div>
-        <h3 className="bx--row"> oauth Settings </h3>
-        <div style={{ marginBottom: "2rem" }} className="bx--row">
-          <div className="bx--col">
-            <TextInput
-              id="oauthClientID"
-              name="oauthClientID"
-              labelText={"OAuth Client ID"}
-              placeholder="OAuth Client ID"
-              defaultValue={oauthClientID}
-              onChange={(e) => {
-                setOAuthClientID(e.target.value);
-              }}
-            />
-          </div>
-          <div className="bx--col">
-            <TextInput.PasswordInput
-              id="oauthClientSecret"
-              name="oauthClientSecret"
-              labelText={"OAuth Secret"}
-              placeholder="OAuth Secret"
-              defaultValue={oauthClientSecret}
-              onChange={(e) => {
-                setOAuthClientSecret(e.target.value);
-              }}
-            />
-          </div>
-        </div>
         <h3 className="bx--row"> About Page Customization </h3>
         <div style={{ marginBottom: "2rem" }} className="bx--row">
           <div className="bx--col-lg-6">
@@ -238,13 +416,20 @@ const Settings = () => {
               placeholder="# Write your first markdown"
               rows={4}
               defaultValue={landingPageMD}
+              style={{ maxHeight: "40rem" }}
               onChange={(e) => {
                 setLandingPageMD(e.target.value);
               }}
             />
           </div>
           <div className="bx--col-lg-6">
-            <div>Markdown Preview Placeholder</div>
+            <label className="bx--label">Preview</label>
+            <div
+              className="bx--text-area:disabled bx--text-area"
+              style={{ maxHeight: "40rem", marginBottom: "2rem" }}
+            >
+              <ReactMarkdown>{landingPageMD}</ReactMarkdown>
+            </div>
           </div>
         </div>
         <h3 className="bx--row"> JWT Settings </h3>
@@ -327,7 +512,18 @@ const Settings = () => {
             />
           </div>
         </div>
-        <div style={{ marginBottom: "2rem" }} className="bx--row">
+
+        <div className="bx--row">
+          <div className="bx-col">
+            <h3>Application form template</h3>
+            <CustomFileUploader
+              init_file={"form.pdf"}
+              add_remote_file_url={"/about/form"}
+            />
+          </div>
+        </div>
+
+        <div style={{ paddingBottom: "2rem" }} className="bx--row">
           <div className="bx--col">
             <Button type="submit" onClick={onSubmit} disabled={isSubmitting}>
               Update

@@ -190,11 +190,30 @@ const getApplication = async (
     if (!(await check_access(application, user)))
       throw new NotAuthorizedError();
 
-    res.json({
-      status: 200,
-      message: "Successfully retrieved application",
-      data: application,
-    });
+    // modify reviews returned based on the user
+    if (
+      user.role === UserType.COORDINATOR ||
+      application.reviews
+        .map((rev) => {
+          return rev.user.id;
+        })
+        .includes(user.id)
+    ) {
+      res.json({
+        status: 200,
+        message: "Successfully retrieved application",
+        data: application,
+      });
+    } else {
+      application.reviews = application.reviews.filter((rev) => {
+        return rev.is_feedback === true;
+      });
+      res.json({
+        status: 200,
+        message: "Successfully retrieved application",
+        data: application,
+      });
+    }
   } catch (err) {
     next(err);
   }
@@ -917,33 +936,36 @@ const createReviewByApplication = async (
       is_feedback: req.user?.role === UserType.COORDINATOR,
       user,
     });
+
+    const savedReview = await reviewRepository.save(review);
+
     if (
       body.status &&
       (body.status === ReviewStatus.APPROVED ||
         body.status === ReviewStatus.REJECTED)
     ) {
-      // find if every reviewer has made a review, if so check that all
-      // reviewers have made a review with a status
-      const reviews = await reviewRepository.find({
-        where: {
-          application,
-        },
-        relations: ["user"],
-      });
-
-      const reviewers = await UsersApplications.find({
+      console.log("Checking for next stage validity");
+      const userApplications = await UsersApplications.find({
         where: {
           application,
           role: RoleType.REVIEWER,
         },
-        relations: ["user", "user.reviews"],
+        relations: ["user"],
       });
 
-      // check if all reviewers have made a review
-      const allReviewersReviewed = reviewers.every(
-        (reviewer: UsersApplications) => {
-          return reviews.some((review) => {
-            return review.user.id === reviewer.user.id && review.status;
+      if (!userApplications) throw new NotFoundError();
+
+      const allReviewersReviewed = userApplications.every(
+        async (userApplication) => {
+          await reviewRepository.find({
+            where: {
+              user: userApplication.user,
+              status:
+                ReviewStatus.PENDING ||
+                ReviewStatus.APPROVED ||
+                ReviewStatus.REJECTED,
+              application,
+            },
           });
         }
       );
@@ -955,8 +977,6 @@ const createReviewByApplication = async (
         await application.save();
       }
     }
-
-    const savedReview = await reviewRepository.save(review);
 
     res.json({
       status: 201,
