@@ -686,7 +686,7 @@ const ApplicationPage: NextPage = () => {
               </p>
               <Dropdown
                 style={{
-                  width: "150px",
+                  width: "200px",
                   margin: "0px 50px",
                 }}
                 items={[
@@ -704,6 +704,19 @@ const ApplicationPage: NextPage = () => {
                   { id: "appstatus-4", text: AppStatus.PENDING, icon: Alarm16 },
                 ]}
                 itemToString={(item) => (item ? item.text : "")}
+                itemToElement={(item) => (
+                  <>
+                    {React.createElement(item.icon)}
+                    <span
+                      style={{
+                        paddingLeft: "1rem",
+                        paddingBottom: "1rem",
+                      }}
+                    >
+                      {item.text}
+                    </span>
+                  </>
+                )}
                 id={""}
                 label={"Status"}
                 onChange={(e) => {
