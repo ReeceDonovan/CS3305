@@ -516,10 +516,7 @@ const Settings = () => {
         <div className="bx--row">
           <div className="bx-col">
             <h3>Application form template</h3>
-            <CustomFileUploader
-              init_file={"form.pdf"}
-              add_remote_file_url={"/about/form"}
-            />
+            <CustomFileUploader add_remote_file_url={"/about/form"} />
           </div>
         </div>
 
