@@ -1,0 +1,72 @@
+---
+title: Guide for Coordinators
+---
+
+import Bleed from "nextra-theme-docs/bleed";
+
+# Guide for Coordinators
+
+When a researcher creates a new application, this application will be added
+to your "Coordinator Panel" on the main page. You can see the state of the
+application, and whether your input is needed to progress the status of the
+application. If an application is in DRAFT mode, you must wait for the
+researcher to submit their application to give a preliminary review.
+
+<table style={{ marginTop: "2rem" }}>
+  <tr>
+    <th>Status</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>DRAFT</td>
+    <td>
+      The application is in draft mode. You must wait for the researcher to
+      submit their application to give a preliminary review.
+    </td>
+  </tr>
+  <tr>
+    <td>SUBMITTED</td>
+    <td>
+      The application has been submitted, and you must approve that the
+      application has no obvious issues, before assigning reviewers.
+    </td>
+  </tr>
+  <tr>
+    <td>REVIEW</td>
+    <td>
+      The application is being reviewed by the reviewers you assigned. You can
+      see the reviewers who have reviewed the application, and the reviews they
+      have given.
+    </td>
+  </tr>
+  <tr>
+    <td>PENDING</td>
+    <td>
+      The application has been reviewed . You can see the reviews and the
+      outcome they have given (whether they think the application should be
+      accepted or rejected). At this point, you must give feedback to the
+      researcher and decide the outcome of the application.
+    </td>
+  </tr>
+</table>
+
+## Assigning Reviewers
+
+Once a researcher has submitted an application, a coordinator can assign
+reviewers to review the application. This can be done atomatically (back end
+system uses a round-robin algorithm to decide which 2 reviewers to assign) or
+you can manually select reviewers from a list of all reviewers.
+
+<Bleed>
+  <img
+    style={{ margin: "auto" }}
+    src="./assign_reviewers.png"
+    alt="Assign reviewers"
+  />
+</Bleed>
+
+## Giving Feedback
+
+Once an application has been reviewed, the coordinator can give feedback to
+the researcher. While giving feedback, you can see the comments left by reviewers
+to help give a better understanding of the feedback.

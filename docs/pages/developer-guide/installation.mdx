@@ -1,0 +1,91 @@
+---
+title: Installation
+---
+
+# Installation
+
+## Requirements
+
+Deployment-method agnostic requirements are as follows:
+
+- A Linux server.
+- A domain name (e.g. `srec.example.com`).
+- A Google OAuth client ID and secret
+  - Create a new project on Google Cloud Platform.
+  - On the `Credentials` page, select `Create credentials`, then `OAuth client ID`.
+  - Select `Web application`, and set a name.
+  - Add the URI that is your domain (e.g. `https://srec.example.com`).
+  - Add the URI that is your domain with `/api/callback` appended (e.g. `https://srec.example.com/api/callback`).
+  - Click `Create`
+  - On the page that appears, make a copy the client ID and secret, these will be needed later.
+  - If these instructions are no longer relevant, check 
+  [here](https://developers.google.com/adwords/api/docs/guides/authentication#create_a_client_id_and_client_secret)
+  for more up to date instructions.
+
+There are two deployment methods for this website:
+
+- [Docker](#docker) <small>\*recommended</small>
+- [Manual Deployment](#manual)
+
+<h2 id="docker">Docker</h2>
+
+### Requirements
+
+- [Git](https://git-scm.com/)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/overview/)
+
+### Setup
+
+On the linux server, perform the following steps:
+
+- Clone the [Git repository](https://github.com/reecedonovan/cs3305)
+  - `git clone https://github.com/reecedonovan/cs3305.git`
+- Change directory into the repository
+  - `cd cs3305`
+- Pull the docker images from Github Container registry
+  - `docker-compose pull`
+  - (This will take a while, as it has to pull 5 images )
+- Copy the template.config.json file to a new file `config.json`
+  - `cp template.config.json config.json`
+- Edit the `config.json` file to suit your needs, adding the OAuth client
+  ID and secret that you created earlier to the `oauth` section.
+- Create the `db`, and `data/pdf_store` directories in the current directory.
+- Ensure that port 80 is not in use, then run the following command:
+  - `docker-compose up -d`
+
+<h2 id="manual">Manual Deployment</h2>
+
+This method is harder to replicate, and may end with a lot of effort to get it to work.
+
+## Requirements
+
+- [Git](https://git-scm.com/)
+- [NodeJS](https://nodejs.org/)
+- [Yarn](https://yarnpkg.com/)
+- [Nginx](https://www.nginx.com/) (or other reverse-proxy webserver)
+- [PostgreSQL](https://www.postgresql.org/)
+
+On the linux server, perform the following steps:
+
+- Clone the [Git repository](https://github.com/reecedonovan/cs3305)
+  - `git clone https://github.com/reecedonovan/cs3305.git`
+- Get dependencies of each of the components of the website
+  - `cd api && yarn && cd ..`
+  - `cd ui && yarn && cd ..`
+  - `cd docs && yarn && cd ..`
+- Deploy a PostgreSQL database, and get a user for the backend to use. 
+Copy the credentials to the appropriate location in `api/config.json`.
+
+- Update the URL paths in the UI to match the domain name.
+  - Change API_URL constant in `ui/api/index.ts` to the url for the api (e.g. `https://srec.example.com/api`)
+
+- Build the frontend
+  - `cd ui && yarn build`
+
+- Run each service
+  - `cd api && yarn start && cd ..`
+  - `cd ui && yarn start && cd ..`
+  - `cd docs && yarn start && cd ..`
+
+- Proxy each service through Nginx or other reverse proxy web server.

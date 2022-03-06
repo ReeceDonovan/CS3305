@@ -17,6 +17,20 @@ const aboutRouter = express.Router();
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+/**
+ * @swagger
+ * /api/about:
+ *   get:
+ *     tags: [Other]
+ *     summary: Get about page content
+ *     responses:
+ *       200:
+ *         description: Successfully assigned reviewers
+ *         content:
+ *           text/html:
+ *             schema:
+ *              type: string
+ */
 const aboutPage = (_req: express.Request, res: express.Response) => {
   const converter = new showdown.Converter();
   res.set("Content-Type", "text/html");
