@@ -134,11 +134,30 @@ const getApplication = async (
     if (!(await check_access(application, user)))
       throw new NotAuthorizedError();
 
-    res.json({
-      status: 200,
-      message: "Successfully retrieved application",
-      data: application,
-    });
+    // modify reviews returned based on the user
+    if (
+      user.role === UserType.COORDINATOR ||
+      application.reviews
+        .map((rev) => {
+          return rev.user.id;
+        })
+        .includes(user.id)
+    ) {
+      res.json({
+        status: 200,
+        message: "Successfully retrieved application",
+        data: application,
+      });
+    } else {
+      application.reviews = application.reviews.filter((rev) => {
+        return rev.is_feedback === true;
+      });
+      res.json({
+        status: 200,
+        message: "Successfully retrieved application",
+        data: application,
+      });
+    }
   } catch (err) {
     next(err);
   }

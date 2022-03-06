@@ -43,6 +43,7 @@ export interface Review extends BaseEntity {
   application?: Application;
   user_id?: number;
   user?: User;
+  is_feedback?: boolean;
 }
 
 export interface FileRef {
