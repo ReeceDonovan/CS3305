@@ -1,5 +1,4 @@
 import axios, { Method } from "axios";
-import { read } from "fs";
 import { User } from "./types";
 
 export const API_URL: string = "https://srec.netsoc.cloud/api";
