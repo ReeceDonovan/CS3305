@@ -191,6 +191,36 @@ const ApplicationPage: NextPage = () => {
     return <div>Loading...</div>;
   }
 
+  const renderStatusSwitch = () => {
+    switch (application?.app_status) {
+      case "PENDING":
+        return (
+          <p>
+            Pending &rarr; Your application has passed the review process, and
+            is awaiting feedback from an SREC coordinator
+          </p>
+        );
+      case AppStatus.DRAFT:
+        return (
+          <p>
+            Draft &rarr; Your application has not been submitted yet, and you
+            can make changes before submitting
+          </p>
+        );
+      case AppStatus.SUBMITTED:
+        return (
+          <p>
+            Submitted &rarr; Your application has been submitted and is awaiting
+            review.
+          </p>
+        );
+      case AppStatus.REVIEW:
+        return (
+          <p>Review &rarr; Your application is currently being reviewed.</p>
+        );
+    }
+  };
+
   return (
     <>
       <Tabs
@@ -239,6 +269,12 @@ const ApplicationPage: NextPage = () => {
                   style={{ width: "calc(100% - 2em)" }}
                 >
                   <tbody>
+                    <tr>
+                      <td>
+                        <strong>Status</strong>
+                      </td>
+                      <td>{renderStatusSwitch()}</td>
+                    </tr>
                     <tr>
                       <td>
                         <strong>Name</strong>
