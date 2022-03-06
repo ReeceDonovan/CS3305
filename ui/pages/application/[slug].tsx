@@ -1,15 +1,19 @@
 // TODO: Further cleanup
 import {
+  Alarm16,
+  CertificateCheck16,
   Checkmark16,
   Checkmark24,
   Close16,
   Close24,
+  Edit16,
 } from "@carbon/icons-react";
 import {
   Button,
   Checkbox,
   Dropdown,
   Form,
+  Link,
   Modal,
   Tab,
   Tabs,
@@ -665,6 +669,58 @@ const ApplicationPage: NextPage = () => {
         {/* Coordinator Tab */}
         {user?.role == "COORDINATOR" ? (
           <Tab href="#coordinator" id="coordinator" label="Coordinator">
+            <div
+              style={{
+                display: "flex",
+                width: "100%",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <p>
+                Need help? Find more information on the{" "}
+                <Link href="https://srecdocs.netsoc.cloud">
+                  <a>docs</a>
+                </Link>
+                .
+              </p>
+              <Dropdown
+                style={{
+                  width: "150px",
+                  margin: "0px 50px",
+                }}
+                items={[
+                  { id: "appstatus-1", text: AppStatus.DRAFT, icon: Edit16 },
+                  {
+                    id: "appstatus-2",
+                    text: AppStatus.SUBMITTED,
+                    icon: Checkmark16,
+                  },
+                  {
+                    id: "appstatus-3",
+                    text: AppStatus.REVIEW,
+                    icon: CertificateCheck16,
+                  },
+                  { id: "appstatus-4", text: AppStatus.PENDING, icon: Alarm16 },
+                ]}
+                itemToString={(item) => (item ? item.text : "")}
+                id={""}
+                label={"Status"}
+                onChange={(e) => {
+                  if (e.selectedItem?.text) {
+                    nm_ctx.request({
+                      method: "PATCH",
+                      path: `/applications/${application.id}`,
+                      data: {
+                        app_status: e.selectedItem.text,
+                      },
+                    });
+                  }
+                }}
+              />
+              <Button>Override Status</Button>
+            </div>
+
             {application.app_status == AppStatus.DRAFT ? (
               <>
                 <h1>This Application is still in draft mode</h1>
@@ -706,7 +762,9 @@ const ApplicationPage: NextPage = () => {
                     paddingBottom: "150px",
                   }}
                 >
-                  <CoordinatorAssignReviewers />
+                  <CoordinatorAssignReviewers
+                    applicationId={application.id.toString()}
+                  />
                 </div>
               </>
             ) : null}

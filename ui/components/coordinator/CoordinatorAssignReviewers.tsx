@@ -1,10 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
-import { UserAvatar32 } from "@carbon/icons-react";
+import { UserAvatar24 } from "@carbon/icons-react";
 import {
   Button,
   InlineLoading,
   Modal,
-  MultiSelect
+  MultiSelect,
 } from "carbon-components-react";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
@@ -12,7 +12,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { User } from "../../api/types";
 import { NetworkManagerContext } from "../../components/NetworkManager";
 
-export default function CoordinatorAssignReviewers() {
+export default function CoordinatorAssignReviewers({
+  applicationId,
+}: {
+  applicationId: string;
+}) {
   const router = useRouter();
   const nm_ctx = useContext(NetworkManagerContext);
 
@@ -33,7 +37,7 @@ export default function CoordinatorAssignReviewers() {
         });
         if (res.data) {
           const reviewers = res.data as User[];
-         
+
           setTempReviewers(reviewers);
         }
 
@@ -48,60 +52,65 @@ export default function CoordinatorAssignReviewers() {
         setLoading(false);
       }
     })();
-  }, [nm_ctx, loading]);
+  }, [loading]);
 
   return (
     <>
-      {!loading ? (
-        <div style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-evenly",
-        }}>
+      {!loading && applicationId !== "" ? (
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-evenly",
+          }}
+        >
           <Button
             onClick={() => {
-              setModalOpen(true)
+              setModalOpen(true);
             }}
           >
-            Manually assign reviewers</Button>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                height: "auto"
+            Manually assign reviewers
+          </Button>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              height: "auto",
+            }}
+          >
+            <Button
+              disabled={suggestedReviewers.length < 1}
+              onClick={() => {
+                nm_ctx.request({
+                  method: "PUT",
+                  path: `/applications/${applicationId}/reviewers`,
+                  data: suggestedReviewers as User[],
+                  show_progress: true,
+                });
               }}
             >
-          <Button
-            disabled={suggestedReviewers.length < 1}
-            onClick={() => {
-              nm_ctx.request({
-                method: "PUT",
-                path: `/applications/${router.query.id}/reviewers`,
-                data: suggestedReviewers as User[],
-                show_progress: true,
-              });
-            }}
-          >Automatically assign reviewers</Button>
-          {suggestedReviewers.length < 1 && (
-            <small>Not enough suggested reviewers to automatically assign reviewers</small>
-          )}
+              Automatically assign reviewers
+            </Button>
+            {suggestedReviewers.length < 1 && (
+              <small>
+                Not enough suggested reviewers to automatically assign reviewers
+              </small>
+            )}
           </div>
           <Modal
             open={modalOpen}
             onRequestClose={() => {
-              setModalOpen(false)
+              setModalOpen(false);
             }}
-
             title="Manually assign reviewers"
             primaryButtonText="Assign"
             secondaryButtonText="Cancel"
             preventCloseOnClickOutside={false}
-
             onRequestSubmit={async () => {
               await nm_ctx.request({
-                path: `/applications/${router.query.slug}/reviewers`,
+                path: `/applications/${applicationId}/reviewers`,
                 method: "PUT",
                 data: reviewers as User[],
                 show_progress: true,
@@ -113,43 +122,45 @@ export default function CoordinatorAssignReviewers() {
                 height: "400px",
               }}
             >
-            <h1>Assign Reviewers</h1>
-            <MultiSelect
-              id={""}
-              label={"Assign Reviewers"}
-              light
-              items={tempReviewers}
-              itemToString={(item) => item?.email}
-              translateWithId={(id) => id}
-              itemToElement={(item) => (
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  {item.avatar ? (
-                    <img
-                      src={item.avatar}
-                      alt={item.name}
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "50%",
-                        marginRight: "8px",
-                      }}
+              <h1>Assign Reviewers</h1>
+              <MultiSelect
+                id={""}
+                label={"Assign Reviewers"}
+                light
+                items={tempReviewers}
+                itemToString={(item) => item?.email}
+                translateWithId={(id) => id}
+                itemToElement={(item) => (
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {item.avatar ? (
+                      <img
+                        src={item.avatar}
+                        alt={item.name}
+                        style={{
+                          width: "24px",
+                          height: "24px",
+                          borderRadius: "50%",
+                          marginRight: "8px",
+                        }}
                       />
-                  ) : <UserAvatar32 style={{marginRight: "8px"}} />}
-                  <p>{item?.email}</p>
-                </span>
-              )}
-              onChange={(e) => {
-                if (e.selectedItems) {
-                  console.log(e.selectedItems);
-                  setReviewers(e.selectedItems);
-                }
-              }}
-            />
+                    ) : (
+                      <UserAvatar24 style={{ marginRight: "8px" }} />
+                    )}
+                    <p>{item?.email}</p>
+                  </span>
+                )}
+                onChange={(e) => {
+                  if (e.selectedItems) {
+                    console.log(e.selectedItems);
+                    setReviewers(e.selectedItems);
+                  }
+                }}
+              />
             </div>
           </Modal>
         </div>
