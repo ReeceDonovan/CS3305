@@ -7,6 +7,7 @@ import {
 } from "carbon-components-react";
 
 import * as api from "../../api";
+import { UserAvatar32 } from "@carbon/icons-react";
 
 interface PermissionRow {
   row: {
@@ -38,23 +39,34 @@ const permissionChange = async (id: number, role: string) => {
 };
 
 const renderSwitchCell = (cell: Cell, id: number): React.ReactNode | null => {
-  switch(cell.info.header) {
+  switch (cell.info.header) {
     case "avatar":
-      return <span>
-          <img style={{height: 43, width: 43, borderRadius: "50%"}} src={cell.value} alt="avatar"/>
+      return (
+        <span>
+          {cell.value ? (
+            <img
+              style={{ height: 32, width: 32, borderRadius: "50%" }}
+              src={cell.value}
+              alt="avatar"
+            />
+          ) : (
+            <UserAvatar32 />
+          )}
         </span>
+      );
     case "role":
       let roles = ["RESEARCHER", "REVIEWER", "COORDINATOR"];
       const rolesIndex = roles.indexOf(cell.value);
-      [roles[0], roles[rolesIndex]] = [roles[rolesIndex], roles[0]]
-      return <span>
+      [roles[0], roles[rolesIndex]] = [roles[rolesIndex], roles[0]];
+      return (
+        <span>
           <Select
             id={cell.id}
             name={cell.id}
             defaultValue={cell.value}
             noLabel
-            onChange={e => {
-              permissionChange(id, e.target.value)
+            onChange={(e) => {
+              permissionChange(id, e.target.value);
             }}
           >
             {roles.map((e, i) => {
@@ -62,28 +74,29 @@ const renderSwitchCell = (cell: Cell, id: number): React.ReactNode | null => {
             })}
           </Select>
         </span>
+      );
     default:
-      return <span>
-        {cell.value
-          ? cell.value.length > 30
-            ? cell.value.substring(0, 30) + "..."
-            : cell.value
-          : "No data"}
-      </span>
+      return (
+        <span>
+          {cell.value
+            ? cell.value.length > 30
+              ? cell.value.substring(0, 30) + "..."
+              : cell.value
+            : "No data"}
+        </span>
+      );
   }
-}
+};
 
 export default function CoordinatorPermissionRow(props: PermissionRow) {
   return (
     <>
       <TableRow>
-        {props.row.cells.map(
-          (cell, _) => (
-            <TableCell key={cell.id}>
-              {renderSwitchCell(cell, props.id)}
-            </TableCell>
-          )
-        )}
+        {props.row.cells.map((cell, _) => (
+          <TableCell key={cell.id}>
+            {renderSwitchCell(cell, props.id)}
+          </TableCell>
+        ))}
       </TableRow>
     </>
   );

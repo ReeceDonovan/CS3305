@@ -1,54 +1,86 @@
-version: "3.9"
+version: "3.8"
+
 services:
-  # reverse-proxy:
-  #   container_name: reverse-proxy
-  #   image: traefik:latest
-  #   command:
-  #     - "--api.insecure=true"
-  #     - "--providers.docker"
-  #     - "--providers.docker.exposedByDefault=false"
-  #   ports:
-  #     - "80:80"
-  #     - "8080:8080"
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  # srec-api:
-  #   container_name: srec-api
-  #   image: srec-api
-  #   build:
-  #     context: ./api
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.srec-api.rule=Host(`${HOST}`) && PathPrefix(`/api/`)"
-  #     - traefik.http.routers.srec-api.middlewares=srec-api
-  #     - "traefik.http.middlewares.srec-api.stripprefix.prefixes=/api"
-  #     - "traefik.http.middlewares.srec-api.stripprefix.forceSlash=false"
-  #   expose:
-  #     - "8000"
-  #   depends_on:
-  #     - timescaledb
-  #     - reverse-proxy
-  # srec-ui:
-  #   container_name: srec-ui
-  #   image: srec-ui
-  #   build:
-  #     context: ./ui
-  #   environment:
-  #     - BASE_URL=${BASE_URL}
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.srec-ui.rule=Host(`${HOST}`)"
-  timescaledb:
-    container_name: pgres
-    image: "timescale/timescaledb:latest-pg14"
+  traefik:
+    image: "traefik:v2.6"
+    container_name: "traefik"
+    command:
+      - "--log.level=DEBUG"
+      # - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
     ports:
-      - "5432:5432"
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+      - "traefik.docker.network=traefik"
+    networks:
+      traefik:
+
+  # === DEVELOPMENT ONLY === #
+  whoami:
+    image: "traefik/whoami"
+    container_name: "whoami"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`localhost`) && PathPrefix(`/whoami/`)"
+      - "traefik.http.middlewares.whoami-prefix.stripprefix.prefixes=/whoami"
+      - "traefik.http.routers.whoami.middlewares=whoami-prefix@docker"
+      - "traefik.http.routers.whoami.entrypoints=web"
+    networks:
+      traefik:
+
+  api:
+    build: api
+    container_name: api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`localhost`) && PathPrefix(`/api/`)"
+      - "traefik.http.middlewares.api-prefix.stripprefix.prefixes=/api"
+      - "traefik.http.routers.api.middlewares=api-prefix@docker"
+      - "traefik.http.routers.api.service=api-port@docker"
+      - "traefik.http.services.api-port.loadbalancer.server.port=8000"
+      - "traefik.http.routers.api.entrypoints=web"
+    volumes:
+      - "./api:/usr/api"
+      - "./data:/usr/data"
+      - "./config.json:/usr/api/config.json"
+    depends_on:
+      - traefik
+      - pgres
+    networks:
+      traefik:
+
+  ui:
+    build:
+      target: deps
+      context: ui
+    container_name: ui
+    volumes:
+      - ./ui:/app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ui.rule=Host(`localhost`)"
+      - "traefik.http.routers.service=ui-port@docker"
+      - "traefik.http.services.ui-port.loadbalancer.server.port=3000"
+      - "traefik.http.routers.ui.entrypoints=web"
+    networks:
+      traefik:
+
+  pgres:
+    image: postgres:10.4
+    container_name: pgres
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}
       - POSTGRES_DB=${DB_NAME}
-    # volumes:
-    #   - "pg_data:/var/lib/postgresql/data"
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    networks:
+      traefik:
 
-volumes:
-  pg_data:
+networks:
+  traefik:

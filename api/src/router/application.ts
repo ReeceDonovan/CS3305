@@ -42,6 +42,37 @@ const check_access = async (application: Application, user: User) => {
   return userApplication !== undefined;
 };
 
+/**
+ * @swagger
+ * /api/applications:
+ *   get:
+ *     tags: [Applications]
+ *     summary: Get applications
+ *     parameters:
+ *       - in: query
+ *         name: target
+ *         required: false
+ *         schema:
+ *          type: string
+ *          enum:
+ *            - all
+ *            - review
+ *            - review_pending
+ *
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully fetched applications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Application'
+ */
 const getApplications = async (
   req: Request,
   res: Response,
@@ -110,6 +141,31 @@ const getApplications = async (
   }
 };
 
+/**
+ * @swagger
+ * /api/applications/{id}:
+ *   get:
+ *     tags: [Applications]
+ *     summary: Get application by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *          type: integer
+ *
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully fetched application
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ */
 const getApplication = async (
   req: Request,
   res: Response,
@@ -134,11 +190,30 @@ const getApplication = async (
     if (!(await check_access(application, user)))
       throw new NotAuthorizedError();
 
-    res.json({
-      status: 200,
-      message: "Successfully retrieved application",
-      data: application,
-    });
+    // modify reviews returned based on the user
+    if (
+      user.role === UserType.COORDINATOR ||
+      application.reviews
+        .map((rev) => {
+          return rev.user.id;
+        })
+        .includes(user.id)
+    ) {
+      res.json({
+        status: 200,
+        message: "Successfully retrieved application",
+        data: application,
+      });
+    } else {
+      application.reviews = application.reviews.filter((rev) => {
+        return rev.is_feedback === true;
+      });
+      res.json({
+        status: 200,
+        message: "Successfully retrieved application",
+        data: application,
+      });
+    }
   } catch (err) {
     next(err);
   }
@@ -176,8 +251,36 @@ const getApplicationForm = async (
     next(err);
   }
 };
-
-// need req otherwise res.locals.user is undefined
+/**
+ * @swagger
+ * /api/applications:
+ *   post:
+ *     tags: [Applications]
+ *     summary: Create application
+ *     parameters:
+ *       - in: body
+ *         name: application
+ *         required: true
+ *         schema:
+ *           $ref: '#/components/schemas/Application'
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully fetched applications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ *       201:
+ *         description: Successfully created application
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ */
 const createApplication = async (req: Request, res: Response) => {
   const user = res.locals.user;
 
@@ -214,6 +317,36 @@ const createApplication = async (req: Request, res: Response) => {
   });
 };
 
+/**
+ * @swagger
+ * /api/applications/{id}:
+ *   patch:
+ *     tags: [Applications]
+ *     summary: Update application
+ *     parameters:
+ *       - in: body
+ *         name: application
+ *         required: true
+ *         schema:
+ *           $ref: '#/components/schemas/Application'
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully updated application
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ *       201:
+ *         description: Successfully updated application
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ */
 const updateApplication = async (
   req: Request,
   res: Response,
@@ -332,6 +465,37 @@ const updateApplication = async (
   }
 };
 
+/**
+ * /api/applications/{id}/form:
+ *   post:
+ *     tags: [Applications]
+ *     summary: Upload application form
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *    requestBody:
+ *      content:
+ *        multipart/form-data:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              file:
+ *                type: string#
+ *                format: binary
+ *    responses:
+ *     401:
+ *       description: Unauthorized
+ *     403:
+ *       description: Forbidden &rarr; User does not have access
+ *     200:
+ *       description: Successfully uploaded application form
+ *     201:
+ *       description: Successfully uploaded application form
+ *
+ */
 const uploadFile = async (req: Request, res: Response, next: NextFunction) => {
   const file = req.file;
   const user = res.locals.user;
@@ -409,6 +573,36 @@ const uploadFile = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+/**
+ * @swagger
+ * /api/applications/{id}:
+ *   delete:
+ *     tags: [Applications]
+ *     summary: Delete application
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully updated application
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ *       201:
+ *         description: Successfully updated application
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ */
 const deleteApplication = async (
   req: Request,
   res: Response,
@@ -456,6 +650,28 @@ const deleteApplication = async (
   }
 };
 
+/**
+ * @swagger
+ * /api/applications/{id}/form:
+ *   delete:
+ *     tags: [Applications]
+ *     summary: Delete application form
+ *     parameters:
+ *       - in: body
+ *         name: application
+ *         required: true
+ *         schema:
+ *           $ref: '#/components/schemas/Application'
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully deleted application form
+ *       201:
+ *         description: Successfully deleted application form
+ */
 const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
   const user = res.locals.user;
   const applicationId = req.params.id;
@@ -500,6 +716,37 @@ const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
 
 // TODO: Needs testing from this endpoint and down
 // Application -> Review routes
+
+/**
+ * @swagger
+ * /api/applications/{id}/reviews:
+ *   get:
+ *     tags: [Applications, Reviews]
+ *     summary: Get reviews by application
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully got reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ *       201:
+ *         description: Successfully got reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Application'
+ */
 const getReviewsByApplication = async (
   req: Request,
   res: Response,
@@ -546,6 +793,35 @@ const getReviewsByApplication = async (
   }
 };
 
+/**
+ * @swagger
+ * /api/applications/{id}:
+ *   put:
+ *     tags: [Applications]
+ *     summary: Assign reviewers to application
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: body
+ *         name: reviewers
+ *         required: true
+ *         schema:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Application'
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully assigned reviewers
+ *       201:
+ *         description: Successfully assigned reviewers
+ */
 const assignReviewers = async (
   req: Request,
   res: Response,
@@ -608,6 +884,33 @@ const assignReviewers = async (
   }
 };
 
+/**
+ * @swagger
+ * /api/applications/{id}/reviews:
+ *   post:
+ *     tags: [Applications, Reviews]
+ *     summary: Create a review for an application
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: body
+ *         name: review
+ *         required: true
+ *         schema:
+ *           $ref: '#/components/schemas/Review'
+ *     responses:
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden &rarr; User does not have access
+ *       200:
+ *         description: Successfully created review
+ *       201:
+ *         description: Successfully created review
+ */
 const createReviewByApplication = async (
   req: Request,
   res: Response,
@@ -630,48 +933,50 @@ const createReviewByApplication = async (
     const review = new Review({
       ...body,
       application,
+      is_feedback: req.user?.role === UserType.COORDINATOR,
       user,
     });
+
+    const savedReview = await reviewRepository.save(review);
+
     if (
       body.status &&
       (body.status === ReviewStatus.APPROVED ||
-        body.status === ReviewStatus.DECLINED)
+        body.status === ReviewStatus.REJECTED)
     ) {
-      // find if every reviewer has made a review, if so check that all
-      // reviewers have made a review with a status
-      const reviews = await reviewRepository.find({
-        where: {
-          application,
-        },
-        relations: ["user"],
-      });
-
-      const reviewers = await UsersApplications.find({
+      console.log("Checking for next stage validity");
+      const userApplications = await UsersApplications.find({
         where: {
           application,
           role: RoleType.REVIEWER,
         },
-        relations: ["user", "user.reviews"],
+        relations: ["user"],
       });
 
-      // check if all reviewers have made a review
-      const allReviewersReviewed = reviewers.every(
-        (reviewer: UsersApplications) => {
-          return reviews.some((review) => {
-            return review.user.id === reviewer.user.id && review.status;
+      if (!userApplications) throw new NotFoundError();
+
+      const allReviewersReviewed = userApplications.every(
+        async (userApplication) => {
+          await reviewRepository.find({
+            where: {
+              user: userApplication.user,
+              status:
+                ReviewStatus.PENDING ||
+                ReviewStatus.APPROVED ||
+                ReviewStatus.REJECTED,
+              application,
+            },
           });
         }
       );
 
       if (!allReviewersReviewed) {
-        console.log("1 Not all reviewers have made a review");
+        console.log("Not all reviewers have made a review");
       } else {
         application.app_status = AppStatus.PENDING;
         await application.save();
       }
     }
-
-    const savedReview = await reviewRepository.save(review);
 
     res.json({
       status: 201,

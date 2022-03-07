@@ -48,10 +48,7 @@ loginRouter.get(
 
       const mailDomain = resp.data.email.split("@")[1];
 
-      if (
-        resp.data.verified_email !== true ||
-        !config.get().oauthConfig.allowedDomains.includes(mailDomain)
-      ) {
+      if (!config.get().oauthConfig.allowedDomains.includes(mailDomain)) {
         throw new BadRequestError(
           "Email not verified, or not from allowed domain"
         );

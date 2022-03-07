@@ -50,7 +50,9 @@ export default function CoordinatorDashboard() {
       {loading == true ? (
         <Loading />
       ) : (
-        <ApplicationTable title={"Coordinator Panel"} rows={rowData} />
+        <ApplicationTable onUpdate={
+          () => {}
+        } title={"Coordinator Panel"} rows={rowData} />
       )}
     </>
   );

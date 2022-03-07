@@ -1,5 +1,3 @@
-import "reflect-metadata";
-
 import cors from "cors";
 import express, { Express } from "express";
 
@@ -13,17 +11,58 @@ import reviewRouter from "./router/reviews";
 import userRouter from "./router/user";
 import adminRouter from "./router/admin";
 
+import { setup, serveWithOptions } from "swagger-ui-express";
+import swaggerJSDoc from "swagger-jsdoc";
+
 const PORT = 8000;
+
+// TODO - Privacy Policy & Licence
+// Extended : https://swagger.io/specification/#infoObject
+const SWAGGER_OPTIONS = {
+  swaggerDefinition: {
+    openapi: "3.0.0",
+    info: {
+      title: "SREC API",
+      description:
+        "API for the SREC website to upload and have research ethically reviewed",
+      contact: {
+        name: "CS3305 Team 1",
+        email: "119429402@umail.ucc.ie",
+        url: "https://github.com/reecedonovan/cs3305",
+      },
+      license: {
+        name: "MIT",
+        url: "TODO: URL",
+      },
+      version: "1.0.0",
+      servers: [
+        {
+          description: "Local Development Server",
+          url: "http://localhost/api",
+        },
+        {
+          description: "Production Server",
+          url: "https://srec.netsoc.cloud/api",
+        },
+      ],
+    },
+  },
+  apis: ["./src/router/*.ts", "app.ts"],
+};
+
+const swaggerDocs = swaggerJSDoc(SWAGGER_OPTIONS);
 
 const createApp = (): Express => {
   const app = express();
   const corsOptions = {
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3000", // TODO: update this to use config url
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   };
 
   app.use(cors(corsOptions));
   app.use(express.json());
+
+  app.use("/docs", serveWithOptions({ redirect: false }), setup(swaggerDocs));
 
   app.use(authUser);
 

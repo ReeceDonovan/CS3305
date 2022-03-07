@@ -43,6 +43,7 @@ export interface Review extends BaseEntity {
   application?: Application;
   user_id?: number;
   user?: User;
+  is_feedback?: boolean;
 }
 
 export interface FileRef {
@@ -55,7 +56,7 @@ export enum AppStatus {
   SUBMITTED = "SUBMITTED",
   PENDING = "PENDING",
   REVIEW = "REVIEW",
-  APPROVAL = "APPROVED",
+  APPROVED = "APPROVED",
   REJECTED = "REJECTED",
 }
 
@@ -75,9 +76,6 @@ export interface configInterface {
     host?: string;
     port?: number;
     secure?: boolean;
-    tls?: {
-      ciphers: string;
-    };
   };
   oauthConfig: {
     oauthClientId: string;
@@ -91,6 +89,7 @@ export interface configInterface {
     password: string;
     database: string;
   };
+  coordinatorEmails: string[];
 }
 
 export interface oauthConfig {

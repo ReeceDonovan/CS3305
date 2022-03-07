@@ -7,7 +7,7 @@ import path from "path";
 const defaultConfig: configInterface = {
   apiURL: "http://localhost:8000",
   uiURL: "http://localhost:3000",
-    signingKey: "",
+  signingKey: "",
   landingPageMD:
     "Landing Page Markdown Sample \n > Hello World \n `Lorem Ipsum` <script>alert('xss!')</script> [some text](javascript:alert('xss'))",
   companyLogo: "",
@@ -111,10 +111,14 @@ class Config {
   }
 
   // set config
-  public set(config: configInterface): void {
+  public set(config: configInterface): boolean {
     if (this.validate(config)) {
       Config.writeConfig(config);
       Config.config = config;
+      return true;
+    } else {
+      console.log("kek");
+      return false;
     }
   }
 
@@ -122,6 +126,9 @@ class Config {
   private validate(newConfig: configInterface): boolean {
     const newKeys = Object.keys(newConfig).sort();
     const defaultKeys = Object.keys(defaultConfig).sort();
+
+    console.log(newKeys, defaultKeys);
+
     return JSON.stringify(newKeys) === JSON.stringify(defaultKeys);
   }
 }

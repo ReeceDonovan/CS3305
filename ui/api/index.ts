@@ -64,10 +64,10 @@ export const request = async (
   }
 };
 
-export const fetchPDF = async (id: string) => {
+export const fetchPDF = async (path: string) => {
   try {
     const req = await axios({
-      url: `${API_URL}/applications/${id}/form`,
+      url: `${API_URL}${path}`,
       method: "GET",
       responseType: "blob",
       headers: {
@@ -77,9 +77,11 @@ export const fetchPDF = async (id: string) => {
             : "",
       },
     });
-    return req.data;
+    if (req.status === 200) {
+      return [req.data, null];
+    }
   } catch (e) {
-    console.log(e);
+    return [null, e];
   }
 };
 

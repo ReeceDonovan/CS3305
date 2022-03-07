@@ -19,6 +19,23 @@ export default function ReviewerDashboard() {
   const [rowData, setRowdata] = useState([] as RowDataType[]);
   const [loading, setLoading] = useState(true);
 
+  const mapData = (data: any) => {
+    for (let i = 0; i < data.length; i++) {
+      data[i].submitter = data[i].submitter?.email;
+      data[i].updatedAt = new Date(
+      data[i].updatedAt
+      ).toLocaleDateString();
+      data[i].createdAt = new Date(
+        data[i].createdAt
+      ).toLocaleDateString();
+      // resp.data[i].status =
+      //   resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
+      console.log(data[i]);
+    }
+
+    setRowdata(data as RowDataType[]);
+  }
+
   useEffect(() => {
     (async () => {
       const resp = await api.request({
@@ -27,21 +44,7 @@ export default function ReviewerDashboard() {
       });
 
       if (resp?.data) {
-        console.log(resp.data);
-        for (let i = 0; i < resp.data.length; i++) {
-          resp.data[i].submitter = resp.data[i].submitter?.email;
-          resp.data[i].updatedAt = new Date(
-            resp.data[i].updatedAt
-          ).toLocaleDateString();
-          resp.data[i].createdAt = new Date(
-            resp.data[i].createdAt
-          ).toLocaleDateString();
-          // resp.data[i].status =
-          //   resp.data[i].reviews[resp.data[i].reviews.length - 1]?.status;
-          console.log(resp.data[i]);
-        }
-
-        setRowdata(resp.data as RowDataType[]);
+        mapData(resp.data);
         setLoading(false);
       }
     })();
@@ -53,6 +56,7 @@ export default function ReviewerDashboard() {
         <Loading />
       ) : (
         <ApplicationTable
+          onUpdate={()=>{}}
           title={"Reviewer Panel"}
           description={"Applications you are reviewing"}
           rows={rowData}

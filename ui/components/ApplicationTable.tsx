@@ -56,6 +56,7 @@ export default function ApplicationTable(props: {
   description: String;
   headers: Array<{ key: string; header: string }>;
   rows: Array<Object>;
+  onUpdate: () => void;
 }) {
   const headerData = props.headers;
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -64,7 +65,6 @@ export default function ApplicationTable(props: {
     description: "",
   });
 
-  
   const nm_ctx = useContext(NetworkManagerContext);
 
   return (
@@ -160,7 +160,7 @@ export default function ApplicationTable(props: {
         onRequestClose={() => {setModalOpen(false)}}
         onRequestSubmit={async () => {
           
-          const [res, err] = await nm_ctx.request({
+          const [_, err] = await nm_ctx.request({
             path: "/applications",
             method: "POST",
             data: newApp,
@@ -170,10 +170,9 @@ export default function ApplicationTable(props: {
             console.error(err)
           } else {
             setModalOpen(false)
-            props.rows.push(res)
+            // change props.rows
+            props.onUpdate()
           }
-
-          console.log("Uh")
         }}
 
         preventCloseOnClickOutside={false}
